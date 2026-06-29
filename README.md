@@ -83,3 +83,17 @@ Debug\mspbluetooth.out
 ```
 
 本阶段只编译，不自动烧录。
+
+## 自动验证
+
+```powershell
+cd E:\code\ccs\mspbluetooth
+powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
+```
+
+验证内容：
+
+- clean build 固件并生成 `Debug\mspbluetooth.out`
+- 静态检查头文件注释、关键命令、引脚冲突说明、RAM 余量
+- 模拟 HC-05 单字符蓝牙命令链路
+- 模拟蓝牙、EC11、本地按键混合控制场景
