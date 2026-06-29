@@ -219,7 +219,8 @@ commands immediately return `status=...` plus the three display lines.
 The Android APK also has a `Run Acceptance` button. It sends `h i e l d ? t 1
 p + n b o 3`, writes `TX>` markers into the phone log, and lets the dashboard,
 display frame, and track-list panels update from firmware responses. The phone
-log can be saved and checked with the same `serial_acceptance_check.py` command.
+log can be exported with `Share Log` and checked with the same
+`serial_acceptance_check.py` command.
 The no-hardware model for this path is:
 
 ```powershell

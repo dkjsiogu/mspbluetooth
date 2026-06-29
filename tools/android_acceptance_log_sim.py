@@ -21,6 +21,7 @@ from serial_acceptance_check import check_required_criteria, check_state_command
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_LOG = ROOT / "dist" / "verification" / "android_acceptance_log.txt"
 DEFAULT_REPORT = ROOT / "docs" / "android_acceptance_script_report.md"
+MAIN_ACTIVITY = ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dkjsiogu" / "mspbluetooth" / "MainActivity.java"
 
 ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3"]
 
@@ -51,6 +52,12 @@ def fragmented_android_feed(android: AndroidUiState, responses: list[str]) -> No
 
 def run_acceptance_flow() -> AcceptanceResult:
     """Runs the simulated APK acceptance button against the protocol model."""
+
+    source = MAIN_ACTIVITY.read_text(encoding="utf-8")
+    if 'commandButton("Share Log"' not in source:
+        raise AssertionError("APK source must expose Share Log for exporting acceptance evidence")
+    if "Intent.ACTION_SEND" not in source or "Intent.EXTRA_TEXT" not in source:
+        raise AssertionError("APK source must export logs through ACTION_SEND and EXTRA_TEXT")
 
     player = SimulatedPlayer()
     android = AndroidUiState()
@@ -106,6 +113,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["---", "---"]),
         row(["Command sequence", "`" + " ".join(ACCEPTANCE_COMMANDS) + "`"]),
         row(["Saved log", f"`{log_path}`"]),
+        row(["Phone export", "`Share Log` uses Android share sheet with `EXTRA_TEXT`"]),
         row(["Serial transcript checks", f"{result.passed_checks}/{result.total_checks} passed"]),
         row(["Final dashboard", result.dashboard]),
         row(["Final display", result.display]),

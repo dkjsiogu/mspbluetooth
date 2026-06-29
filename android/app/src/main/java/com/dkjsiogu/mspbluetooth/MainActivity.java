@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -162,9 +163,12 @@ public class MainActivity extends Activity {
         LinearLayout acceptanceRow = row();
         Button acceptanceButton = commandButton("Run Acceptance", 0xFF0F766E);
         acceptanceButton.setOnClickListener(v -> runAcceptanceScript());
+        Button shareLogButton = commandButton("Share Log", 0xFF334155);
+        shareLogButton.setOnClickListener(v -> shareLog());
         Button clearLogButton = commandButton("Clear Log", 0xFF475569);
         clearLogButton.setOnClickListener(v -> logView.setText(""));
         acceptanceRow.addView(acceptanceButton, new LinearLayout.LayoutParams(0, dp(44), 2));
+        acceptanceRow.addView(shareLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         acceptanceRow.addView(clearLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(acceptanceRow);
 
@@ -355,6 +359,20 @@ public class MainActivity extends Activity {
             sendCommand(command);
         }
         appendLog("acceptance commands sent");
+    }
+
+    private void shareLog() {
+        String text = logView.getText().toString();
+        if (text.trim().length() == 0) {
+            toast("Log is empty");
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "MSP430 Bluetooth acceptance log");
+        intent.putExtra(Intent.EXTRA_TEXT, text);
+        startActivity(Intent.createChooser(intent, "Share acceptance log"));
     }
 
     private void handleIncomingText(String text) {

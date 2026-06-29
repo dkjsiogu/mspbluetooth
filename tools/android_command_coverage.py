@@ -128,6 +128,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),
             row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
             row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),
+            row(["Acceptance log export", "`Share Log` uses Android `ACTION_SEND` with `EXTRA_TEXT` so logs can be saved and checked on PC"]),
             "",
             "## Bluetooth APK Requirements",
             "",
@@ -177,6 +178,10 @@ def verify_coverage() -> tuple[dict[str, list[str]], str, str]:
             raise AssertionError(f"Android source must send {command!r} during initial panel sync")
     if 'commandButton("Run Acceptance"' not in source:
         raise AssertionError("Android source must expose a Run Acceptance button")
+    if 'commandButton("Share Log"' not in source:
+        raise AssertionError("Android source must expose a Share Log button")
+    if "Intent.ACTION_SEND" not in source or "Intent.EXTRA_TEXT" not in source:
+        raise AssertionError("Android source must share the acceptance log with ACTION_SEND and EXTRA_TEXT")
     if 'appendLog("TX> " + command)' not in source:
         raise AssertionError("Android source must log transmitted commands with TX> markers")
     for command in REQUIRED_ACCEPTANCE_COMMANDS:
