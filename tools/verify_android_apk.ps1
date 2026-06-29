@@ -58,6 +58,11 @@ $requiredUiMarkers = @(
     "boundedInt",
     "volumeBar.setMax(32)",
     "progressBar.setMax(100)",
+    "DEMO_RX_LINES",
+    "runOfflineDemo",
+    '"Demo RX"',
+    '"demo rx start"',
+    '"demo rx done"',
     "healthView",
     "displayView",
     "trackListView",
@@ -102,6 +107,7 @@ foreach ($marker in $requiredUiMarkers) {
 
 Invoke-Checked { python (Join-Path $root "tools\android_ui_parser_sim.py") }
 Invoke-Checked { python (Join-Path $root "tools\android_command_coverage.py") }
+Invoke-Checked { python (Join-Path $root "tools\android_offline_demo_sim.py") }
 
 Write-Output "Android APK verification passed"
 Write-Output $apk

@@ -13,6 +13,7 @@ from pathlib import Path
 
 from android_ui_parser_sim import run_fragmented_flow
 from android_command_coverage import verify_coverage
+from android_offline_demo_sim import run_offline_demo
 from audio_stream_sim import run_audio_stream_simulation
 from bluetooth_diagnostic_sim import run_diagnostic_cases
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
@@ -119,7 +120,7 @@ def android_source_evidence() -> tuple[list[str], list[str]]:
     commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k", "u", "w"]
     missing_commands = [command for command in commands if f'"{command}"' not in source]
     parser_markers = ["status=", "progress=", "sd mounted", "info name=", "selftest ", "tone start", "open TRACK0", "display 1:", "display 2:", "display 3:", "link ", "input ", "pin "]
-    visual_markers = ["volumeBar", "progressBar", "boundedInt", "volumeBar.setMax(32)", "progressBar.setMax(100)"]
+    visual_markers = ["volumeBar", "progressBar", "boundedInt", "volumeBar.setMax(32)", "progressBar.setMax(100)", "Demo RX", "DEMO_RX_LINES", "runOfflineDemo"]
     missing_markers = [marker for marker in parser_markers if f'"{marker}"' not in source]
     missing_visual_markers = [marker for marker in visual_markers if marker not in source]
     if missing_commands:
@@ -149,6 +150,7 @@ def render_report(input_dir: Path) -> str:
     encoder_cases = run_encoder_cases()
     led_models = assert_patterns()
     android_state = run_fragmented_flow()
+    offline_demo_state, offline_demo_lines = run_offline_demo()
     android_buttons, _, _ = verify_coverage()
     audio_config, audio_results = run_audio_stream_simulation(input_dir)
     commands, parser_markers = android_source_evidence()
@@ -171,7 +173,8 @@ def render_report(input_dir: Path) -> str:
         row(["APK log evidence export", "`Share Log` shares text; `Save Log` writes text through Android document picker"]),
         row(["Firmware command transcript", " -> ".join(player.transcript)]),
         row(["Final status line", status_line]),
-        row(["End-to-end demo", f"{len(demo_snapshots)} APK button steps verified in docs/end_to_end_demo_report.md"]),
+            row(["End-to-end demo", f"{len(demo_snapshots)} APK button steps verified in docs/end_to_end_demo_report.md"]),
+            row(["Offline APK demo", f"`Demo RX` replays {len(offline_demo_lines)} firmware-style lines and is verified in docs/android_offline_demo_report.md"]),
         "",
         "## Bluetooth UART Diagnostics",
         "",
@@ -240,6 +243,7 @@ def render_report(input_dir: Path) -> str:
             row(["Android parsed input", android_state.input_text.replace("\n", " / ")]),
             row(["Android parsed wiring", android_state.wiring_text.replace("\n", " / ")]),
             row(["Android acceptance summary", android_state.acceptance_text.replace("\n", " / ")]),
+            row(["Android offline demo", offline_demo_state.dashboard_text.replace("\n", " / ") + f" / bars={offline_demo_state.volume_bar}/32,{offline_demo_state.progress_bar}/100 / " + offline_demo_state.acceptance_text.replace("\n", " / ")]),
             row(["E-paper preview", "tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame"]),
             row(["E-paper gallery", "playing, paused, stopped, and error previews are generated in docs/epaper_gallery_report.md"]),
             "",

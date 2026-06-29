@@ -36,6 +36,28 @@ public class MainActivity extends Activity {
     private static final int REQUEST_SAVE_LOG = 431;
     private static final String[] ACCEPTANCE_COMMANDS =
             new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "w"};
+    private static final String[] DEMO_RX_LINES = new String[]{
+            "sd mounted",
+            "info name=MSP430F5529-BT-WAV version=1.4.1 profile=bt_wav_player",
+            "selftest bt=ok sd=ok wav=ok i2s=ok buttons=ok",
+            "tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--",
+            "display 1:playing T3 V19 ONE",
+            "display 2:SD:OK WAV:OPEN",
+            "display 3:16000Hz 2ch P42%",
+            "status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=42",
+            "tone start",
+            "tone done",
+            "open TRACK03.WAV",
+            "link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms",
+            "input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1",
+            "pin profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1",
+            "pin tf cs=P4.0 sck=P3.1 mosi=P3.2 miso=P3.3",
+            "pin i2s bck=P4.1 lrck=P4.2 din=P4.3",
+            "pin ec11 a=P2.1 b=P2.2 sw=P2.3",
+            "pin local s1=P1.2 s2=P1.3 s4=P2.6 led=P1.0",
+            "pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict",
+            "pin epaper optional=P6.0-P6.5 default=disabled"
+    };
 
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
     private Spinner deviceSpinner;
@@ -223,6 +245,8 @@ public class MainActivity extends Activity {
         saveLogButton.setOnClickListener(v -> saveLogToFile());
         Button shareLogButton = commandButton("Share Log", 0xFF334155);
         shareLogButton.setOnClickListener(v -> shareLog());
+        Button demoRxButton = commandButton("Demo RX", 0xFF475569);
+        demoRxButton.setOnClickListener(v -> runOfflineDemo());
         Button clearLogButton = commandButton("Clear Log", 0xFF475569);
         clearLogButton.setOnClickListener(v -> {
             logView.setText("");
@@ -234,6 +258,7 @@ public class MainActivity extends Activity {
         LinearLayout logActionRow = row();
         logActionRow.addView(saveLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         logActionRow.addView(shareLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        logActionRow.addView(demoRxButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         logActionRow.addView(clearLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(logActionRow);
 
@@ -426,6 +451,16 @@ public class MainActivity extends Activity {
             sendCommand(command);
         }
         appendLog("acceptance commands sent");
+    }
+
+    private void runOfflineDemo() {
+        appendLog("demo rx start");
+        StringBuilder builder = new StringBuilder();
+        for (String line : DEMO_RX_LINES) {
+            builder.append(line).append("\r\n");
+        }
+        handleIncomingText(builder.toString());
+        appendLog("demo rx done");
     }
 
     private void shareLog() {

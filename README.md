@@ -137,6 +137,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟 HC-05 字节流诊断链路，覆盖分片输入、大小写命令、换行噪声和现场自检转录
 - 模拟 Android 端对碎片化蓝牙回传的状态面板、音量/进度条、显示帧、曲目列表和链路计数解析
+- 模拟 APK `Demo RX` 离线注入固件格式回传，无需 HC-05/板卡即可检查手机端可见面板效果
 - 检查 Android APK 命令按钮覆盖、HC-05 SPP 权限、连接后自动同步状态/曲目/显示帧和结构化回传解析覆盖
 - 模拟端到端演示流程：APK 按钮、HC-05 命令、固件回包、手机状态面板、显示帧和链路面板变化
 - 模拟蓝牙、EC11、本地按键混合控制场景
@@ -147,7 +148,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 校验 TF 卡测试 WAV 是否为固件支持的 RIFF/WAVE PCM、16-bit、单/双声道格式
 - 模拟 TF WAV 到软件 I2S 样本流，确认读块、音量缩放、非静音输出和播放进度
 - 模拟 PCM5102A 软件 I2S 帧结构，确认 64 个 BCK、LRCK 左右槽、MSB 延迟和 padding
-- 生成软件效果验收报告，汇总蓝牙命令、整板场景、按键、显示帧、APK 解析和 WAV 资产证据
+- 生成软件效果验收报告，汇总蓝牙命令、整板场景、按键、显示帧、APK 解析、APK 离线演示和 WAV 资产证据
 
 ## 交付打包
 
@@ -162,7 +163,7 @@ powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 dist\mspbluetooth_delivery\
 ```
 
-目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、蓝牙诊断报告、Android 命令覆盖报告、端到端演示报告、音频流仿真报告、I2S 帧仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
+目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、蓝牙诊断报告、Android 命令覆盖报告、Android 离线演示报告、端到端演示报告、音频流仿真报告、I2S 帧仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
 
 ## 实物验证
 
@@ -175,6 +176,7 @@ dist\mspbluetooth_delivery\
 - [软件效果验收报告](docs/effect_acceptance_report.md)
 - [蓝牙诊断报告](docs/bluetooth_diagnostic_report.md)
 - [Android 命令覆盖报告](docs/android_command_coverage_report.md)
+- [Android 离线演示报告](docs/android_offline_demo_report.md)
 - [端到端演示仿真报告](docs/end_to_end_demo_report.md)
 - [音频流仿真报告](docs/audio_stream_report.md)
 - [I2S 帧仿真报告](docs/i2s_frame_report.md)
@@ -186,7 +188,7 @@ dist\mspbluetooth_delivery\
 
 ## Android 控制端
 
-仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`sd mounted`、`info name=...`、`selftest ...`、`tone ...`、`open TRACK...`、`error: ...`、`display 1/2/3:...`、`tracks ...`、`link ...`、`input ...` 和 `pin ...`，在手机上显示当前播放状态、音量/进度条、Health/Storage 证据、三行显示帧、曲目可用状态、蓝牙链路计数、本地输入计数和接线诊断，便于未接墨水屏时确认显示效果并核对现场接线。`Run Acceptance` 会在手机上显示 `Acceptance X/9` 摘要面板，集中标出 SD、固件信息、自检、曲目扫描、接线、显示帧、状态、测试音和 WAV 打开证据；日志可用 `Share Log` 分享，也可用 `Save Log` 直接保存为文本文件。构建 APK：
+仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`sd mounted`、`info name=...`、`selftest ...`、`tone ...`、`open TRACK...`、`error: ...`、`display 1/2/3:...`、`tracks ...`、`link ...`、`input ...` 和 `pin ...`，在手机上显示当前播放状态、音量/进度条、Health/Storage 证据、三行显示帧、曲目可用状态、蓝牙链路计数、本地输入计数和接线诊断，便于未接墨水屏时确认显示效果并核对现场接线。`Demo RX` 可在无 HC-05/无板卡时注入同格式回传，直接演示全部面板；`Run Acceptance` 会在手机上显示 `Acceptance X/9` 摘要面板，集中标出 SD、固件信息、自检、曲目扫描、接线、显示帧、状态、测试音和 WAV 打开证据；日志可用 `Share Log` 分享，也可用 `Save Log` 直接保存为文本文件。构建 APK：
 
 ```powershell
 cd E:\code\ccs\mspbluetooth
@@ -234,10 +236,13 @@ visual volume/progress bars, Health, display frame, track-list, Link, Input, Wir
 from firmware responses. The phone log can be exported with `Share Log` or
 saved as a text file with `Save Log`, then checked with the same
 `serial_acceptance_check.py` command.
+`Demo RX` uses the same parser with a built-in firmware-style transcript, so
+the APK visual effect can be checked on a phone before HC-05 pairing.
 The no-hardware model for this path is:
 
 ```powershell
 python tools\android_acceptance_log_sim.py
+python tools\android_offline_demo_sim.py
 ```
 
 ## Optional E-Paper Panel

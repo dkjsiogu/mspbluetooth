@@ -26,6 +26,7 @@ python tools\generate_diagrams.py
 - 使用 PCM5102A I2S DAC 输出音频
 - 使用 EC11 和本地按键完成离线控制
 - 使用 APK 和蓝牙日志显示状态、音量/进度条、Health/Storage 与自检结果
+- 使用 APK `Demo RX` 在无硬件时演示同一套手机端可见面板
 
 ## 3. 系统方案
 
@@ -35,7 +36,7 @@ python tools\generate_diagrams.py
 - 存储子系统：TF 卡、FatFs、软件 SPI
 - 音频子系统：WAV 解析、软件 I2S、PCM5102A、PAM8403
 - 人机交互：HC-05、Android APK、EC11、本地按键
-- 验证与诊断：Health/Storage 面板、测试音、自检命令、显示帧、蓝牙链路计数、本地输入计数、接线诊断、仿真脚本
+- 验证与诊断：Health/Storage 面板、测试音、自检命令、显示帧、蓝牙链路计数、本地输入计数、接线诊断、APK 离线演示、仿真脚本
 
 ## 4. 硬件连接
 

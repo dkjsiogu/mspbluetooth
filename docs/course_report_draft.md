@@ -20,8 +20,8 @@
 - 驱动层：`drivers/` 负责 MSP430 时钟、UART、EC11、本地按键、软件 I2S 和板级 GPIO。
 - 中间层：`middleware/wav_reader.*` 解析 16-bit PCM WAV，`middleware/display_model.*` 生成三行状态显示帧。
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
-- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、Health 证据、`display 1/2/3:`、`tracks`、`link`、`input` 和 `pin` 回传。
-- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
+- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、Health 证据、`display 1/2/3:`、`tracks`、`link`、`input` 和 `pin` 回传；`Demo RX` 可在无 HC-05/无板卡时注入同格式回传，现场演示 APK 面板效果。
+- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、Android 离线演示仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
 - TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
 系统硬件框图见下图：
@@ -57,6 +57,7 @@
 - 蓝牙 `u` 命令输出 EC11 与 S1/S2/S4 短按、长按计数，便于确认本地输入链路。
 - 蓝牙 `w` 命令输出 TF、I2S、EC11、本地按键、HC-05 和可选墨水屏接线，便于现场核对 P3.3 冲突和 P4.4/P4.5 蓝牙改线。
 - Android `Save Log` 可把手机 TX/RX 验收日志直接保存为文本文件，便于课后用脚本复查。
+- Android `Demo RX` 可离线注入固件格式回传，直接确认状态面板、音量/进度条、Health、显示帧、Link/Input/Wiring 和 Acceptance 摘要的可见效果。
 - 蓝牙状态包含播放模式、曲目、音量、播放顺序、采样率、声道和进度百分比。
 
 软件主流程见下图：
@@ -108,6 +109,7 @@ pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict
 | 手机蓝牙曲目选择 | APK `Track 1-9` 发送 `1-9` | APK 源码检查、协议仿真 |
 | Android APK 命令覆盖 | APK 对固件全部蓝牙命令提供按钮，并声明 HC-05 SPP 所需蓝牙权限 | `tools/android_command_coverage.py`、`docs/android_command_coverage_report.md` |
 | Android 连接后同步 | APK 连接成功后自动发送 `?`、`l`、`d`，首屏填充状态、曲目列表和显示帧 | `tools/android_command_coverage.py`、`tools/end_to_end_demo_sim.py` |
+| Android 离线演示 | APK `Demo RX` 无需 HC-05/板卡即可注入固件格式回传，显示状态、音量/进度条、Health、显示帧、曲目、Link、Input、Wiring 和 Acceptance 9/9 | `tools/android_offline_demo_sim.py`、`docs/android_offline_demo_report.md` |
 | 端到端演示效果 | APK 按钮发送 HC-05 命令，状态改变后立即收到 `status=...` 和 `display 1/2/3:...`，手机状态面板、显示帧和曲目列表随回包变化 | `tools/end_to_end_demo_sim.py`、`docs/end_to_end_demo_report.md` |
 | 手机蓝牙曲目扫描 | APK `Track List` 发送 `l`，并把 `tracks ...` 回传解析到曲目状态面板 | `tools/bluetooth_protocol_sim.py`、`tools/android_ui_parser_sim.py` |
 | 手机蓝牙播放顺序 | APK `Order` 发送 `o`，固件循环 sequence/repeat_all/repeat_one | `tools/bluetooth_protocol_sim.py`、`tools/board_scenario_sim.py` |
@@ -118,7 +120,7 @@ pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict
 | TF 卡测试音频 | `tools/prepare_sdcard_assets.py` 生成 TRACK01-03.WAV，并用 RIFF chunk 校验 | `tools/wav_asset_check.py`、`tools/run_verification.ps1` |
 | PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame，32-bit 左/右声道 slot，标准 I2S MSB 延迟 | 固件编译、`t` 测试音命令、`tools/audio_stream_sim.py`、`tools/i2s_frame_sim.py` |
 | 音频流效果 | TF WAV 按固件读块大小解码为非静音、音量缩放后的 stereo 样本，进度到 100% | `tools/audio_stream_sim.py`、`docs/audio_stream_report.md` |
-| 状态显示 | APK 日志、含播放进度的状态面板、音量/进度条、Health/Storage 面板、蓝牙/EC11/本地按键控制后即时状态和显示帧、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`tools/end_to_end_demo_sim.py`、`tools/board_scenario_sim.py`、`docs/effect_acceptance_report.md` |
+| 状态显示 | APK 日志、含播放进度的状态面板、音量/进度条、Health/Storage 面板、蓝牙/EC11/本地按键控制后即时状态和显示帧、自动状态、`d` 三行显示帧、`Demo RX` 离线演示 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`tools/android_offline_demo_sim.py`、`tools/end_to_end_demo_sim.py`、`tools/board_scenario_sim.py`、`docs/effect_acceptance_report.md` |
 | 状态 LED | P1.0 表示播放器模式：播放快闪、暂停慢闪、停止常亮、错误双闪 | `tools/status_led_pattern_sim.py`、`docs/status_led_report.md` |
 | 墨水屏扩展 | 未默认接入，保留显示模型、APK 显示帧、PGM 黑白预览和播放/暂停/停止/错误多状态画廊，并说明引脚冲突 | `tools/epaper_preview_sim.py`、`docs/epaper_gallery_report.md`、`docs/hardware_verification.md` |
 | 硬件框图/软件流程图 | 自动生成 SVG 图并纳入报告和交付包 | `tools/generate_diagrams.py`、`docs/hardware_block_diagram.svg`、`docs/software_flowchart.svg` |
@@ -141,7 +143,7 @@ powershell -ExecutionPolicy Bypass -File tools\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/Health/显示帧/Link/Input/Wiring 面板解析和日志保存路径、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/Health/显示帧/Link/Input/Wiring 面板解析、Android 离线 Demo RX 演示和日志保存路径、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 

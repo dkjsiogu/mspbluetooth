@@ -60,8 +60,8 @@ def build_report() -> str:
 - 驱动层：`drivers/` 负责 MSP430 时钟、UART、EC11、本地按键、软件 I2S 和板级 GPIO。
 - 中间层：`middleware/wav_reader.*` 解析 16-bit PCM WAV，`middleware/display_model.*` 生成三行状态显示帧。
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
-- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、Health 证据、`display 1/2/3:`、`tracks`、`link`、`input` 和 `pin` 回传。
-- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
+- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、Health 证据、`display 1/2/3:`、`tracks`、`link`、`input` 和 `pin` 回传；`Demo RX` 可在无 HC-05/无板卡时注入同格式回传，现场演示 APK 面板效果。
+- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、Android 离线演示仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
 - TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
 系统硬件框图见下图：
@@ -97,6 +97,7 @@ def build_report() -> str:
 - 蓝牙 `u` 命令输出 EC11 与 S1/S2/S4 短按、长按计数，便于确认本地输入链路。
 - 蓝牙 `w` 命令输出 TF、I2S、EC11、本地按键、HC-05 和可选墨水屏接线，便于现场核对 P3.3 冲突和 P4.4/P4.5 蓝牙改线。
 - Android `Save Log` 可把手机 TX/RX 验收日志直接保存为文本文件，便于课后用脚本复查。
+- Android `Demo RX` 可离线注入固件格式回传，直接确认状态面板、音量/进度条、Health、显示帧、Link/Input/Wiring 和 Acceptance 摘要的可见效果。
 - 蓝牙状态包含播放模式、曲目、音量、播放顺序、采样率、声道和进度百分比。
 
 软件主流程见下图：
@@ -151,7 +152,7 @@ powershell -ExecutionPolicy Bypass -File tools\\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/Health/显示帧/Link/Input/Wiring 面板解析和日志保存路径、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/Health/显示帧/Link/Input/Wiring 面板解析、Android 离线 Demo RX 演示和日志保存路径、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
@@ -188,7 +189,9 @@ def validate_report(text: str) -> None:
         "input ecw=",
         "pin bt tx=P4.4",
         "tools/wav_asset_check.py",
-        "Android 状态/Health/显示帧/Link/Input/Wiring 面板解析和日志保存路径",
+        "Android 状态/Health/显示帧/Link/Input/Wiring 面板解析",
+        "Android 离线 Demo RX 演示",
+        "日志保存路径",
         "音频流仿真",
         "I2S 帧仿真",
         "EC11 正交解码仿真",

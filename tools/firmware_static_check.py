@@ -40,6 +40,7 @@ REQUIRED_FILES = [
     "tools/serial_acceptance_check.py",
     "tools/android_command_coverage.py",
     "tools/android_acceptance_log_sim.py",
+    "tools/android_offline_demo_sim.py",
     "tools/end_to_end_demo_sim.py",
     "tools/generate_effect_report.py",
     "tools/generate_diagrams.py",

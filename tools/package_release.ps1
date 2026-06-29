@@ -68,6 +68,7 @@ try {
         Invoke-Checked { python tools\epaper_driver_trace_sim.py }
         Invoke-Checked { python tools\android_command_coverage.py }
         Invoke-Checked { python tools\android_acceptance_log_sim.py }
+        Invoke-Checked { python tools\android_offline_demo_sim.py }
         Invoke-Checked { python tools\end_to_end_demo_sim.py }
         Invoke-Checked { python tools\status_led_pattern_sim.py }
         Invoke-Checked { python tools\generate_effect_report.py }
@@ -92,6 +93,7 @@ try {
     Copy-RequiredFile "docs\serial_acceptance_report.md" (Join-Path $packageRoot "docs\serial_acceptance_report.md")
     Copy-RequiredFile "docs\android_command_coverage_report.md" (Join-Path $packageRoot "docs\android_command_coverage_report.md")
     Copy-RequiredFile "docs\android_acceptance_script_report.md" (Join-Path $packageRoot "docs\android_acceptance_script_report.md")
+    Copy-RequiredFile "docs\android_offline_demo_report.md" (Join-Path $packageRoot "docs\android_offline_demo_report.md")
     Copy-RequiredFile "docs\end_to_end_demo_report.md" (Join-Path $packageRoot "docs\end_to_end_demo_report.md")
     Copy-RequiredFile "docs\status_led_report.md" (Join-Path $packageRoot "docs\status_led_report.md")
     Copy-RequiredFile "docs\audio_stream_report.md" (Join-Path $packageRoot "docs\audio_stream_report.md")
@@ -135,6 +137,7 @@ try {
             --log (Join-Path $packageRoot "docs\android_acceptance_log.txt") `
             --report (Join-Path $packageRoot "docs\android_acceptance_script_report.md")
     }
+    Invoke-Checked { python tools\android_offline_demo_sim.py --report (Join-Path $packageRoot "docs\android_offline_demo_report.md") }
     Invoke-Checked { python tools\end_to_end_demo_sim.py --report (Join-Path $packageRoot "docs\end_to_end_demo_report.md") }
     Invoke-Checked { python tools\status_led_pattern_sim.py --report (Join-Path $packageRoot "docs\status_led_report.md") }
     Invoke-Checked { python tools\generate_effect_report.py --input (Join-Path $packageRoot "sdcard") --output (Join-Path $packageRoot "docs\effect_acceptance_report.md") }
@@ -165,6 +168,7 @@ try {
         "docs\android_command_coverage_report.md",
         "docs\android_acceptance_script_report.md",
         "docs\android_acceptance_log.txt",
+        "docs\android_offline_demo_report.md",
         "docs\end_to_end_demo_report.md",
         "docs\status_led_report.md",
         "docs\audio_stream_report.md",

@@ -8,6 +8,7 @@
 | 手机蓝牙曲目选择 | APK `Track 1-9` 发送 `1-9` | APK 源码检查、协议仿真 |
 | Android APK 命令覆盖 | APK 对固件全部蓝牙命令提供按钮，并声明 HC-05 SPP 所需蓝牙权限 | `tools/android_command_coverage.py`、`docs/android_command_coverage_report.md` |
 | Android 连接后同步 | APK 连接成功后自动发送 `?`、`l`、`d`，首屏填充状态、曲目列表和显示帧 | `tools/android_command_coverage.py`、`tools/end_to_end_demo_sim.py` |
+| Android 离线演示 | APK `Demo RX` 无需 HC-05/板卡即可注入固件格式回传，显示状态、音量/进度条、Health、显示帧、曲目、Link、Input、Wiring 和 Acceptance 9/9 | `tools/android_offline_demo_sim.py`、`docs/android_offline_demo_report.md` |
 | 端到端演示效果 | APK 按钮发送 HC-05 命令，状态改变后立即收到 `status=...` 和 `display 1/2/3:...`，手机状态面板、显示帧和曲目列表随回包变化 | `tools/end_to_end_demo_sim.py`、`docs/end_to_end_demo_report.md` |
 | 手机蓝牙曲目扫描 | APK `Track List` 发送 `l`，并把 `tracks ...` 回传解析到曲目状态面板 | `tools/bluetooth_protocol_sim.py`、`tools/android_ui_parser_sim.py` |
 | 手机蓝牙播放顺序 | APK `Order` 发送 `o`，固件循环 sequence/repeat_all/repeat_one | `tools/bluetooth_protocol_sim.py`、`tools/board_scenario_sim.py` |
@@ -18,7 +19,7 @@
 | TF 卡测试音频 | `tools/prepare_sdcard_assets.py` 生成 TRACK01-03.WAV，并用 RIFF chunk 校验 | `tools/wav_asset_check.py`、`tools/run_verification.ps1` |
 | PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame，32-bit 左/右声道 slot，标准 I2S MSB 延迟 | 固件编译、`t` 测试音命令、`tools/audio_stream_sim.py`、`tools/i2s_frame_sim.py` |
 | 音频流效果 | TF WAV 按固件读块大小解码为非静音、音量缩放后的 stereo 样本，进度到 100% | `tools/audio_stream_sim.py`、`docs/audio_stream_report.md` |
-| 状态显示 | APK 日志、含播放进度的状态面板、音量/进度条、Health/Storage 面板、蓝牙/EC11/本地按键控制后即时状态和显示帧、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`tools/end_to_end_demo_sim.py`、`tools/board_scenario_sim.py`、`docs/effect_acceptance_report.md` |
+| 状态显示 | APK 日志、含播放进度的状态面板、音量/进度条、Health/Storage 面板、蓝牙/EC11/本地按键控制后即时状态和显示帧、自动状态、`d` 三行显示帧、`Demo RX` 离线演示 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`tools/android_offline_demo_sim.py`、`tools/end_to_end_demo_sim.py`、`tools/board_scenario_sim.py`、`docs/effect_acceptance_report.md` |
 | 状态 LED | P1.0 表示播放器模式：播放快闪、暂停慢闪、停止常亮、错误双闪 | `tools/status_led_pattern_sim.py`、`docs/status_led_report.md` |
 | 墨水屏扩展 | 未默认接入，保留显示模型、APK 显示帧、PGM 黑白预览和播放/暂停/停止/错误多状态画廊，并说明引脚冲突 | `tools/epaper_preview_sim.py`、`docs/epaper_gallery_report.md`、`docs/hardware_verification.md` |
 | 硬件框图/软件流程图 | 自动生成 SVG 图并纳入报告和交付包 | `tools/generate_diagrams.py`、`docs/hardware_block_diagram.svg`、`docs/software_flowchart.svg` |

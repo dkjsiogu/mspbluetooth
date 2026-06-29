@@ -6,6 +6,7 @@ WAV asset check,tools/wav_asset_check.py,TRACK01-03.WAV are valid RIFF PCM 16-bi
 Software effect report,tools/generate_effect_report.py,Bluetooth/board/buttons/display/APK/WAV evidence report generated,,,
 Android parser simulation,tools/android_ui_parser_sim.py,Fragmented status/health/display/tracks/link/input/pin stream updates dashboard volume/progress bars Health display frame track list Link Input and Wiring panels,,,
 Android command coverage,tools/android_command_coverage.py,All firmware commands have APK buttons required Bluetooth/SPP markers and connect-time panel sync,,,
+Android offline demo,tools/android_offline_demo_sim.py,APK Demo RX injects firmware-style responses and updates dashboard bars Health display tracks Link Input Wiring and Acceptance 9/9 without hardware,,,
 End-to-end demo simulation,tools/end_to_end_demo_sim.py,APK button commands receive immediate status/health/display/link/input/wiring responses and drive visible phone panel state changes,,,
 Bluetooth diagnostic simulation,tools/bluetooth_diagnostic_sim.py,Fragmented uppercase noisy and diagnostic command streams produce expected responses,,,
 Whole-board control scenario,tools/board_scenario_sim.py,Bluetooth/encoder/local button mixed sequence reaches expected state and emits immediate status/display reports,,,

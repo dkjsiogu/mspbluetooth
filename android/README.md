@@ -37,6 +37,9 @@ settings first, then open the app, select the paired device, and connect.
 - `input ...`: EC11 and S1/S2/S4 short/long event counters
 - `pin ...`: TF, I2S, EC11, local-button, HC-05, and optional e-paper wiring
 
+`Demo RX` injects a built-in firmware-style transcript into the same parser, so
+these panels can be visually checked on a phone before HC-05 pairing.
+
 ## Build
 
 ```powershell
@@ -70,9 +73,13 @@ the dashboard, visual volume/progress bars, Health, display-frame, track-list, L
 `Acceptance X/9` panels, then lets the operator save evidence through `Save Log`
 or export it through `Share Log`.
 
+`Demo RX` is the no-hardware visual check for the same panels. It does not send
+Bluetooth data; it feeds representative RX lines into the APK parser.
+
 The saved phone log can be checked on the PC:
 
 ```powershell
 python tools\serial_acceptance_check.py --input path\to\phone_log.txt
 python tools\android_acceptance_log_sim.py
+python tools\android_offline_demo_sim.py
 ```
