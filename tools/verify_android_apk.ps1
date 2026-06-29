@@ -54,10 +54,14 @@ foreach ($command in $requiredCommands) {
 $requiredUiMarkers = @(
     "dashboardView",
     "displayView",
+    "trackListView",
     "parseIncomingLine",
     '"status="',
     '"progress="',
+    '"tracks"',
+    "updateTrackList",
     "Progress:",
+    "Tracks",
     '"display 1:"',
     '"display 2:"',
     '"display 3:"'

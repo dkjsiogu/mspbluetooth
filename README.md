@@ -167,7 +167,7 @@ dist\mspbluetooth_delivery\
 
 ## Android 控制端
 
-仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...` 和 `display 1/2/3:...`，在手机上显示当前播放状态和三行显示帧，便于未接墨水屏时确认显示效果。构建 APK：
+仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`display 1/2/3:...` 和 `tracks ...`，在手机上显示当前播放状态、三行显示帧和曲目可用状态，便于未接墨水屏时确认显示效果。构建 APK：
 
 ```powershell
 cd E:\code\ccs\mspbluetooth

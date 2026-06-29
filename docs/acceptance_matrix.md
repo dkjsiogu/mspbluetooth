@@ -6,7 +6,7 @@
 | 手机蓝牙音量加减 | APK `Vol +`/`Vol -` 发送 `+`/`-` | `tools/bluetooth_protocol_sim.py` |
 | 手机蓝牙上一曲/下一曲 | APK `Prev`/`Next` 发送 `b`/`n` | `tools/bluetooth_protocol_sim.py` |
 | 手机蓝牙曲目选择 | APK `Track 1-9` 发送 `1-9` | APK 源码检查、协议仿真 |
-| 手机蓝牙曲目扫描 | APK `Track List` 发送 `l` | `tools/bluetooth_protocol_sim.py` |
+| 手机蓝牙曲目扫描 | APK `Track List` 发送 `l`，并把 `tracks ...` 回传解析到曲目状态面板 | `tools/bluetooth_protocol_sim.py`、`tools/android_ui_parser_sim.py` |
 | 手机蓝牙播放顺序 | APK `Order` 发送 `o`，固件循环 sequence/repeat_all/repeat_one | `tools/bluetooth_protocol_sim.py`、`tools/board_scenario_sim.py` |
 | EC11 音量和按键 | `drivers/encoder.*` 事件映射到音量和播放/暂停，A/B 相位解码为 CW/CCW，按键去抖 | `tools/board_scenario_sim.py`、`tools/encoder_quadrature_sim.py` |
 | 本地按键 | S1/S2/S4 短按映射播放/上一曲/下一曲，长按映射停止/静音/播放顺序 | `tools/board_scenario_sim.py`、`tools/local_button_sim.py` |

@@ -20,7 +20,7 @@
 - 驱动层：`drivers/` 负责 MSP430 时钟、UART、EC11、本地按键、软件 I2S 和板级 GPIO。
 - 中间层：`middleware/wav_reader.*` 解析 16-bit PCM WAV，`middleware/display_model.*` 生成三行状态显示帧。
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
-- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=` 和 `display 1/2/3:` 回传。
+- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、`display 1/2/3:` 和 `tracks` 回传。
 - 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、音频流仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
 - TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
@@ -96,7 +96,7 @@ display 3:16000Hz 2ch P0%
 | 手机蓝牙音量加减 | APK `Vol +`/`Vol -` 发送 `+`/`-` | `tools/bluetooth_protocol_sim.py` |
 | 手机蓝牙上一曲/下一曲 | APK `Prev`/`Next` 发送 `b`/`n` | `tools/bluetooth_protocol_sim.py` |
 | 手机蓝牙曲目选择 | APK `Track 1-9` 发送 `1-9` | APK 源码检查、协议仿真 |
-| 手机蓝牙曲目扫描 | APK `Track List` 发送 `l` | `tools/bluetooth_protocol_sim.py` |
+| 手机蓝牙曲目扫描 | APK `Track List` 发送 `l`，并把 `tracks ...` 回传解析到曲目状态面板 | `tools/bluetooth_protocol_sim.py`、`tools/android_ui_parser_sim.py` |
 | 手机蓝牙播放顺序 | APK `Order` 发送 `o`，固件循环 sequence/repeat_all/repeat_one | `tools/bluetooth_protocol_sim.py`、`tools/board_scenario_sim.py` |
 | EC11 音量和按键 | `drivers/encoder.*` 事件映射到音量和播放/暂停，A/B 相位解码为 CW/CCW，按键去抖 | `tools/board_scenario_sim.py`、`tools/encoder_quadrature_sim.py` |
 | 本地按键 | S1/S2/S4 短按映射播放/上一曲/下一曲，长按映射停止/静音/播放顺序 | `tools/board_scenario_sim.py`、`tools/local_button_sim.py` |

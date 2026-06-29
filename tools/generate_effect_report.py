@@ -179,6 +179,7 @@ def render_report(input_dir: Path) -> str:
             row(["Android parser markers", ", ".join(parser_markers)]),
             row(["Android parsed dashboard", android_state.dashboard_text.replace("\n", " / ")]),
             row(["Android parsed display", android_state.display_text.replace("\n", " / ")]),
+            row(["Android parsed track list", android_state.track_list_text.replace("\n", " / ")]),
             row(["E-paper preview", "tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame"]),
             row(["E-paper gallery", "playing, paused, stopped, and error previews are generated in docs/epaper_gallery_report.md"]),
             "",

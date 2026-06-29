@@ -17,6 +17,7 @@ DISPLAY_LINES = [
     "display 2:SD:OK WAV:OPEN",
     "display 3:16000Hz 2ch P42%",
 ]
+TRACKS_LINE = "tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--"
 
 
 @dataclass
@@ -25,6 +26,7 @@ class AndroidUiState:
 
     dashboard_text: str = "Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --"
     display_lines: list[str] = field(default_factory=lambda: ["--", "--", "--"])
+    track_list_text: str = "Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --"
     rx_line_buffer: str = ""
     parsed_lines: list[str] = field(default_factory=list)
 
@@ -56,6 +58,27 @@ def update_dashboard(state: AndroidUiState, status_line: str) -> None:
     )
 
 
+def update_track_list(state: AndroidUiState, tracks_line: str) -> None:
+    parts = tracks_line.split(" ")
+    shown = 0
+    lines = ["Tracks"]
+    current_line: list[str] = []
+    for part in parts:
+        if "=" not in part:
+            continue
+        track, status = part.split("=", 1)
+        current_line.append(f"{track}: {status}")
+        shown += 1
+        if shown % 3 == 0:
+            lines.append("  ".join(current_line))
+            current_line = []
+    if current_line:
+        lines.append("  ".join(current_line))
+    if shown == 0:
+        lines.append("--")
+    state.track_list_text = "\n".join(lines)
+
+
 def parse_incoming_line(state: AndroidUiState, line: str) -> None:
     state.parsed_lines.append(line)
     if line.startswith("status="):
@@ -66,6 +89,8 @@ def parse_incoming_line(state: AndroidUiState, line: str) -> None:
         state.display_lines[1] = line[len("display 2:") :]
     elif line.startswith("display 3:"):
         state.display_lines[2] = line[len("display 3:") :]
+    elif line.startswith("tracks"):
+        update_track_list(state, line)
 
 
 def handle_incoming_text(state: AndroidUiState, text: str) -> None:
@@ -80,8 +105,8 @@ def handle_incoming_text(state: AndroidUiState, text: str) -> None:
 
 def run_fragmented_flow() -> AndroidUiState:
     state = AndroidUiState()
-    stream = "\r\n".join([STATUS_LINE, *DISPLAY_LINES]) + "\r\n"
-    chunks = [stream[:7], stream[7:29], stream[29:61], stream[61:92], stream[92:130], stream[130:]]
+    stream = "\r\n".join([STATUS_LINE, *DISPLAY_LINES, TRACKS_LINE]) + "\r\n"
+    chunks = [stream[:7], stream[7:29], stream[29:61], stream[61:92], stream[92:130], stream[130:181], stream[181:]]
     for chunk in chunks:
         handle_incoming_text(state, chunk)
 
@@ -95,6 +120,9 @@ def run_fragmented_flow() -> AndroidUiState:
         raise AssertionError(f"dashboard mismatch: {state.dashboard_text!r}")
     if state.display_lines != expected_display:
         raise AssertionError(f"display mismatch: {state.display_lines!r}")
+    expected_tracks = "Tracks\n1: ok  2: --  3: ok\n4: --  5: --  6: --\n7: --  8: --  9: --"
+    if state.track_list_text != expected_tracks:
+        raise AssertionError(f"track list mismatch: {state.track_list_text!r}")
     if state.rx_line_buffer != "":
         raise AssertionError(f"line buffer should be empty, got {state.rx_line_buffer!r}")
     return state
@@ -105,6 +133,7 @@ def main() -> int:
     print("Android UI parser simulation passed")
     print(state.dashboard_text.replace("\n", " | "))
     print(state.display_text.replace("\n", " | "))
+    print(state.track_list_text.replace("\n", " | "))
     return 0
 
 

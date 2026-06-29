@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
     private TextView stateView;
     private TextView dashboardView;
     private TextView displayView;
+    private TextView trackListView;
     private TextView logView;
     private Button connectButton;
     private BluetoothSocket socket;
@@ -113,6 +114,9 @@ public class MainActivity extends Activity {
 
         displayView = panelText("Display frame\n--\n--\n--");
         root.addView(displayView, new LinearLayout.LayoutParams(-1, dp(96)));
+
+        trackListView = panelText("Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --");
+        root.addView(trackListView, new LinearLayout.LayoutParams(-1, dp(82)));
 
         LinearLayout connectionRow = row();
         connectButton = commandButton("Connect", 0xFF0F766E);
@@ -354,6 +358,8 @@ public class MainActivity extends Activity {
         } else if (line.startsWith("display 3:")) {
             displayLines[2] = line.substring("display 3:".length());
             updateDisplayFrame();
+        } else if (line.startsWith("tracks")) {
+            updateTrackList(line);
         }
     }
 
@@ -371,6 +377,31 @@ public class MainActivity extends Activity {
     private void updateDisplayFrame() {
         displayView.setText("Display frame\n" + displayLines[0] + "\n" +
                 displayLines[1] + "\n" + displayLines[2]);
+    }
+
+    private void updateTrackList(String tracksLine) {
+        String[] parts = tracksLine.split(" ");
+        StringBuilder builder = new StringBuilder("Tracks");
+        int shown = 0;
+
+        for (String part : parts) {
+            if (part.indexOf('=') <= 0) {
+                continue;
+            }
+            String[] item = part.split("=", 2);
+            if (shown % 3 == 0) {
+                builder.append('\n');
+            } else {
+                builder.append("  ");
+            }
+            builder.append(item[0]).append(": ").append(item[1]);
+            shown++;
+        }
+
+        if (shown == 0) {
+            builder.append("\n--");
+        }
+        trackListView.setText(builder.toString());
     }
 
     private String fieldValue(String line, String key) {
