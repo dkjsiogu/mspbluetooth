@@ -1,0 +1,12 @@
+Debug/*.obj
+Debug/*.d
+Debug/*.d_raw
+Debug/*.map
+Debug/*.out
+Debug/*_linkInfo.xml
+Debug/*.opt
+.launches/
+.settings/
+.theia/
+.vscode/.browse.VC.db*
+
