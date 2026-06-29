@@ -18,7 +18,7 @@ from bluetooth_diagnostic_sim import run_diagnostic_cases
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
 from board_scenario_sim import BoardState, apply_event
 from end_to_end_demo_sim import run_demo
-from encoder_quadrature_sim import run_button_sequence, run_sequence
+from encoder_quadrature_sim import ENCODER_DEBOUNCE_TICKS, ENCODER_LONG_PRESS_TICKS, run_button_sequence, run_sequence
 from local_button_sim import LONG_PRESS_TICKS, run_samples
 from wav_asset_check import DEFAULT_INPUT, WavAsset, find_tracks, parse_wav
 
@@ -46,6 +46,8 @@ def run_board_scenario() -> tuple[list[str], BoardState]:
         "bt:t",
         "bt:r",
         "s4:long",
+        "enc:long",
+        "s1",
         "enc:press",
         "tick:500ms",
         "tick:5s",
@@ -60,8 +62,8 @@ def run_board_scenario() -> tuple[list[str], BoardState]:
         volume=3,
         order="repeat_one",
         led_toggles=1,
-        status_reports=19,
-        display_reports=18,
+        status_reports=21,
+        display_reports=20,
         tone_tests=1,
     ):
         raise AssertionError(f"unexpected board scenario result: {state}")
@@ -84,11 +86,14 @@ def run_button_cases() -> list[tuple[str, list[str], list[str]]]:
 
 
 def run_encoder_cases() -> list[tuple[str, list[str], list[str]]]:
+    short_press = [0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+    long_press = [0] + [1] * (ENCODER_DEBOUNCE_TICKS + ENCODER_LONG_PRESS_TICKS + 3) + [0] * (ENCODER_DEBOUNCE_TICKS + 2)
     cases = [
         ("EC11 clockwise detent", ["cw"], run_sequence([0, 2, 3, 1, 0])),
         ("EC11 counter-clockwise detent", ["ccw"], run_sequence([0, 1, 3, 2, 0])),
         ("EC11 back-and-forth jitter", [], run_sequence([0, 2, 0, 1, 0])),
-        ("EC11 switch debounce", ["button"], run_button_sequence([0, 1, 0, 1, 1, 1, 1, 1, 1])),
+        ("EC11 switch short press", ["button"], run_button_sequence(short_press)),
+        ("EC11 switch long press", ["button_long"], run_button_sequence(long_press)),
     ]
     for name, expected, actual in cases:
         if actual != expected:
@@ -265,7 +270,7 @@ def render_report(input_dir: Path) -> str:
             "- Pair Android phone with HC-05 and confirm command/response latency.",
             "- Confirm TF-card mount and real WAV stream from the course wiring.",
             "- Confirm PCM5102A analog output, PAM8403 speaker output, and 3.5mm headphone output.",
-            "- Confirm EC11 detent direction and S1/S2/S4 long-press timing on the physical buttons.",
+            "- Confirm EC11 detent direction, EC11 long-press stop, and S1/S2/S4 long-press timing on the physical buttons.",
             "",
         ]
     )

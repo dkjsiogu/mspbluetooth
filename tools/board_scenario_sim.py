@@ -1,9 +1,9 @@
 """Whole-board control scenario simulator.
 
 This validates that the intended physical controls do not fight each other:
-Bluetooth controls transport, EC11 controls volume/play-pause, and S1/S2/S4
-provide local fallback transport keys. It mirrors the firmware mapping rather
-than emulating MSP430 registers.
+Bluetooth controls transport, EC11 controls volume/play-pause/stop, and
+S1/S2/S4 provide local fallback transport keys. It mirrors the firmware mapping
+rather than emulating MSP430 registers.
 """
 
 from __future__ import annotations
@@ -28,6 +28,8 @@ def apply_event(state: BoardState, event: str) -> None:
 
     if event in ("bt:p", "enc:press", "s1"):
         state.mode = "paused" if state.mode == "playing" else "playing"
+    elif event == "enc:long":
+        state.mode = "stopped"
     elif event == "s1:long":
         state.mode = "stopped"
     elif event in ("bt:+", "enc:cw"):
@@ -93,6 +95,8 @@ def main() -> int:
         "bt:t",
         "bt:r",
         "s4:long",
+        "enc:long",
+        "s1",
         "enc:press",
         "tick:500ms",
         "tick:5s",
@@ -106,8 +110,8 @@ def main() -> int:
     assert state.volume == 3, state
     assert state.order == "repeat_one", state
     assert state.led_toggles == 1, state
-    assert state.status_reports == 19, state
-    assert state.display_reports == 18, state
+    assert state.status_reports == 21, state
+    assert state.display_reports == 20, state
     assert state.tone_tests == 1, state
 
     print("whole-board control scenario passed")

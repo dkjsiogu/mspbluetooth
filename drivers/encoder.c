@@ -29,6 +29,12 @@ static uint8_t g_button_stable = 0;
 /* g_button_ticks: count of consecutive samples matching g_button_sample. */
 static uint8_t g_button_ticks = 0;
 
+/* g_button_hold_ticks: stable pressed samples counted toward long press. */
+static uint16_t g_button_hold_ticks = 0u;
+
+/* g_button_long_sent: nonzero after the current press emitted a long event. */
+static uint8_t g_button_long_sent = 0u;
+
 /* g_last_poll_ms: millisecond timestamp used to pace encoder polling. */
 static uint32_t g_last_poll_ms = 0;
 
@@ -54,6 +60,30 @@ static uint8_t encoder_read_button_pressed(void)
     return (uint8_t)((ENC_IN & ENC_SW_BIT) == 0u);
 }
 
+/* encoder_reset_button_hold: clears hold tracking for a newly pressed switch. */
+static void encoder_reset_button_hold(void)
+{
+    g_button_hold_ticks = 0u;
+    g_button_long_sent = 0u;
+}
+
+/* encoder_update_button_hold: emits one long-press event after the hold threshold. */
+static void encoder_update_button_hold(void)
+{
+    if ((g_button_stable == 0u) || (g_button_long_sent != 0u)) {
+        return;
+    }
+
+    if (g_button_hold_ticks < ENCODER_LONG_PRESS_TICKS) {
+        g_button_hold_ticks++;
+    }
+
+    if (g_button_hold_ticks >= ENCODER_LONG_PRESS_TICKS) {
+        g_pending_events |= ENCODER_EVENT_BUTTON_LONG;
+        g_button_long_sent = 1u;
+    }
+}
+
 void encoder_init(void)
 {
     ENC_SEL &= (uint8_t)~(ENC_A_BIT | ENC_B_BIT | ENC_SW_BIT);
@@ -65,6 +95,7 @@ void encoder_init(void)
     g_button_sample = encoder_read_button_pressed();
     g_button_stable = g_button_sample;
     g_button_ticks = 0u;
+    encoder_reset_button_hold();
 }
 
 /* encoder_poll: samples A/B/SW, decodes movement, and debounces the button. */
@@ -112,9 +143,13 @@ static void encoder_poll(void)
             (g_button_stable != g_button_sample)) {
             g_button_stable = g_button_sample;
             if (g_button_stable != 0u) {
+                encoder_reset_button_hold();
+            } else if (g_button_long_sent == 0u) {
                 g_pending_events |= ENCODER_EVENT_BUTTON;
             }
         }
+    } else {
+        encoder_update_button_hold();
     }
 }
 

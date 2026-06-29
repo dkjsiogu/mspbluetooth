@@ -14,7 +14,7 @@
 #define PLAYER_FIRMWARE_NAME            "MSP430F5529-BT-WAV"
 
 /* PLAYER_FIRMWARE_VERSION: manually updated firmware version string. */
-#define PLAYER_FIRMWARE_VERSION         "1.4.0"
+#define PLAYER_FIRMWARE_VERSION         "1.4.1"
 
 /* PLAYER_HARDWARE_PROFILE: wiring profile name reported for lab debugging. */
 #define PLAYER_HARDWARE_PROFILE         "TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1"
@@ -81,6 +81,12 @@
 
 /* ENCODER_DEBOUNCE_TICKS: stable samples required for the EC11 push button. */
 #define ENCODER_DEBOUNCE_TICKS          5u
+
+/* ENCODER_LONG_PRESS_MS: EC11 hold time that emits the long-press event. */
+#define ENCODER_LONG_PRESS_MS           800u
+
+/* ENCODER_LONG_PRESS_TICKS: EC11 long-press threshold expressed in polls. */
+#define ENCODER_LONG_PRESS_TICKS        (ENCODER_LONG_PRESS_MS / ENCODER_POLL_PERIOD_MS)
 
 /* LOCAL_BUTTON_POLL_PERIOD_MS: S1/S2/S4 scan interval. */
 #define LOCAL_BUTTON_POLL_PERIOD_MS     5u

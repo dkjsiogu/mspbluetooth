@@ -89,7 +89,7 @@ def build_report() -> str:
 - 支持 16-bit PCM WAV，单声道自动复制到左右声道，双声道直接输出。
 - 软件 I2S 输出到 PCM5102A，模拟音频可接 PAM8403 和耳机座。
 - Android APK 蓝牙控制播放、暂停、停止、重播、音量、静音、上下曲、曲目选择和播放顺序。
-- EC11 旋转调节音量，按键播放/暂停。
+- EC11 旋转调节音量，短按播放/暂停，长按约 0.8 秒停止。
 - S1/S2/S4 支持短按和长按：短按播放/暂停、上一曲、下一曲；长按停止、静音、播放顺序。
 - 蓝牙 `t` 命令输出 DAC 测试音，便于现场确认 DAC/功放/喇叭链路。
 - 蓝牙 `d` 命令输出三行显示帧；Android 面板和 PGM 预览图可模拟墨水屏效果。
@@ -141,7 +141,7 @@ powershell -ExecutionPolicy Bypass -File tools\\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、本地按键长按仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
@@ -151,7 +151,7 @@ powershell -ExecutionPolicy Bypass -File tools\\package_release.ps1
 - 接 HC-05，使用 APK 连接并测试 `?`、`i`、`e`、`l`、`d`。
 - 接 PCM5102A/PAM8403/喇叭，先用 `t` 测试音确认音频链路。
 - 插入 TF 卡并放置 `TRACK01.WAV` 等文件，测试播放、暂停、上下曲和进度上报。
-- 测试 EC11、本地短按和长按。
+- 测试 EC11 旋转、短按、长按，以及本地按键短按和长按。
 - 将结果填写到 `docs/test_record.csv`。
 
 ## 9. 风险与说明

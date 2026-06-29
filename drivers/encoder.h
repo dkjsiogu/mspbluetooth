@@ -17,8 +17,11 @@
 /* ENCODER_EVENT_CCW: one counter-clockwise detent was detected. */
 #define ENCODER_EVENT_CCW               0x02u
 
-/* ENCODER_EVENT_BUTTON: the EC11 push button was pressed once. */
+/* ENCODER_EVENT_BUTTON: the EC11 push button was short-pressed once. */
 #define ENCODER_EVENT_BUTTON            0x04u
+
+/* ENCODER_EVENT_BUTTON_LONG: the EC11 push button was held for stop control. */
+#define ENCODER_EVENT_BUTTON_LONG       0x08u
 
 /* encoder_init: configures EC11 GPIO inputs and initializes debounce state. */
 void encoder_init(void);

@@ -49,7 +49,7 @@ def generate_hardware() -> str:
     add_box(parts, 390, 210, 210, 120, "MSP430F5529", ["16 MHz MCLK/SMCLK", "GPIO / UART / SPI / I2S", "Timer / interrupt"], "core")
     add_box(parts, 40, 70, 220, 95, "Android + HC-05", ["SPP 串口透传", "UCA1 P4.4/P4.5"])
     add_box(parts, 40, 220, 220, 95, "TF 卡座", ["FATFS + WAV 文件", "P3.1/P3.2/P3.3 + P4.0"])
-    add_box(parts, 40, 370, 220, 95, "本地输入", ["EC11: P2.1/P2.2/P2.3", "S1/S2/S4 短按/长按"])
+    add_box(parts, 40, 370, 220, 95, "本地输入", ["EC11旋转/短按/长按", "S1/S2/S4 短按/长按"])
     add_box(parts, 720, 100, 220, 95, "PCM5102A DAC", ["软件 I2S", "BCK/LRCK/DIN=P4.1/4.2/4.3"])
     add_box(parts, 720, 250, 220, 95, "PAM8403 + 喇叭", ["DAC 模拟输出", "功放驱动无源喇叭"])
     add_box(parts, 720, 400, 220, 95, "3.5mm 耳机座 / 状态显示", ["耳机并联输出", "APK + 三行显示帧"])

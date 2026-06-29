@@ -18,7 +18,7 @@
 <text class="note" x="52" y="281">P3.1/P3.2/P3.3 + P4.0</text>
 <rect class="box" x="40" y="370" width="220" height="95" rx="6"/>
 <text x="52" y="392" font-weight="bold">本地输入</text>
-<text class="note" x="52" y="414">EC11: P2.1/P2.2/P2.3</text>
+<text class="note" x="52" y="414">EC11旋转/短按/长按</text>
 <text class="note" x="52" y="431">S1/S2/S4 短按/长按</text>
 <rect class="box" x="720" y="100" width="220" height="95" rx="6"/>
 <text x="732" y="122" font-weight="bold">PCM5102A DAC</text>

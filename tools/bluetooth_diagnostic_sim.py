@@ -12,7 +12,7 @@ import argparse
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from bluetooth_protocol_sim import SimulatedPlayer
+from bluetooth_protocol_sim import FIRMWARE_NAME, FIRMWARE_VERSION, HARDWARE_PROFILE, SimulatedPlayer
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -108,7 +108,7 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
             name="bring-up transcript",
             chunks=["i", "e", "l", "d", "?"],
             expected_tail=[
-                "info name=MSP430F5529-BT-WAV version=1.4.0",
+                f"info name={FIRMWARE_NAME} version={FIRMWARE_VERSION} profile={HARDWARE_PROFILE}",
                 "selftest bt=ok sd=ok file=open dac=test-with-t",
                 "tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--",
                 "display 1:paused T1 V18 ALL",
@@ -179,7 +179,7 @@ def render_report(results: list[DiagnosticResult]) -> str:
             "",
             row(["Step", "Send", "Expected response"]),
             row(["---", "---", "---"]),
-            row(["Version and wiring", "`i`", "`info name=MSP430F5529-BT-WAV version=1.4.0 ...`"]),
+            row(["Version and wiring", "`i`", f"`info name={FIRMWARE_NAME} version={FIRMWARE_VERSION} ...`"]),
             row(["Software-visible self-test", "`e`", "`selftest bt=ok sd=ok file=open dac=test-with-t`"]),
             row(["Track scan", "`l`", "`tracks 1=ok ...` with available WAV files marked `ok`"]),
             row(["Display model", "`d`", "`display 1:`/`display 2:`/`display 3:` lines"]),

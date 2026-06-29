@@ -22,7 +22,7 @@ acceptance start
 TX> h
 help
 TX> i
-info name=MSP430F5529-BT-WAV version=1.4.0
+info name=MSP430F5529-BT-WAV version=1.4.1 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
 TX> e
 selftest bt=ok sd=ok file=open dac=test-with-t
 TX> l

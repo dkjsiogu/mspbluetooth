@@ -756,6 +756,10 @@ void audio_player_poll_controls(void)
         player_toggle_play_pause();
         local_status_report = 1u;
     }
+    if ((events & ENCODER_EVENT_BUTTON_LONG) != 0u) {
+        player_stop();
+        local_status_report = 1u;
+    }
 
     button_events = local_buttons_take_events();
     if ((button_events & LOCAL_BUTTON_EVENT_PLAY_PAUSE) != 0u) {

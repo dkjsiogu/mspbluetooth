@@ -9,7 +9,7 @@ Checks passed: 20/20
 | --- | --- | --- | --- |
 | TF card mounted | PASS | sd mounted | boot path can see the storage layer |
 | Help prompt | PASS | RX> help | operator can discover the command set |
-| Firmware info | PASS | RX> info name=MSP430F5529-BT-WAV version=1.4.0 | firmware identity is visible |
+| Firmware info | PASS | RX> info name=MSP430F5529-BT-WAV version=1.4.1 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1 | firmware identity is visible |
 | Self-test | PASS | RX> selftest bt=ok sd=ok file=open dac=test-with-t | software-visible link self-test passes |
 | Track scan | PASS | RX> tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=-- | TRACKxx.WAV scan is reported |
 | Display line 1 | PASS | RX> display 1:paused T1 V18 ALL | display model first row is reported |
@@ -44,7 +44,7 @@ open TRACK01.WAV
 TX> h
 RX> help
 TX> i
-RX> info name=MSP430F5529-BT-WAV version=1.4.0
+RX> info name=MSP430F5529-BT-WAV version=1.4.1 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
 TX> e
 RX> selftest bt=ok sd=ok file=open dac=test-with-t
 TX> l

@@ -7,12 +7,30 @@ buttons cover the required firmware actions.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
+ROOT = Path(__file__).resolve().parents[1]
 MAX_TRACKS = 9
 MAX_VOLUME = 32
 AVAILABLE_TRACKS = (1, 3)
+
+
+def platform_define(name: str) -> str:
+    """Returns one quoted string #define from drivers/platform_config.h."""
+
+    text = (ROOT / "drivers" / "platform_config.h").read_text(encoding="utf-8")
+    match = re.search(rf"{name}\s+\"([^\"]+)\"", text)
+    if not match:
+        raise RuntimeError(f"{name} not found in platform_config.h")
+    return match.group(1)
+
+
+FIRMWARE_NAME = platform_define("PLAYER_FIRMWARE_NAME")
+FIRMWARE_VERSION = platform_define("PLAYER_FIRMWARE_VERSION")
+HARDWARE_PROFILE = platform_define("PLAYER_HARDWARE_PROFILE")
 
 
 @dataclass
@@ -134,7 +152,7 @@ class SimulatedPlayer:
             self.transcript.append("tone done")
             self.report_ui_snapshot()
         elif command == "i":
-            self.transcript.append("info name=MSP430F5529-BT-WAV version=1.4.0")
+            self.transcript.append(f"info name={FIRMWARE_NAME} version={FIRMWARE_VERSION} profile={HARDWARE_PROFILE}")
         elif command == "e":
             self.transcript.append("selftest bt=ok sd=ok file=open dac=test-with-t")
         elif command == "l":

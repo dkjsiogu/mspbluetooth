@@ -242,6 +242,8 @@ def check_pin_conflict_documented() -> None:
 def check_local_button_long_press() -> None:
     local_header = read_text("drivers/local_buttons.h")
     local_source = read_text("drivers/local_buttons.c")
+    encoder_header = read_text("drivers/encoder.h")
+    encoder_source = read_text("drivers/encoder.c")
     config = read_text("drivers/platform_config.h")
 
     for token in [
@@ -253,6 +255,16 @@ def check_local_button_long_press() -> None:
     ]:
         if token not in local_header and token not in local_source and token not in config:
             fail(f"local button long-press support missing token: {token}")
+
+    for token in [
+        "ENCODER_EVENT_BUTTON_LONG",
+        "ENCODER_LONG_PRESS_MS",
+        "ENCODER_LONG_PRESS_TICKS",
+        "g_button_hold_ticks",
+        "g_button_long_sent",
+    ]:
+        if token not in encoder_header and token not in encoder_source and token not in config:
+            fail(f"EC11 long-press support missing token: {token}")
 
 
 def check_build_map() -> None:
