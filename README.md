@@ -123,6 +123,21 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟蓝牙、EC11、本地按键混合控制场景
 
+## 交付打包
+
+```powershell
+cd E:\code\ccs\mspbluetooth
+powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
+```
+
+脚本默认先执行固件验证和 APK 验证，然后生成：
+
+```text
+dist\mspbluetooth_delivery\
+```
+
+目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、报告提纲、测试记录表、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
+
 ## 实物验证
 
 上板前按 [硬件现场验证清单](docs/hardware_verification.md) 分阶段检查蓝牙、DAC 测试音、TF 卡 WAV 播放、EC11 和本地按键。墨水屏引脚冲突分析也在该文档中。

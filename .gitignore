@@ -16,3 +16,4 @@ android/app/build/
 android/local.properties
 sdcard/*.WAV
 sdcard/*.wav
+dist/
