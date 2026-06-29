@@ -5,8 +5,10 @@
 #include "board_pins.h"
 #include "platform_config.h"
 
+/* g_volume: current software gain step applied before I2S output. */
 static uint8_t g_volume = PLAYER_DEFAULT_VOLUME;
 
+/* i2s_set_bit: writes one software I2S output bit high or low. */
 static void i2s_set_bit(uint8_t bit_mask, uint8_t on)
 {
     if (on != 0u) {
@@ -16,6 +18,7 @@ static void i2s_set_bit(uint8_t bit_mask, uint8_t on)
     }
 }
 
+/* i2s_clock_bit: places bit on DIN and generates one BCK pulse. */
 static void i2s_clock_bit(uint8_t bit)
 {
     i2s_set_bit(I2S_DIN_BIT, bit);
@@ -25,6 +28,7 @@ static void i2s_clock_bit(uint8_t bit)
     __delay_cycles(1);
 }
 
+/* i2s_apply_volume: scales one signed PCM sample by g_volume. */
 static int16_t i2s_apply_volume(int16_t sample)
 {
     int32_t scaled;
@@ -41,6 +45,7 @@ static int16_t i2s_apply_volume(int16_t sample)
     return (int16_t)scaled;
 }
 
+/* i2s_write_channel: writes one 16-bit sample into a 32-bit I2S channel slot. */
 static void i2s_write_channel(uint16_t sample, uint8_t right_channel)
 {
     uint16_t mask;

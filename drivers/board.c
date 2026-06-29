@@ -5,8 +5,10 @@
 #include "board_pins.h"
 #include "platform_config.h"
 
+/* g_millis: 1 ms uptime counter incremented by TIMER0_A0 ISR. */
 static volatile uint32_t g_millis = 0;
 
+/* pmm_set_vcore_up: raises PMM core voltage by one level; level is target VCore. */
 static uint8_t pmm_set_vcore_up(uint8_t level)
 {
     uint16_t pmmrie_backup;
@@ -75,6 +77,7 @@ static uint8_t pmm_set_vcore_up(uint8_t level)
     return 1;
 }
 
+/* pmm_set_vcore: walks VCore upward until target_level is reached. */
 static void pmm_set_vcore(uint8_t target_level)
 {
     uint8_t level;
@@ -188,4 +191,3 @@ __interrupt void TIMER0_A0_ISR(void)
     g_millis++;
     __bic_SR_register_on_exit(LPM0_bits);
 }
-

@@ -5,6 +5,7 @@
 #include "drivers/board.h"
 #include "drivers/encoder.h"
 #include "drivers/i2s_dac.h"
+#include "drivers/local_buttons.h"
 
 int main(void)
 {
@@ -15,6 +16,7 @@ int main(void)
     board_tick_init();
     bluetooth_uart_init();
     encoder_init();
+    local_buttons_init();
     i2s_dac_init();
 
     __enable_interrupt();
@@ -29,4 +31,3 @@ int main(void)
         board_idle();
     }
 }
-

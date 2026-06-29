@@ -6,14 +6,28 @@
 #include "board_pins.h"
 #include "platform_config.h"
 
+/* g_last_ab: previous two-bit EC11 A/B phase sample. */
 static uint8_t g_last_ab = 0;
+
+/* g_quadrature_accum: signed transition accumulator; +/-4 equals one detent. */
 static int8_t g_quadrature_accum = 0;
+
+/* g_pending_events: accumulated ENCODER_EVENT_* bits since the last read. */
 static uint8_t g_pending_events = ENCODER_EVENT_NONE;
+
+/* g_button_sample: most recent raw EC11 push-button sample. */
 static uint8_t g_button_sample = 0;
+
+/* g_button_stable: debounced EC11 push-button state. */
 static uint8_t g_button_stable = 0;
+
+/* g_button_ticks: count of consecutive samples matching g_button_sample. */
 static uint8_t g_button_ticks = 0;
+
+/* g_last_poll_ms: millisecond timestamp used to pace encoder polling. */
 static uint32_t g_last_poll_ms = 0;
 
+/* encoder_read_ab: returns phase A in bit0 and phase B in bit1. */
 static uint8_t encoder_read_ab(void)
 {
     uint8_t value;
@@ -29,6 +43,7 @@ static uint8_t encoder_read_ab(void)
     return value;
 }
 
+/* encoder_read_button_pressed: returns 1 while the active-low EC11 switch is down. */
 static uint8_t encoder_read_button_pressed(void)
 {
     return (uint8_t)((ENC_IN & ENC_SW_BIT) == 0u);
@@ -47,6 +62,7 @@ void encoder_init(void)
     g_button_ticks = 0u;
 }
 
+/* encoder_poll: samples A/B/SW, decodes movement, and debounces the button. */
 static void encoder_poll(void)
 {
     static const int8_t transition_table[16] = {
@@ -105,4 +121,3 @@ uint8_t encoder_take_events(void)
     g_pending_events = ENCODER_EVENT_NONE;
     return events;
 }
-

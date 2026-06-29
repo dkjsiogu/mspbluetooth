@@ -5,6 +5,7 @@
 #include "encoder.h"
 #include "ff.h"
 #include "i2s_dac.h"
+#include "local_buttons.h"
 #include "platform_config.h"
 #include "wav_reader.h"
 
@@ -17,22 +18,35 @@ typedef struct {
     uint16_t bytes_per_frame;
     uint32_t data_remaining;
     uint32_t led_stamp_ms;
+    uint32_t status_stamp_ms;
     WavInfo wav;
 } PlayerState;
 
+/* g_fatfs: single mounted FAT volume used for track files. */
 static FATFS g_fatfs;
+
+/* g_audio_file: currently open WAV file object. */
 static FIL g_audio_file;
+
+/* g_player: all mutable playback, UI, and stream state. */
 static PlayerState g_player;
+
+/* g_audio_buffer: small shared SD read buffer sized for MSP430 RAM. */
 static uint8_t g_audio_buffer[PLAYER_AUDIO_BUFFER_BYTES];
 
+/* player_write_prompt: prints the Bluetooth command cheat sheet. */
 static void player_write_prompt(void);
+
+/* player_open_track: opens TRACKxx.WAV and optionally starts playback. */
 static uint8_t player_open_track(uint8_t track_index, uint8_t start_playing);
 
+/* read_sample16: decodes one little-endian signed PCM sample from data. */
 static int16_t read_sample16(const uint8_t *data)
 {
     return (int16_t)((uint16_t)data[0] | ((uint16_t)data[1] << 8));
 }
 
+/* make_track_name: formats TRACKxx.WAV into name for the requested track_index. */
 static void make_track_name(uint8_t track_index, char *name)
 {
     name[0] = 'T';
@@ -49,6 +63,7 @@ static void make_track_name(uint8_t track_index, char *name)
     name[11] = '\0';
 }
 
+/* mode_text: maps a PlayerMode to stable ASCII text for Bluetooth/APK display. */
 static const char *mode_text(PlayerMode mode)
 {
     switch (mode) {
@@ -65,6 +80,7 @@ static const char *mode_text(PlayerMode mode)
     }
 }
 
+/* player_report_status: sends a compact state snapshot over Bluetooth UART. */
 static void player_report_status(void)
 {
     bluetooth_uart_write_str("status=");
@@ -82,6 +98,7 @@ static void player_report_status(void)
     bluetooth_uart_write_str("\r\n");
 }
 
+/* player_report_track_opened: reports the current WAV format after successful open. */
 static void player_report_track_opened(void)
 {
     char name[12];
@@ -96,6 +113,7 @@ static void player_report_track_opened(void)
     bluetooth_uart_write_str("ch\r\n");
 }
 
+/* player_close_file: closes the active FatFs file when one is open. */
 static void player_close_file(void)
 {
     if (g_player.file_open != 0u) {
@@ -104,6 +122,7 @@ static void player_close_file(void)
     }
 }
 
+/* player_set_error: enters error mode and sends message to the phone/debug terminal. */
 static void player_set_error(const char *message)
 {
     player_close_file();
@@ -112,6 +131,7 @@ static void player_set_error(const char *message)
     bluetooth_uart_write_line(message);
 }
 
+/* player_open_track: opens a numbered WAV, parses it, and sets the playback mode. */
 static uint8_t player_open_track(uint8_t track_index, uint8_t start_playing)
 {
     char name[12];
@@ -150,6 +170,7 @@ static uint8_t player_open_track(uint8_t track_index, uint8_t start_playing)
     return 1u;
 }
 
+/* player_open_near_track: scans forward/backward from start_index for a playable file. */
 static uint8_t player_open_near_track(uint8_t start_index, int8_t direction)
 {
     uint8_t attempts;
@@ -180,6 +201,7 @@ static uint8_t player_open_near_track(uint8_t start_index, int8_t direction)
     return 0u;
 }
 
+/* player_next_track: advances to the next playable numbered WAV file. */
 static void player_next_track(void)
 {
     if (player_open_near_track((uint8_t)(g_player.track_index + 1u), 1) == 0u) {
@@ -187,6 +209,7 @@ static void player_next_track(void)
     }
 }
 
+/* player_previous_track: moves to the previous playable numbered WAV file. */
 static void player_previous_track(void)
 {
     if (player_open_near_track((uint8_t)(g_player.track_index - 1u), -1) == 0u) {
@@ -194,6 +217,7 @@ static void player_previous_track(void)
     }
 }
 
+/* player_play: starts or resumes playback from the current file position. */
 static void player_play(void)
 {
     if (g_player.file_open == 0u) {
@@ -215,6 +239,7 @@ static void player_play(void)
     bluetooth_uart_write_line("play");
 }
 
+/* player_pause: pauses playback and outputs a short zero-sample tail. */
 static void player_pause(void)
 {
     if (g_player.mode == PLAYER_MODE_PLAYING) {
@@ -224,6 +249,7 @@ static void player_pause(void)
     }
 }
 
+/* player_toggle_play_pause: maps a button or 'p' command to play/pause behavior. */
 static void player_toggle_play_pause(void)
 {
     if (g_player.mode == PLAYER_MODE_PLAYING) {
@@ -233,6 +259,7 @@ static void player_toggle_play_pause(void)
     }
 }
 
+/* player_stop: stops playback and seeks back to the start of the current WAV data. */
 static void player_stop(void)
 {
     if (g_player.file_open != 0u) {
@@ -244,6 +271,7 @@ static void player_stop(void)
     bluetooth_uart_write_line("stop");
 }
 
+/* player_set_volume: clamps, stores, applies, and reports the requested volume. */
 static void player_set_volume(uint8_t volume)
 {
     if (volume > PLAYER_VOLUME_MAX) {
@@ -257,6 +285,7 @@ static void player_set_volume(uint8_t volume)
     bluetooth_uart_write_str("\r\n");
 }
 
+/* player_volume_up: increases volume by one step if not already at maximum. */
 static void player_volume_up(void)
 {
     if (g_player.volume < PLAYER_VOLUME_MAX) {
@@ -264,6 +293,7 @@ static void player_volume_up(void)
     }
 }
 
+/* player_volume_down: decreases volume by one step if not already muted. */
 static void player_volume_down(void)
 {
     if (g_player.volume > 0u) {
@@ -271,6 +301,7 @@ static void player_volume_down(void)
     }
 }
 
+/* player_handle_command: executes one ASCII Bluetooth/APK control byte. */
 static void player_handle_command(uint8_t command)
 {
     if ((command >= (uint8_t)'A') && (command <= (uint8_t)'Z')) {
@@ -335,6 +366,7 @@ void audio_player_init(void)
     g_player.bytes_per_frame = 4u;
     g_player.data_remaining = 0u;
     g_player.led_stamp_ms = board_millis();
+    g_player.status_stamp_ms = board_millis();
 
     i2s_dac_set_volume(g_player.volume);
 
@@ -363,6 +395,7 @@ void audio_player_poll_controls(void)
 {
     uint8_t command;
     uint8_t events;
+    uint8_t button_events;
 
     while (bluetooth_uart_read(&command) != 0u) {
         player_handle_command(command);
@@ -379,9 +412,26 @@ void audio_player_poll_controls(void)
         player_toggle_play_pause();
     }
 
+    button_events = local_buttons_take_events();
+    if ((button_events & LOCAL_BUTTON_EVENT_PLAY_PAUSE) != 0u) {
+        player_toggle_play_pause();
+    }
+    if ((button_events & LOCAL_BUTTON_EVENT_PREVIOUS) != 0u) {
+        player_previous_track();
+    }
+    if ((button_events & LOCAL_BUTTON_EVENT_NEXT) != 0u) {
+        player_next_track();
+    }
+
     if (board_elapsed_ms(&g_player.led_stamp_ms, 500u) != 0u) {
         board_status_led_toggle();
     }
+
+#if PLAYER_STATUS_PUSH_MS > 0
+    if (board_elapsed_ms(&g_player.status_stamp_ms, PLAYER_STATUS_PUSH_MS) != 0u) {
+        player_report_status();
+    }
+#endif
 }
 
 void audio_player_service(void)
@@ -447,4 +497,3 @@ PlayerMode audio_player_mode(void)
 {
     return g_player.mode;
 }
-

@@ -2,11 +2,13 @@
 
 #include <string.h>
 
+/* read_le16: returns an unsigned little-endian 16-bit value from data. */
 static uint16_t read_le16(const uint8_t *data)
 {
     return (uint16_t)((uint16_t)data[0] | ((uint16_t)data[1] << 8));
 }
 
+/* read_le32: returns an unsigned little-endian 32-bit value from data. */
 static uint32_t read_le32(const uint8_t *data)
 {
     return (uint32_t)data[0] |
@@ -15,6 +17,7 @@ static uint32_t read_le32(const uint8_t *data)
            ((uint32_t)data[3] << 24);
 }
 
+/* read_exact: reads exactly length bytes from file into buffer. */
 static uint8_t read_exact(FIL *file, void *buffer, UINT length)
 {
     UINT bytes_read;
@@ -27,11 +30,13 @@ static uint8_t read_exact(FIL *file, void *buffer, UINT length)
     return (uint8_t)(bytes_read == length);
 }
 
+/* skip_bytes: advances the FatFs file pointer by count bytes. */
 static uint8_t skip_bytes(FIL *file, uint32_t count)
 {
     return (uint8_t)(f_lseek(file, f_tell(file) + count) == FR_OK);
 }
 
+/* validate_info: accepts only 16-bit PCM mono/stereo with consistent block size. */
 static WavResult validate_info(const WavInfo *info)
 {
     uint16_t expected_align;

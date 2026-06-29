@@ -33,6 +33,7 @@ OBJS := \
 	board.obj \
 	bluetooth_uart.obj \
 	encoder.obj \
+	local_buttons.obj \
 	i2s_dac.obj \
 	audio_player.obj \
 	wav_reader.obj \
@@ -63,6 +64,10 @@ encoder.obj: ../drivers/encoder.c
 	@echo MSP430 Compiler - building file: "$<"
 	$(CC) $(CFLAGS) --preproc_dependency="encoder.d_raw" "$<"
 
+local_buttons.obj: ../drivers/local_buttons.c
+	@echo MSP430 Compiler - building file: "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="local_buttons.d_raw" "$<"
+
 i2s_dac.obj: ../drivers/i2s_dac.c
 	@echo MSP430 Compiler - building file: "$<"
 	$(CC) $(CFLAGS) --preproc_dependency="i2s_dac.d_raw" "$<"
@@ -92,4 +97,3 @@ clean:
 	-DEL /F *.d_raw *.map *.out *_linkInfo.xml 2>NUL
 
 .PHONY: all clean
-

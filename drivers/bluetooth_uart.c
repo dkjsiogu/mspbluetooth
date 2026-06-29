@@ -5,13 +5,22 @@
 #include "board_pins.h"
 #include "platform_config.h"
 
+/* UART_RX_BUFFER_SIZE: power-of-two RX ring size for Bluetooth command bytes. */
 #define UART_RX_BUFFER_SIZE             32u
+
+/* UART_RX_BUFFER_MASK: wraps RX ring indices without division. */
 #define UART_RX_BUFFER_MASK             (UART_RX_BUFFER_SIZE - 1u)
 
+/* g_rx_buffer: interrupt-filled circular buffer for received command bytes. */
 static volatile uint8_t g_rx_buffer[UART_RX_BUFFER_SIZE];
+
+/* g_rx_head: write index advanced by the UART RX ISR. */
 static volatile uint8_t g_rx_head = 0;
+
+/* g_rx_tail: read index advanced by foreground command polling. */
 static volatile uint8_t g_rx_tail = 0;
 
+/* uart_rx_push: stores byte in the RX ring unless it is full. */
 static void uart_rx_push(uint8_t byte)
 {
     uint8_t next;
@@ -142,4 +151,3 @@ __interrupt void USCI_A0_ISR(void)
     }
 }
 #endif
-

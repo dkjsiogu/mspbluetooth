@@ -4,11 +4,13 @@
 
 #include "board_pins.h"
 
+/* sd_spi_delay: short delay that sets the bit-banged SPI clock rate. */
 static void sd_spi_delay(void)
 {
     __delay_cycles(2);
 }
 
+/* sd_spi_transfer: shifts out_byte on MOSI while sampling one byte from MISO. */
 static uint8_t sd_spi_transfer(uint8_t out_byte)
 {
     uint8_t in_byte;
@@ -95,4 +97,3 @@ void SDCard_setCSLow(void)
 {
     SD_CS_OUT &= (uint8_t)~SD_CS_BIT;
 }
-
