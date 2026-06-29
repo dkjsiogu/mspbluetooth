@@ -10,6 +10,7 @@ Debug/*.opt
 .theia/
 .vscode/.browse.VC.db*
 .tools/
+__pycache__/
 android/.gradle/
 android/build/
 android/app/build/
