@@ -581,6 +581,10 @@ static void player_run_test_tone(void)
 /* player_handle_command: executes one ASCII Bluetooth/APK control byte. */
 static void player_handle_command(uint8_t command)
 {
+    uint8_t report_status;
+
+    report_status = 0u;
+
     if ((command >= (uint8_t)'A') && (command <= (uint8_t)'Z')) {
         command = (uint8_t)(command + ((uint8_t)'a' - (uint8_t)'A'));
     }
@@ -588,6 +592,8 @@ static void player_handle_command(uint8_t command)
     if ((command >= (uint8_t)'1') && (command <= (uint8_t)'9')) {
         if (player_open_track((uint8_t)(command - (uint8_t)'0'), 1u) == 0u) {
             bluetooth_uart_write_line("track not found");
+        } else {
+            player_report_status();
         }
         return;
     }
@@ -595,37 +601,47 @@ static void player_handle_command(uint8_t command)
     switch (command) {
     case 'p':
         player_toggle_play_pause();
+        report_status = 1u;
         break;
     case 's':
         player_stop();
+        report_status = 1u;
         break;
     case 'r':
         player_replay();
+        report_status = 1u;
         break;
     case 'n':
     case '>':
         player_next_track();
+        report_status = 1u;
         break;
     case 'b':
     case '<':
         player_previous_track();
+        report_status = 1u;
         break;
     case '+':
     case '=':
         player_volume_up();
+        report_status = 1u;
         break;
     case '-':
     case '_':
         player_volume_down();
+        report_status = 1u;
         break;
     case 'm':
         player_toggle_mute();
+        report_status = 1u;
         break;
     case 'o':
         player_cycle_order();
+        report_status = 1u;
         break;
     case 't':
         player_run_test_tone();
+        report_status = 1u;
         break;
     case 'i':
         player_report_info();
@@ -647,6 +663,10 @@ static void player_handle_command(uint8_t command)
         break;
     default:
         break;
+    }
+
+    if (report_status != 0u) {
+        player_report_status();
     }
 }
 

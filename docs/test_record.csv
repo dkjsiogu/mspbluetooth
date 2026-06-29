@@ -6,7 +6,7 @@ WAV asset check,tools/wav_asset_check.py,TRACK01-03.WAV are valid RIFF PCM 16-bi
 Software effect report,tools/generate_effect_report.py,Bluetooth/board/buttons/display/APK/WAV evidence report generated,,,
 Android parser simulation,tools/android_ui_parser_sim.py,Fragmented status/display/tracks input updates dashboard display frame and track list,,,
 Android command coverage,tools/android_command_coverage.py,All firmware commands have APK buttons and required Bluetooth/SPP markers,,,
-End-to-end demo simulation,tools/end_to_end_demo_sim.py,APK button commands drive firmware responses and visible phone panel state changes,,,
+End-to-end demo simulation,tools/end_to_end_demo_sim.py,APK button commands receive immediate status responses and drive visible phone panel state changes,,,
 Bluetooth diagnostic simulation,tools/bluetooth_diagnostic_sim.py,Fragmented uppercase noisy and diagnostic command streams produce expected responses,,,
 Audio stream simulation,tools/audio_stream_sim.py,TRACK01-03.WAV produce non-silent scaled stereo samples and 100% progress,,,
 I2S frame simulation,tools/i2s_frame_sim.py,One stereo frame has 64 BCK pulses LRCK slots MSB delay and padding,,,

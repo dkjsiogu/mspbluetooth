@@ -122,7 +122,9 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
             chunks=["p+", "+n", "b-", "m", "m", "o", "3", "?"],
             expected_tail=[
                 "order=repeat_one",
+                "status=playing track=1 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0",
                 "open TRACK03.WAV",
+                "status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0",
                 "status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0",
             ],
             expected_state={"mode": "playing", "track": 3, "volume": 19, "order": "repeat_one"},
@@ -131,11 +133,11 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
             name="uppercase aliases",
             chunks=["PNBMTIELDO?"],
             expected_tail=[
-                "tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--",
                 "display 1:playing T1 V0 ALL",
                 "display 2:SD:OK WAV:OPEN",
                 "display 3:16000Hz 2ch P0%",
                 "order=repeat_one",
+                "status=playing track=1 volume=0 order=repeat_one rate=16000Hz channels=2 progress=0",
                 "status=playing track=1 volume=0 order=repeat_one rate=16000Hz channels=2 progress=0",
             ],
             expected_state={"mode": "playing", "track": 1, "volume": 0, "order": "repeat_one"},

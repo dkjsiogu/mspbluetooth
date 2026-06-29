@@ -7,7 +7,7 @@
 | 手机蓝牙上一曲/下一曲 | APK `Prev`/`Next` 发送 `b`/`n` | `tools/bluetooth_protocol_sim.py` |
 | 手机蓝牙曲目选择 | APK `Track 1-9` 发送 `1-9` | APK 源码检查、协议仿真 |
 | Android APK 命令覆盖 | APK 对固件全部蓝牙命令提供按钮，并声明 HC-05 SPP 所需蓝牙权限 | `tools/android_command_coverage.py`、`docs/android_command_coverage_report.md` |
-| 端到端演示效果 | APK 按钮发送 HC-05 命令，固件文本回包驱动手机状态面板、显示帧和曲目列表变化 | `tools/end_to_end_demo_sim.py`、`docs/end_to_end_demo_report.md` |
+| 端到端演示效果 | APK 按钮发送 HC-05 命令，状态改变后立即收到 `status=...`，手机状态面板、显示帧和曲目列表随回包变化 | `tools/end_to_end_demo_sim.py`、`docs/end_to_end_demo_report.md` |
 | 手机蓝牙曲目扫描 | APK `Track List` 发送 `l`，并把 `tracks ...` 回传解析到曲目状态面板 | `tools/bluetooth_protocol_sim.py`、`tools/android_ui_parser_sim.py` |
 | 手机蓝牙播放顺序 | APK `Order` 发送 `o`，固件循环 sequence/repeat_all/repeat_one | `tools/bluetooth_protocol_sim.py`、`tools/board_scenario_sim.py` |
 | 蓝牙诊断与异常输入 | `i/e/l/d/?` 形成现场自检转录，分片输入、大小写命令、换行和无效字符不破坏状态 | `tools/bluetooth_diagnostic_sim.py`、`docs/bluetooth_diagnostic_report.md` |
@@ -17,7 +17,7 @@
 | TF 卡测试音频 | `tools/prepare_sdcard_assets.py` 生成 TRACK01-03.WAV，并用 RIFF chunk 校验 | `tools/wav_asset_check.py`、`tools/run_verification.ps1` |
 | PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame，32-bit 左/右声道 slot，标准 I2S MSB 延迟 | 固件编译、`t` 测试音命令、`tools/audio_stream_sim.py`、`tools/i2s_frame_sim.py` |
 | 音频流效果 | TF WAV 按固件读块大小解码为非静音、音量缩放后的 stereo 样本，进度到 100% | `tools/audio_stream_sim.py`、`docs/audio_stream_report.md` |
-| 状态显示 | APK 日志、含播放进度的状态面板、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`docs/effect_acceptance_report.md` |
+| 状态显示 | APK 日志、含播放进度的状态面板、控制后即时状态、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`tools/end_to_end_demo_sim.py`、`docs/effect_acceptance_report.md` |
 | 墨水屏扩展 | 未默认接入，保留显示模型、APK 显示帧、PGM 黑白预览和播放/暂停/停止/错误多状态画廊，并说明引脚冲突 | `tools/epaper_preview_sim.py`、`docs/epaper_gallery_report.md`、`docs/hardware_verification.md` |
 | 硬件框图/软件流程图 | 自动生成 SVG 图并纳入报告和交付包 | `tools/generate_diagrams.py`、`docs/hardware_block_diagram.svg`、`docs/software_flowchart.svg` |
 | 课程报告材料 | 自动生成课程设计报告初稿，保留实物验证待补项 | `tools/generate_course_report.py`、`docs/course_report_draft.md` |

@@ -38,6 +38,15 @@ class SimulatedPlayer:
         lower_tracks = [track for track in AVAILABLE_TRACKS if track < self.track]
         return (lower_tracks or list(AVAILABLE_TRACKS))[-1]
 
+    def status_line(self) -> str:
+        return (
+            f"status={self.mode} track={self.track} volume={self.volume} order={self.order} "
+            f"rate=16000Hz channels=2 progress={self.progress}"
+        )
+
+    def report_status(self) -> None:
+        self.transcript.append(self.status_line())
+
     def finish_track(self) -> None:
         if self.order == "repeat_one":
             self.mode = "playing"
@@ -63,25 +72,33 @@ class SimulatedPlayer:
             self.track = int(command)
             self.mode = "playing"
             self.transcript.append(f"open TRACK0{self.track}.WAV")
+            self.report_status()
         elif command == "p":
             self.mode = "paused" if self.mode == "playing" else "playing"
             self.transcript.append(self.mode)
+            self.report_status()
         elif command == "s":
             self.mode = "stopped"
             self.transcript.append("stop")
+            self.report_status()
         elif command == "r":
             self.mode = "playing"
             self.transcript.append("replay")
+            self.report_status()
         elif command in ("n", ">"):
             self.open_track(self.next_available_track())
+            self.report_status()
         elif command in ("b", "<"):
             self.open_track(self.previous_available_track())
+            self.report_status()
         elif command in ("+", "="):
             self.volume = min(MAX_VOLUME, self.volume + 1)
             self.transcript.append(f"volume={self.volume}")
+            self.report_status()
         elif command in ("-", "_"):
             self.volume = max(0, self.volume - 1)
             self.transcript.append(f"volume={self.volume}")
+            self.report_status()
         elif command == "m":
             if self.volume > 0:
                 self.saved_volume = self.volume
@@ -90,6 +107,7 @@ class SimulatedPlayer:
             else:
                 self.volume = self.saved_volume or 18
                 self.transcript.append("mute=off")
+            self.report_status()
         elif command == "o":
             if self.order == "sequence":
                 self.order = "repeat_all"
@@ -98,9 +116,11 @@ class SimulatedPlayer:
             else:
                 self.order = "sequence"
             self.transcript.append(f"order={self.order}")
+            self.report_status()
         elif command == "t":
             self.transcript.append("tone start")
             self.transcript.append("tone done")
+            self.report_status()
         elif command == "i":
             self.transcript.append("info name=MSP430F5529-BT-WAV version=1.4.0")
         elif command == "e":
@@ -113,10 +133,7 @@ class SimulatedPlayer:
             self.transcript.append("display 2:SD:OK WAV:OPEN")
             self.transcript.append(f"display 3:16000Hz 2ch P{self.progress}%")
         elif command == "?":
-            self.transcript.append(
-                f"status={self.mode} track={self.track} volume={self.volume} order={self.order} "
-                f"rate=16000Hz channels=2 progress={self.progress}"
-            )
+            self.report_status()
         elif command == "h":
             self.transcript.append("help")
 
