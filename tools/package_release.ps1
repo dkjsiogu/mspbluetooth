@@ -77,11 +77,17 @@ try {
     Copy-RequiredFile "docs\course_report_draft.md" (Join-Path $packageRoot "docs\course_report_draft.md")
     Copy-RequiredFile "docs\effect_acceptance_report.md" (Join-Path $packageRoot "docs\effect_acceptance_report.md")
     Copy-RequiredFile "docs\audio_stream_report.md" (Join-Path $packageRoot "docs\audio_stream_report.md")
+    Copy-RequiredFile "docs\epaper_gallery_report.md" (Join-Path $packageRoot "docs\epaper_gallery_report.md")
     Copy-RequiredFile "docs\test_record.csv" (Join-Path $packageRoot "docs\test_record.csv")
     Copy-RequiredFile "docs\hardware_block_diagram.svg" (Join-Path $packageRoot "docs\hardware_block_diagram.svg")
     Copy-RequiredFile "docs\software_flowchart.svg" (Join-Path $packageRoot "docs\software_flowchart.svg")
     Copy-RequiredFile "sdcard\README.md" (Join-Path $packageRoot "sdcard\README.md")
-    Invoke-Checked { python tools\epaper_preview_sim.py --output (Join-Path $packageRoot "docs\epaper_preview.pgm") }
+    Invoke-Checked {
+        python tools\epaper_preview_sim.py `
+            --output (Join-Path $packageRoot "docs\epaper_preview.pgm") `
+            --gallery-dir (Join-Path $packageRoot "docs\epaper_gallery") `
+            --report (Join-Path $packageRoot "docs\epaper_gallery_report.md")
+    }
 
     Get-ChildItem -LiteralPath "sdcard" -Filter "TRACK*.WAV" | ForEach-Object {
         Copy-RequiredFile $_.FullName (Join-Path $packageRoot ("sdcard\" + $_.Name))
@@ -109,10 +115,15 @@ try {
         "docs\course_report_draft.md",
         "docs\effect_acceptance_report.md",
         "docs\audio_stream_report.md",
+        "docs\epaper_gallery_report.md",
         "docs\test_record.csv",
         "docs\hardware_block_diagram.svg",
         "docs\software_flowchart.svg",
         "docs\epaper_preview.pgm",
+        "docs\epaper_gallery\epaper_playing.pgm",
+        "docs\epaper_gallery\epaper_paused.pgm",
+        "docs\epaper_gallery\epaper_stopped.pgm",
+        "docs\epaper_gallery\epaper_error.pgm",
         "docs\wav_asset_report.md",
         "",
         "Note: software build and simulations are verified by this package script.",

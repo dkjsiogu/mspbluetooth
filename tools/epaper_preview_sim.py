@@ -19,6 +19,30 @@ BLACK = 0
 SCALE = 2
 
 
+GALLERY_FRAMES = {
+    "playing": [
+        "playing T3 V19 ONE",
+        "SD:OK WAV:OPEN",
+        "16000Hz 2ch P42%",
+    ],
+    "paused": [
+        "paused T2 V18 ALL",
+        "SD:OK WAV:OPEN",
+        "16000Hz 2ch P55%",
+    ],
+    "stopped": [
+        "stopped T1 V18 ALL",
+        "SD:OK WAV:OPEN",
+        "16000Hz 2ch P0%",
+    ],
+    "error": [
+        "error T1 V18 ALL",
+        "SD:NO WAV:NONE",
+        "Use TF TRACK01.WAV",
+    ],
+}
+
+
 FONT_5X7 = {
     " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
     "-": ["00000", "00000", "00000", "11110", "00000", "00000", "00000"],
@@ -135,6 +159,37 @@ def assert_nonblank(canvas: list[list[int]]) -> None:
         raise AssertionError(f"preview has too few white pixels: {white_pixels}")
 
 
+def render_gallery(gallery_dir: Path) -> list[Path]:
+    outputs: list[Path] = []
+    for name, frame_lines in GALLERY_FRAMES.items():
+        canvas = render_frame(frame_lines)
+        assert_nonblank(canvas)
+        output = gallery_dir / f"epaper_{name}.pgm"
+        write_pgm(canvas, output)
+        outputs.append(output)
+    return outputs
+
+
+def write_gallery_report(outputs: list[Path], report: Path) -> None:
+    report.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# E-paper Preview Gallery",
+        "",
+        "These PGM files render the same three-line display frame used by firmware and the Android mirror.",
+        "",
+        "| State | Preview file | Line 1 | Line 2 | Line 3 |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for output in outputs:
+        state = output.stem.replace("epaper_", "")
+        frame_lines = GALLERY_FRAMES[state]
+        lines.append(f"| {state} | {output.name} | {frame_lines[0]} | {frame_lines[1]} | {frame_lines[2]} |")
+    lines.append("")
+    lines.append("All listed previews passed the nonblank black/white pixel check.")
+    lines.append("")
+    report.write_text("\n".join(lines), encoding="utf-8", newline="\n")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -142,18 +197,27 @@ def main() -> int:
         default="dist/verification/epaper_preview.pgm",
         help="PGM preview path to write",
     )
+    parser.add_argument(
+        "--gallery-dir",
+        default="dist/verification/epaper_gallery",
+        help="Directory for multi-state PGM preview gallery",
+    )
+    parser.add_argument(
+        "--report",
+        default="docs/epaper_gallery_report.md",
+        help="Markdown report path for the preview gallery",
+    )
     args = parser.parse_args()
 
-    frame_lines = [
-        "playing T3 V19 ONE",
-        "SD:OK WAV:OPEN",
-        "16000Hz 2ch P42%",
-    ]
+    frame_lines = GALLERY_FRAMES["playing"]
     canvas = render_frame(frame_lines)
     assert_nonblank(canvas)
     output = Path(args.output)
     write_pgm(canvas, output)
+    gallery_outputs = render_gallery(Path(args.gallery_dir))
+    write_gallery_report(gallery_outputs, Path(args.report))
     print(f"e-paper display preview simulation passed: {output}")
+    print(f"e-paper preview gallery generated: {Path(args.gallery_dir)}")
     return 0
 
 

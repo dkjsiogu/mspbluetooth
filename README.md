@@ -129,7 +129,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟蓝牙、EC11、本地按键混合控制场景
 - 模拟 EC11 A/B 正交相位解码、反向抖动抵消和按键去抖
 - 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按
-- 生成并检查墨水屏风格黑白预览图，确认显示帧不是空白
+- 生成并检查墨水屏风格黑白预览图和多状态预览画廊，确认显示帧不是空白
 - 校验 TF 卡测试 WAV 是否为固件支持的 RIFF/WAVE PCM、16-bit、单/双声道格式
 - 模拟 TF WAV 到软件 I2S 样本流，确认读块、音量缩放、非静音输出和播放进度
 - 生成软件效果验收报告，汇总蓝牙命令、整板场景、按键、显示帧、APK 解析和 WAV 资产证据
@@ -147,7 +147,7 @@ powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 dist\mspbluetooth_delivery\
 ```
 
-目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、音频流仿真报告、报告提纲、测试记录表、墨水屏预览图、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
+目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、音频流仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
 
 ## 实物验证
 
@@ -159,6 +159,7 @@ dist\mspbluetooth_delivery\
 - [课程设计报告初稿](docs/course_report_draft.md)
 - [软件效果验收报告](docs/effect_acceptance_report.md)
 - [音频流仿真报告](docs/audio_stream_report.md)
+- [墨水屏多状态预览报告](docs/epaper_gallery_report.md)
 - [硬件框图](docs/hardware_block_diagram.svg)
 - [软件流程图](docs/software_flowchart.svg)
 - [功能验收矩阵](docs/acceptance_matrix.md)

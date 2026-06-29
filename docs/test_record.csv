@@ -7,6 +7,7 @@ Software effect report,tools/generate_effect_report.py,Bluetooth/board/buttons/d
 Android parser simulation,tools/android_ui_parser_sim.py,Fragmented status/display input updates dashboard and display frame,,,
 Audio stream simulation,tools/audio_stream_sim.py,TRACK01-03.WAV produce non-silent scaled stereo samples and 100% progress,,,
 EC11 quadrature simulation,tools/encoder_quadrature_sim.py,CW/CCW detents and debounced switch produce expected events,,,
+E-paper gallery,tools/epaper_preview_sim.py,Playing/paused/stopped/error PGM previews are nonblank,,,
 Bluetooth connect,APK connect to paired HC-05,Connected and status response,,,
 Info command,Send i,info name=MSP430F5529-BT-WAV version=1.4.0,,,
 Selftest command,Send e,selftest bt=ok and SD/file status visible,,,
