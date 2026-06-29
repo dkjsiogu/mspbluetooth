@@ -30,6 +30,7 @@ TONE_LINES = [
 ]
 LINK_LINE = "link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms"
 INPUT_LINE = "input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1"
+TRACE_LINE = "trace count=6 1=bt:vol+ 2=bt:next 3=bt:prev 4=bt:order 5=bt:track 6=bt:trace"
 WIRING_LINES = [
     "pin profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1",
     "pin tf cs=P4.0 sck=P3.1 mosi=P3.2 miso=P3.3",
@@ -58,6 +59,7 @@ class AndroidUiState:
     track_list_text: str = "Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --"
     link_text: str = "Link\nRX: --  Status: --  Display: --\nBad: --  Last: --  Uptime: --"
     input_text: str = "Input\nEC11 CW:-- CCW:-- SW:-- Long:--\nS1:--/-- S2:--/-- S4:--/--"
+    trace_text: str = "Trace\n--"
     wiring_lines: list[str] = field(default_factory=lambda: ["Profile: --", "TF: --", "I2S: --", "EC11: --", "Local: --", "BT: --", "E-paper: --"])
     acceptance_text: str = "Acceptance 0/9\nSD:-- Info:-- Selftest:-- Tracks:-- Wiring:--\nDisplay:-- Status:-- Tone:-- Open:--"
     rx_line_buffer: str = ""
@@ -194,6 +196,25 @@ def update_input_panel(state: AndroidUiState, input_line: str) -> None:
     state.input_text = f"Input\nEC11 CW:{ecw} CCW:{eccw} SW:{eb} Long:{elong}\nS1:{s1}/{s1l} S2:{s2}/{s2l} S4:{s4}/{s4l}"
 
 
+def update_trace_panel(state: AndroidUiState, trace_line: str) -> None:
+    shown = 0
+    lines = ["Trace"]
+    current_line: list[str] = []
+    for part in trace_line.split(" "):
+        if "=" not in part or part.startswith("count="):
+            continue
+        current_line.append(part)
+        shown += 1
+        if shown % 3 == 0:
+            lines.append("  ".join(current_line))
+            current_line = []
+    if current_line:
+        lines.append("  ".join(current_line))
+    if shown == 0:
+        lines.append("--")
+    state.trace_text = "\n".join(lines)
+
+
 def update_wiring_panel(state: AndroidUiState, pin_line: str) -> None:
     if pin_line.startswith("pin profile="):
         state.wiring_lines[0] = "Profile: " + pin_line[len("pin profile=") :]
@@ -296,6 +317,8 @@ def parse_incoming_line(state: AndroidUiState, line: str) -> None:
         update_link_panel(state, line)
     elif line.startswith("input "):
         update_input_panel(state, line)
+    elif line.startswith("trace "):
+        update_trace_panel(state, line)
     elif line.startswith("pin "):
         update_wiring_panel(state, line)
 
@@ -312,7 +335,7 @@ def handle_incoming_text(state: AndroidUiState, text: str) -> None:
 
 def run_fragmented_flow() -> AndroidUiState:
     state = AndroidUiState()
-    stream = "\r\n".join([*BOOT_LINES, INFO_LINE, SELFTEST_LINE, TRACKS_LINE, *DISPLAY_LINES, STATUS_LINE, *TONE_LINES, LINK_LINE, INPUT_LINE, *WIRING_LINES]) + "\r\n"
+    stream = "\r\n".join([*BOOT_LINES, INFO_LINE, SELFTEST_LINE, TRACKS_LINE, *DISPLAY_LINES, STATUS_LINE, *TONE_LINES, LINK_LINE, INPUT_LINE, TRACE_LINE, *WIRING_LINES]) + "\r\n"
     chunks = [stream[:7], stream[7:29], stream[29:61], stream[61:92], stream[92:130], stream[130:181], stream[181:]]
     for chunk in chunks:
         handle_incoming_text(state, chunk)
@@ -343,6 +366,9 @@ def run_fragmented_flow() -> AndroidUiState:
     expected_input = "Input\nEC11 CW:3 CCW:1 SW:2 Long:1\nS1:2/1 S2:1/1 S4:1/1"
     if state.input_text != expected_input:
         raise AssertionError(f"input panel mismatch: {state.input_text!r}")
+    expected_trace = "Trace\n1=bt:vol+  2=bt:next  3=bt:prev\n4=bt:order  5=bt:track  6=bt:trace"
+    if state.trace_text != expected_trace:
+        raise AssertionError(f"trace panel mismatch: {state.trace_text!r}")
     if "BT: tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict" not in state.wiring_text:
         raise AssertionError(f"wiring panel mismatch: {state.wiring_text!r}")
     if state.rx_line_buffer != "":
@@ -360,6 +386,7 @@ def main() -> int:
     print(state.track_list_text.replace("\n", " | "))
     print(state.link_text.replace("\n", " | "))
     print(state.input_text.replace("\n", " | "))
+    print(state.trace_text.replace("\n", " | "))
     print(state.wiring_text.replace("\n", " | "))
     print(state.acceptance_text.replace("\n", " | "))
     return 0

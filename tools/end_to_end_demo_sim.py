@@ -41,6 +41,7 @@ class DemoSnapshot:
     tracks: str
     link: str
     input: str
+    trace: str
     wiring: str
 
 
@@ -57,6 +58,7 @@ DEMO_STEPS = [
     DemoStep("Track 3", "3", "direct track button opens TRACK03.WAV and immediately reports status"),
     DemoStep("Link", "k", "firmware reports Bluetooth RX, status, display, bad-command, and last-command counters"),
     DemoStep("Input", "u", "firmware reports EC11 and S1/S2/S4 local input counters"),
+    DemoStep("Trace", "x", "firmware reports the recent Bluetooth/local control event ring"),
     DemoStep("Wiring", "w", "firmware reports the active TF/I2S/EC11/local/BT/e-paper pin map"),
 ]
 
@@ -100,6 +102,7 @@ def run_demo() -> list[DemoSnapshot]:
                 tracks=android.track_list_text,
                 link=android.link_text,
                 input=android.input_text,
+                trace=android.trace_text,
                 wiring=android.wiring_text,
             )
         )
@@ -122,6 +125,8 @@ def run_demo() -> list[DemoSnapshot]:
         raise AssertionError(f"final link panel mismatch: {android.link_text!r}")
     if "EC11 CW:0" not in android.input_text or "S4:0/0" not in android.input_text:
         raise AssertionError(f"final input panel mismatch: {android.input_text!r}")
+    if "bt:trace" not in android.trace_text or "bt:tone" not in android.trace_text:
+        raise AssertionError(f"final trace panel mismatch: {android.trace_text!r}")
     if "BT: tx=P4.4 rx=P4.5" not in android.wiring_text:
         raise AssertionError(f"final wiring panel mismatch: {android.wiring_text!r}")
     if android.rx_line_buffer:
@@ -160,6 +165,8 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
             + " | "
             + snapshot.input.replace("\n", " / ")
             + " | "
+            + snapshot.trace.replace("\n", " / ")
+            + " | "
             + snapshot.wiring.replace("\n", " / ")
         )
         lines.append(row([snapshot.label, f"`{snapshot.command}`", snapshot.note, " -> ".join(snapshot.responses), visible]))
@@ -178,6 +185,7 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
             row(["Track list", snapshots[-1].tracks]),
             row(["Link", snapshots[-1].link]),
             row(["Input", snapshots[-1].input]),
+            row(["Trace", snapshots[-1].trace]),
             row(["Wiring", snapshots[-1].wiring]),
             "",
         ]
@@ -201,6 +209,7 @@ def main() -> int:
     print(snapshots[-1].display.replace("\n", " | "))
     print(snapshots[-1].link.replace("\n", " | "))
     print(snapshots[-1].input.replace("\n", " | "))
+    print(snapshots[-1].trace.replace("\n", " | "))
     print(snapshots[-1].wiring.replace("\n", " | "))
     print(f"demo report generated: {args.report}")
     return 0

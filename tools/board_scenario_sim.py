@@ -11,6 +11,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
+TRACE_DEPTH = 6
+
+
 @dataclass
 class BoardState:
     mode: str = "playing"
@@ -31,10 +34,20 @@ class BoardState:
     input_s2_long: int = 0
     input_s4_short: int = 0
     input_s4_long: int = 0
+    trace: tuple[str, ...] = ()
 
 
 def apply_event(state: BoardState, event: str) -> None:
     reports_status = event.startswith(("bt:", "enc:")) or event in ("s1", "s2", "s4", "s1:long", "s2:long", "s4:long")
+    trace_label = event
+    if event == "enc:press":
+        trace_label = "enc:sw"
+    elif event == "s1":
+        trace_label = "s1:short"
+    elif event == "s2":
+        trace_label = "s2:short"
+    elif event == "s4":
+        trace_label = "s4:short"
 
     if event in ("bt:p", "enc:press", "s1"):
         if event == "enc:press":
@@ -97,6 +110,7 @@ def apply_event(state: BoardState, event: str) -> None:
         raise ValueError(f"unknown event: {event}")
 
     if reports_status:
+        state.trace = (*state.trace, trace_label)[-TRACE_DEPTH:]
         state.status_reports += 1
         state.display_reports += 1
 
@@ -149,6 +163,7 @@ def main() -> int:
     assert state.input_s2_long == 1, state
     assert state.input_s4_short == 1, state
     assert state.input_s4_long == 1, state
+    assert state.trace == ("enc:cw", "bt:t", "bt:r", "s4:long", "enc:long", "s1:short", "enc:sw")[-TRACE_DEPTH:], state
 
     print("whole-board control scenario passed")
     print(state)

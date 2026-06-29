@@ -23,7 +23,7 @@ DEFAULT_LOG = ROOT / "dist" / "verification" / "android_acceptance_log.txt"
 DEFAULT_REPORT = ROOT / "docs" / "android_acceptance_script_report.md"
 MAIN_ACTIVITY = ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dkjsiogu" / "mspbluetooth" / "MainActivity.java"
 
-ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "w"]
+ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "x", "w"]
 
 
 @dataclass
@@ -37,6 +37,7 @@ class AcceptanceResult:
     tracks: str
     link: str
     input: str
+    trace: str
     wiring: str
     acceptance: str
     passed_checks: int
@@ -107,6 +108,8 @@ def run_acceptance_flow() -> AcceptanceResult:
         raise AssertionError(f"Android link panel did not parse link diagnostics: {android.link_text!r}")
     if "EC11 CW:0" not in android.input_text or "S4:0/0" not in android.input_text:
         raise AssertionError(f"Android input panel did not parse input diagnostics: {android.input_text!r}")
+    if "bt:trace" not in android.trace_text or "bt:track" not in android.trace_text:
+        raise AssertionError(f"Android trace panel did not parse event trace: {android.trace_text!r}")
     if "BT: tx=P4.4 rx=P4.5" not in android.wiring_text:
         raise AssertionError(f"Android wiring panel did not parse pin diagnostics: {android.wiring_text!r}")
 
@@ -120,6 +123,7 @@ def run_acceptance_flow() -> AcceptanceResult:
         tracks=android.track_list_text,
         link=android.link_text,
         input=android.input_text,
+        trace=android.trace_text,
         wiring=android.wiring_text,
         acceptance=android.acceptance_text,
         passed_checks=len(check_results),
@@ -155,6 +159,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["Track list", result.tracks]),
         row(["Link diagnostics", result.link]),
         row(["Input diagnostics", result.input]),
+        row(["Trace diagnostics", result.trace]),
         row(["Wiring diagnostics", result.wiring]),
         row(["Acceptance summary", result.acceptance]),
         "",
@@ -186,6 +191,7 @@ def main() -> int:
     print(result.health.replace("\n", " | "))
     print(result.link.replace("\n", " | "))
     print(result.input.replace("\n", " | "))
+    print(result.trace.replace("\n", " | "))
     print(result.wiring.replace("\n", " | "))
     print(result.acceptance.replace("\n", " | "))
     print(f"acceptance log generated: {args.log}")

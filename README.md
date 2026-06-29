@@ -17,6 +17,7 @@
 - 蓝牙 `d` 命令输出三行显示帧，当前由 APK/串口显示，后续可接到墨水屏渲染层。
 - 蓝牙 `k` 命令输出链路计数，显示已接收命令数、状态/显示帧上报数、异常命令数、最后命令和运行时间，便于现场确认手机到 HC-05 到固件再回手机的闭环。
 - 蓝牙 `u` 命令输出 EC11 与 S1/S2/S4 短按、长按事件计数，便于实物验收时确认本地输入链路。
+- 蓝牙 `x` 命令输出最近控制事件轨迹，便于确认手机命令、EC11 和本地按键确实进入播放器状态机。
 - 蓝牙 `w` 命令输出实际接线清单，便于现场核对 TF/I2S/EC11/HC-05 和可选墨水屏引脚。
 - `tools\epaper_preview_sim.py` 可把三行显示帧渲染成 296x128 黑白 PGM 预览图，用于未接墨水屏时确认显示效果。
 - DAC 模拟输出可同时接 PAM8403 功放输入和 3.5mm 耳机座。
@@ -88,6 +89,7 @@ d    三行显示帧
 ?    查询状态
 k    查询蓝牙链路计数
 u    查询EC11/本地按键计数
+x    查询最近控制事件轨迹
 w    查询实际接线
 h    输出命令帮助
 ```
@@ -105,6 +107,7 @@ display 2:SD:OK WAV:OPEN
 display 3:16000Hz 2ch P0%
 link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms
 input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1
+trace count=6 1=bt:vol+ 2=bt:next 3=bt:prev 4=bt:order 5=bt:track 6=bt:trace
 pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict
 ```
 
@@ -188,7 +191,7 @@ dist\mspbluetooth_delivery\
 
 ## Android 控制端
 
-仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`sd mounted`、`info name=...`、`selftest ...`、`tone ...`、`open TRACK...`、`error: ...`、`display 1/2/3:...`、`tracks ...`、`link ...`、`input ...` 和 `pin ...`，在手机上显示当前播放状态、音量/进度条、Health/Storage 证据、三行显示帧、曲目可用状态、蓝牙链路计数、本地输入计数和接线诊断，便于未接墨水屏时确认显示效果并核对现场接线。`Demo RX` 可在无 HC-05/无板卡时注入同格式回传，直接演示全部面板；`Run Acceptance` 会在手机上显示 `Acceptance X/9` 摘要面板，集中标出 SD、固件信息、自检、曲目扫描、接线、显示帧、状态、测试音和 WAV 打开证据；日志可用 `Share Log` 分享，也可用 `Save Log` 直接保存为文本文件。构建 APK：
+仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`sd mounted`、`info name=...`、`selftest ...`、`tone ...`、`open TRACK...`、`error: ...`、`display 1/2/3:...`、`tracks ...`、`link ...`、`input ...`、`trace ...` 和 `pin ...`，在手机上显示当前播放状态、音量/进度条、Health/Storage 证据、三行显示帧、曲目可用状态、蓝牙链路计数、本地输入计数、最近控制事件轨迹和接线诊断，便于未接墨水屏时确认显示效果并核对现场接线。`Demo RX` 可在无 HC-05/无板卡时注入同格式回传，直接演示全部面板；`Run Acceptance` 会在手机上显示 `Acceptance X/9` 摘要面板，集中标出 SD、固件信息、自检、曲目扫描、接线、显示帧、状态、测试音和 WAV 打开证据；日志可用 `Share Log` 分享，也可用 `Save Log` 直接保存为文本文件。构建 APK：
 
 ```powershell
 cd E:\code\ccs\mspbluetooth
@@ -225,14 +228,14 @@ python tools\serial_acceptance_check.py --input path\to\capture.txt
 
 The checker looks for `sd mounted`, `info name=MSP430F5529-BT-WAV`,
 `selftest bt=ok`, `tracks 1=ok`, `display 1/2/3:`, `status=...`,
-`link rx=...`, `input ecw=...`, `pin bt tx=P4.4 rx=P4.5`, `tone start`,
+`link rx=...`, `input ecw=...`, `trace count=...`, `pin bt tx=P4.4 rx=P4.5`, `tone start`,
 `tone done`, and `open TRACK01.WAV`/`open TRACK03.WAV`. If the
 log includes `TX>` command markers, it also verifies that state-changing
 commands immediately return `status=...` plus the three display lines.
 
 The Android APK also has a `Run Acceptance` button. It sends `h i e l d ? t 1
-p + n b o 3 k u w`, writes `TX>` markers into the phone log, and lets the dashboard,
-visual volume/progress bars, Health, display frame, track-list, Link, Input, Wiring, and `Acceptance X/9` summary panels update
+p + n b o 3 k u x w`, writes `TX>` markers into the phone log, and lets the dashboard,
+visual volume/progress bars, Health, display frame, track-list, Link, Input, Trace, Wiring, and `Acceptance X/9` summary panels update
 from firmware responses. The phone log can be exported with `Share Log` or
 saved as a text file with `Save Log`, then checked with the same
 `serial_acceptance_check.py` command.

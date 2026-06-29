@@ -45,6 +45,7 @@ REQUIRED_COMMANDS = [
     RequiredCommand("?", "current status query", "Status"),
     RequiredCommand("k", "Bluetooth link counters", "Link"),
     RequiredCommand("u", "local input counters", "Input"),
+    RequiredCommand("x", "recent control event trace", "Trace"),
     RequiredCommand("w", "active wiring diagnostics", "Wiring"),
     RequiredCommand("1", "direct track 1", "Track 1"),
     RequiredCommand("2", "direct track 2", "Track 2"),
@@ -72,6 +73,7 @@ REQUIRED_PARSER_MARKERS = [
     'line.startsWith("tracks")',
     'line.startsWith("link ")',
     'line.startsWith("input ")',
+    'line.startsWith("trace ")',
     'line.startsWith("pin ")',
     "updateDashboard",
     "updateHealthPanel",
@@ -79,6 +81,7 @@ REQUIRED_PARSER_MARKERS = [
     "updateTrackList",
     "updateLinkPanel",
     "updateInputPanel",
+    "updateTracePanel",
     "updateWiringPanel",
     "volumeBar",
     "progressBar",
@@ -115,7 +118,7 @@ REQUIRED_MANIFEST_MARKERS = [
     'android:label="MSP430 Player"',
 ]
 
-REQUIRED_ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "w"]
+REQUIRED_ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "x", "w"]
 
 
 def extract_send_buttons(source: str) -> dict[str, list[str]]:
@@ -171,6 +174,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),
             row(["`link ...`", "`updateLinkPanel` renders RX/status/display/error counters for Bluetooth round-trip evidence"]),
             row(["`input ...`", "`updateInputPanel` renders EC11 and S1/S2/S4 short/long event counters"]),
+            row(["`trace ...`", "`updateTracePanel` renders the recent BT/EC11/local-button event ring"]),
             row(["`pin ...`", "`updateWiringPanel` renders TF/I2S/EC11/local/BT/e-paper wiring diagnostics"]),
             row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
             row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),

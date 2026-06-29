@@ -37,6 +37,7 @@ ALLOWED_TRANSCRIPT_PREFIXES = (
     "status=",
     "link ",
     "input ",
+    "trace ",
     "pin ",
     "help",
     "end",
@@ -109,7 +110,7 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
     cases = [
         DiagnosticCase(
             name="bring-up transcript",
-            chunks=["i", "e", "l", "d", "?", "k", "u", "w"],
+            chunks=["i", "e", "l", "d", "?", "k", "u", "x", "w"],
             expected_tail=[
                 f"info name={FIRMWARE_NAME} version={FIRMWARE_VERSION} profile={HARDWARE_PROFILE}",
                 "selftest bt=ok sd=ok file=open dac=test-with-t",
@@ -120,6 +121,7 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
                 "status=paused track=1 volume=18 order=repeat_all rate=16000Hz channels=2 progress=0",
                 "link rx=6 status=1 display=1 bad=0 last=k uptime=1234ms",
                 "input ecw=0 eccw=0 eb=0 elong=0 s1=0 s1l=0 s2=0 s2l=0 s4=0 s4l=0",
+                "trace count=1 1=bt:trace",
                 *WIRING_LINES,
             ],
         ),
@@ -151,7 +153,7 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
         ),
         DiagnosticCase(
             name="noise and line endings ignored",
-            chunks=["\r\n", "x", "\t", "?", "#", "\n"],
+            chunks=["\r\n", "z", "\t", "?", "#", "\n"],
             expected_tail=[
                 "status=paused track=1 volume=18 order=repeat_all rate=16000Hz channels=2 progress=0",
             ],
@@ -192,6 +194,7 @@ def render_report(results: list[DiagnosticResult]) -> str:
             row(["Current status", "`?`", "`status=... track=... volume=... order=... progress=...`"]),
             row(["Bluetooth link counters", "`k`", "`link rx=... status=... display=... bad=... last=... uptime=...ms`"]),
             row(["Local input counters", "`u`", "`input ecw=... eccw=... eb=... elong=... s1=... s1l=... s2=... s2l=... s4=... s4l=...`"]),
+            row(["Recent event trace", "`x`", "`trace count=... 1=...` recent BT/EC11/local events"]),
             row(["Wiring diagnostics", "`w`", "`pin ...` lines for TF, I2S, EC11, local buttons, Bluetooth, and optional e-paper"]),
             "",
         ]

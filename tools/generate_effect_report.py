@@ -77,6 +77,7 @@ def run_board_scenario() -> tuple[list[str], BoardState]:
         input_s2_long=1,
         input_s4_short=1,
         input_s4_long=1,
+        trace=("bt:t", "bt:r", "s4:long", "enc:long", "s1:short", "enc:sw"),
     ):
         raise AssertionError(f"unexpected board scenario result: {state}")
     return scenario, state
@@ -117,9 +118,9 @@ def android_source_evidence() -> tuple[list[str], list[str]]:
     source = (ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dkjsiogu" / "mspbluetooth" / "MainActivity.java").read_text(
         encoding="utf-8"
     )
-    commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k", "u", "w"]
+    commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k", "u", "x", "w"]
     missing_commands = [command for command in commands if f'"{command}"' not in source]
-    parser_markers = ["status=", "progress=", "sd mounted", "info name=", "selftest ", "tone start", "open TRACK0", "display 1:", "display 2:", "display 3:", "link ", "input ", "pin "]
+    parser_markers = ["status=", "progress=", "sd mounted", "info name=", "selftest ", "tone start", "open TRACK0", "display 1:", "display 2:", "display 3:", "link ", "input ", "trace ", "pin "]
     visual_markers = ["volumeBar", "progressBar", "boundedInt", "volumeBar.setMax(32)", "progressBar.setMax(100)", "Demo RX", "DEMO_RX_LINES", "runOfflineDemo"]
     missing_markers = [marker for marker in parser_markers if f'"{marker}"' not in source]
     missing_visual_markers = [marker for marker in visual_markers if marker not in source]
@@ -241,6 +242,7 @@ def render_report(input_dir: Path) -> str:
             row(["Android parsed track list", android_state.track_list_text.replace("\n", " / ")]),
             row(["Android parsed link", android_state.link_text.replace("\n", " / ")]),
             row(["Android parsed input", android_state.input_text.replace("\n", " / ")]),
+            row(["Android parsed trace", android_state.trace_text.replace("\n", " / ")]),
             row(["Android parsed wiring", android_state.wiring_text.replace("\n", " / ")]),
             row(["Android acceptance summary", android_state.acceptance_text.replace("\n", " / ")]),
             row(["Android offline demo", offline_demo_state.dashboard_text.replace("\n", " / ") + f" / bars={offline_demo_state.volume_bar}/32,{offline_demo_state.progress_bar}/100 / " + offline_demo_state.acceptance_text.replace("\n", " / ")]),

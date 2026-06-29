@@ -20,6 +20,7 @@ settings first, then open the app, select the paired device, and connect.
 - `d`: three-line display frame
 - `k`: Bluetooth link counters
 - `u`: EC11 and local-button counters
+- `x`: recent BT/EC11/local event trace
 - `w`: active wiring diagnostics
 - `1`..`9`: direct track selection
 - `?`: current status
@@ -35,6 +36,7 @@ settings first, then open the app, select the paired device, and connect.
 - `tracks ...`: track availability list
 - `link ...`: RX/status/display/bad-command/last-command/uptime counters
 - `input ...`: EC11 and S1/S2/S4 short/long event counters
+- `trace ...`: recent control-event ring
 - `pin ...`: TF, I2S, EC11, local-button, HC-05, and optional e-paper wiring
 
 `Demo RX` injects a built-in firmware-style transcript into the same parser, so
@@ -65,11 +67,11 @@ android\app\build\outputs\apk\debug\app-debug.apk
 `Run Acceptance` sends:
 
 ```text
-h i e l d ? t 1 p + n b o 3 k u w
+h i e l d ? t 1 p + n b o 3 k u x w
 ```
 
 The app logs every command with `TX>` markers, parses firmware responses into
-the dashboard, visual volume/progress bars, Health, display-frame, track-list, Link, Input, Wiring, and
+the dashboard, visual volume/progress bars, Health, display-frame, track-list, Link, Input, Trace, Wiring, and
 `Acceptance X/9` panels, then lets the operator save evidence through `Save Log`
 or export it through `Share Log`.
 

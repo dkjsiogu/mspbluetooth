@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
     private static final int REQUEST_SAVE_LOG = 431;
     private static final String[] ACCEPTANCE_COMMANDS =
-            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "w"};
+            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "x", "w"};
     private static final String[] DEMO_RX_LINES = new String[]{
             "sd mounted",
             "info name=MSP430F5529-BT-WAV version=1.4.1 profile=bt_wav_player",
@@ -50,6 +50,7 @@ public class MainActivity extends Activity {
             "open TRACK03.WAV",
             "link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms",
             "input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1",
+            "trace count=6 1=bt:vol+ 2=bt:next 3=bt:prev 4=bt:order 5=bt:track 6=bt:trace",
             "pin profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1",
             "pin tf cs=P4.0 sck=P3.1 mosi=P3.2 miso=P3.3",
             "pin i2s bck=P4.1 lrck=P4.2 din=P4.3",
@@ -70,6 +71,7 @@ public class MainActivity extends Activity {
     private TextView trackListView;
     private TextView linkView;
     private TextView inputView;
+    private TextView traceView;
     private TextView wiringView;
     private TextView acceptanceView;
     private TextView logView;
@@ -190,6 +192,9 @@ public class MainActivity extends Activity {
         inputView = panelText("Input\nEC11 CW:-- CCW:-- SW:-- Long:--\nS1:--/-- S2:--/-- S4:--/--");
         root.addView(inputView, new LinearLayout.LayoutParams(-1, dp(70)));
 
+        traceView = panelText("Trace\n--");
+        root.addView(traceView, new LinearLayout.LayoutParams(-1, dp(58)));
+
         wiringView = panelText("Wiring\nProfile: --\nTF: --\nI2S: --\nEC11: --\nLocal: --\nBT: --\nE-paper: --");
         root.addView(wiringView, new LinearLayout.LayoutParams(-1, dp(146)));
 
@@ -236,6 +241,7 @@ public class MainActivity extends Activity {
         queryRow.addView(sendButton("Track List", "l"), new LinearLayout.LayoutParams(0, dp(44), 1));
         queryRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
         queryRow.addView(sendButton("Link", "k"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        queryRow.addView(sendButton("Trace", "x"), new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(queryRow);
 
         LinearLayout acceptanceRow = row();
@@ -554,6 +560,8 @@ public class MainActivity extends Activity {
             updateLinkPanel(line);
         } else if (line.startsWith("input ")) {
             updateInputPanel(line);
+        } else if (line.startsWith("trace ")) {
+            updateTracePanel(line);
         } else if (line.startsWith("pin ")) {
             updateWiringPanel(line);
         }
@@ -728,6 +736,28 @@ public class MainActivity extends Activity {
         inputView.setText("Input\nEC11 CW:" + ecw + " CCW:" + eccw +
                 " SW:" + eb + " Long:" + elong + "\nS1:" + s1 + "/" + s1l +
                 " S2:" + s2 + "/" + s2l + " S4:" + s4 + "/" + s4l);
+    }
+
+    private void updateTracePanel(String traceLine) {
+        String[] parts = traceLine.split(" ");
+        StringBuilder builder = new StringBuilder("Trace");
+        int shown = 0;
+        for (String part : parts) {
+            if (part.indexOf('=') <= 0 || part.startsWith("count=")) {
+                continue;
+            }
+            if (shown % 3 == 0) {
+                builder.append('\n');
+            } else {
+                builder.append("  ");
+            }
+            builder.append(part);
+            shown++;
+        }
+        if (shown == 0) {
+            builder.append("\n--");
+        }
+        traceView.setText(builder.toString());
     }
 
     private void updateWiringPanel(String pinLine) {

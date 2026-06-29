@@ -65,6 +65,8 @@ def run_offline_demo() -> tuple[AndroidUiState, list[str]]:
         raise AssertionError(f"offline demo link mismatch: {state.link_text!r}")
     if "EC11 CW:3" not in state.input_text or "S4:1/1" not in state.input_text:
         raise AssertionError(f"offline demo input mismatch: {state.input_text!r}")
+    if "bt:trace" not in state.trace_text or "bt:track" not in state.trace_text:
+        raise AssertionError(f"offline demo trace mismatch: {state.trace_text!r}")
     if "BT: tx=P4.4 rx=P4.5" not in state.wiring_text:
         raise AssertionError(f"offline demo wiring mismatch: {state.wiring_text!r}")
     if not state.acceptance_text.startswith("Acceptance 9/9"):
@@ -100,6 +102,7 @@ def render_report(state: AndroidUiState, lines: list[str]) -> str:
             row(["Track list", state.track_list_text]),
             row(["Link diagnostics", state.link_text]),
             row(["Input diagnostics", state.input_text]),
+            row(["Trace diagnostics", state.trace_text]),
             row(["Wiring diagnostics", state.wiring_text]),
             row(["Acceptance summary", state.acceptance_text]),
             "",

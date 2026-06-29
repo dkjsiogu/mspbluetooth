@@ -54,6 +54,9 @@
 /* PLAYER_MAX_TRACKS: highest TRACKxx.WAV number scanned on the TF card. */
 #define PLAYER_MAX_TRACKS               9u
 
+/* PLAYER_TRACE_DEPTH: number of recent control events kept for diagnostics. */
+#define PLAYER_TRACE_DEPTH              6u
+
 /* PLAYER_AUDIO_BUFFER_BYTES: one SD read chunk; keep small for MSP430 RAM. */
 #define PLAYER_AUDIO_BUFFER_BYTES       192u
 

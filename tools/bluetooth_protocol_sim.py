@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MAX_TRACKS = 9
 MAX_VOLUME = 32
+TRACE_DEPTH = 6
 AVAILABLE_TRACKS = (1, 3)
 
 
@@ -65,7 +66,13 @@ class SimulatedPlayer:
     input_s2_long: int = 0
     input_s4_short: int = 0
     input_s4_long: int = 0
+    trace: list[str] = field(default_factory=list)
     transcript: list[str] = field(default_factory=list)
+
+    def trace_event(self, label: str) -> None:
+        self.trace.append(label)
+        if len(self.trace) > TRACE_DEPTH:
+            self.trace = self.trace[-TRACE_DEPTH:]
 
     def open_track(self, track: int) -> None:
         self.track = track
@@ -127,37 +134,46 @@ class SimulatedPlayer:
         self.rx_count += 1
         self.last_command = command
         if command in "123456789":
+            self.trace_event("bt:track")
             self.track = int(command)
             self.mode = "playing"
             self.transcript.append(f"open TRACK0{self.track}.WAV")
             self.report_ui_snapshot()
         elif command == "p":
+            self.trace_event("bt:play")
             self.mode = "paused" if self.mode == "playing" else "playing"
             self.transcript.append(self.mode)
             self.report_ui_snapshot()
         elif command == "s":
+            self.trace_event("bt:stop")
             self.mode = "stopped"
             self.transcript.append("stop")
             self.report_ui_snapshot()
         elif command == "r":
+            self.trace_event("bt:replay")
             self.mode = "playing"
             self.transcript.append("replay")
             self.report_ui_snapshot()
         elif command in ("n", ">"):
+            self.trace_event("bt:next")
             self.open_track(self.next_available_track())
             self.report_ui_snapshot()
         elif command in ("b", "<"):
+            self.trace_event("bt:prev")
             self.open_track(self.previous_available_track())
             self.report_ui_snapshot()
         elif command in ("+", "="):
+            self.trace_event("bt:vol+")
             self.volume = min(MAX_VOLUME, self.volume + 1)
             self.transcript.append(f"volume={self.volume}")
             self.report_ui_snapshot()
         elif command in ("-", "_"):
+            self.trace_event("bt:vol-")
             self.volume = max(0, self.volume - 1)
             self.transcript.append(f"volume={self.volume}")
             self.report_ui_snapshot()
         elif command == "m":
+            self.trace_event("bt:mute")
             if self.volume > 0:
                 self.saved_volume = self.volume
                 self.volume = 0
@@ -167,6 +183,7 @@ class SimulatedPlayer:
                 self.transcript.append("mute=off")
             self.report_ui_snapshot()
         elif command == "o":
+            self.trace_event("bt:order")
             if self.order == "sequence":
                 self.order = "repeat_all"
             elif self.order == "repeat_all":
@@ -176,6 +193,7 @@ class SimulatedPlayer:
             self.transcript.append(f"order={self.order}")
             self.report_ui_snapshot()
         elif command == "t":
+            self.trace_event("bt:tone")
             self.transcript.append("tone start")
             self.transcript.append("tone done")
             self.report_ui_snapshot()
@@ -205,10 +223,18 @@ class SimulatedPlayer:
                 f"s2={self.input_s2_short} s2l={self.input_s2_long} "
                 f"s4={self.input_s4_short} s4l={self.input_s4_long}"
             )
+        elif command == "x":
+            self.trace_event("bt:trace")
+            self.transcript.append(
+                "trace count="
+                + str(len(self.trace))
+                + "".join(f" {index + 1}={label}" for index, label in enumerate(self.trace))
+            )
         elif command == "w":
             self.transcript.extend(WIRING_LINES)
         else:
             self.bad_count += 1
+            self.trace_event("bt:bad")
 
 
 def assert_equal(actual: object, expected: object, label: str) -> None:
@@ -219,7 +245,7 @@ def assert_equal(actual: object, expected: object, label: str) -> None:
 def run_required_flow() -> SimulatedPlayer:
     player = SimulatedPlayer()
 
-    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?", "k", "u", "w"]:
+    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?", "k", "u", "x", "w"]:
         player.send(command)
 
     assert_equal(player.mode, "playing", "mode after direct track command")
@@ -236,6 +262,9 @@ def run_required_flow() -> SimulatedPlayer:
     assert link_lines
     assert "last=k" in link_lines[-1]
     assert any(line.startswith("input ecw=") for line in player.transcript)
+    trace_lines = [line for line in player.transcript if line.startswith("trace count=")]
+    assert trace_lines
+    assert "bt:trace" in trace_lines[-1] and "bt:tone" in trace_lines[-1]
     assert any(line.startswith("pin bt tx=P4.4") for line in player.transcript)
     return player
 
