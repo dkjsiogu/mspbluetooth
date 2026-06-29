@@ -138,6 +138,7 @@ public class MainActivity extends Activity {
         root.addView(diagRow);
 
         LinearLayout queryRow = row();
+        queryRow.addView(sendButton("Order", "o"), new LinearLayout.LayoutParams(0, dp(44), 1));
         queryRow.addView(sendButton("Track List", "l"), new LinearLayout.LayoutParams(0, dp(44), 1));
         queryRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(queryRow);

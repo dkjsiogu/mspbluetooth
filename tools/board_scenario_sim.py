@@ -16,6 +16,7 @@ class BoardState:
     mode: str = "playing"
     track: int = 1
     volume: int = 18
+    order: str = "repeat_all"
     led_toggles: int = 0
     status_reports: int = 0
     tone_tests: int = 0
@@ -33,6 +34,13 @@ def apply_event(state: BoardState, event: str) -> None:
         state.mode = "paused"
     elif event == "bt:r":
         state.mode = "playing"
+    elif event == "bt:o":
+        if state.order == "sequence":
+            state.order = "repeat_all"
+        elif state.order == "repeat_all":
+            state.order = "repeat_one"
+        else:
+            state.order = "sequence"
     elif event in ("bt:n", "s4"):
         state.track = 1 if state.track >= 9 else state.track + 1
         state.mode = "playing"
@@ -60,6 +68,7 @@ def main() -> int:
         "bt:-",
         "bt:t",
         "bt:r",
+        "bt:o",
         "enc:press",
         "tick:500ms",
         "tick:5s",
@@ -71,6 +80,7 @@ def main() -> int:
     assert state.mode == "paused", state
     assert state.track == 2, state
     assert state.volume == 19, state
+    assert state.order == "repeat_one", state
     assert state.led_toggles == 1, state
     assert state.status_reports == 1, state
     assert state.tone_tests == 1, state

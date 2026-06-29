@@ -43,7 +43,7 @@ foreach ($needle in $required) {
 }
 
 $source = Get-Content -Raw $mainActivity
-$requiredCommands = @('"p"', '"s"', '"r"', '"n"', '"b"', '"+"', '"-"', '"m"', '"t"', '"i"', '"e"', '"l"', '"d"', '"?"')
+$requiredCommands = @('"p"', '"s"', '"r"', '"n"', '"b"', '"+"', '"-"', '"m"', '"o"', '"t"', '"i"', '"e"', '"l"', '"d"', '"?"')
 foreach ($command in $requiredCommands) {
     if ($source.IndexOf("sendButton", [StringComparison]::Ordinal) -ge 0 -and
         $source.IndexOf($command, [StringComparison]::Ordinal) -lt 0) {

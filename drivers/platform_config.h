@@ -14,7 +14,7 @@
 #define PLAYER_FIRMWARE_NAME            "MSP430F5529-BT-WAV"
 
 /* PLAYER_FIRMWARE_VERSION: manually updated firmware version string. */
-#define PLAYER_FIRMWARE_VERSION         "1.1.0"
+#define PLAYER_FIRMWARE_VERSION         "1.2.0"
 
 /* PLAYER_HARDWARE_PROFILE: wiring profile name reported for lab debugging. */
 #define PLAYER_HARDWARE_PROFILE         "TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1"

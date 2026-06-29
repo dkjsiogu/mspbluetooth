@@ -17,6 +17,7 @@ typedef struct {
     uint8_t track_index;
     uint8_t volume;
     uint8_t saved_volume;
+    PlayerOrder order;
     uint16_t bytes_per_frame;
     uint32_t data_remaining;
     uint32_t led_stamp_ms;
@@ -45,8 +46,20 @@ static void player_report_status(void);
 /* player_report_display_frame: sends the display model as three ASCII lines. */
 static void player_report_display_frame(void);
 
+/* player_report_order: sends the current automatic track-advance mode. */
+static void player_report_order(void);
+
 /* player_open_track: opens TRACKxx.WAV and optionally starts playback. */
 static uint8_t player_open_track(uint8_t track_index, uint8_t start_playing);
+
+/* player_next_track: advances to the next playable numbered WAV file. */
+static void player_next_track(void);
+
+/* player_stop: stops playback and rewinds the selected WAV file. */
+static void player_stop(void);
+
+/* player_replay: restarts the selected WAV file from its data section. */
+static void player_replay(void);
 
 /* read_sample16: decodes one little-endian signed PCM sample from data. */
 static int16_t read_sample16(const uint8_t *data)
@@ -88,6 +101,36 @@ static const char *mode_text(PlayerMode mode)
     }
 }
 
+/* order_text: maps PlayerOrder to stable ASCII text for Bluetooth status. */
+static const char *order_text(PlayerOrder order)
+{
+    switch (order) {
+    case PLAYER_ORDER_SEQUENCE:
+        return "sequence";
+    case PLAYER_ORDER_REPEAT_ALL:
+        return "repeat_all";
+    case PLAYER_ORDER_REPEAT_ONE:
+        return "repeat_one";
+    default:
+        return "unknown";
+    }
+}
+
+/* order_short_text: maps PlayerOrder to compact text for three-line displays. */
+static const char *order_short_text(PlayerOrder order)
+{
+    switch (order) {
+    case PLAYER_ORDER_SEQUENCE:
+        return "SEQ";
+    case PLAYER_ORDER_REPEAT_ALL:
+        return "ALL";
+    case PLAYER_ORDER_REPEAT_ONE:
+        return "ONE";
+    default:
+        return "UNK";
+    }
+}
+
 static void player_report_status(void)
 {
     bluetooth_uart_write_str("status=");
@@ -96,6 +139,8 @@ static void player_report_status(void)
     bluetooth_uart_write_uint(g_player.track_index);
     bluetooth_uart_write_str(" volume=");
     bluetooth_uart_write_uint(g_player.volume);
+    bluetooth_uart_write_str(" order=");
+    bluetooth_uart_write_str(order_text(g_player.order));
     if (g_player.file_open != 0u) {
         bluetooth_uart_write_str(" rate=");
         bluetooth_uart_write_uint(g_player.wav.sample_rate);
@@ -111,6 +156,7 @@ static void player_report_display_frame(void)
     DisplayFrame frame;
 
     input.mode_text = mode_text(g_player.mode);
+    input.order_text = order_short_text(g_player.order);
     input.track_index = g_player.track_index;
     input.volume = g_player.volume;
     input.sd_ready = g_player.sd_ready;
@@ -125,6 +171,13 @@ static void player_report_display_frame(void)
     bluetooth_uart_write_line(frame.line2);
     bluetooth_uart_write_str("display 3:");
     bluetooth_uart_write_line(frame.line3);
+}
+
+static void player_report_order(void)
+{
+    bluetooth_uart_write_str("order=");
+    bluetooth_uart_write_str(order_text(g_player.order));
+    bluetooth_uart_write_str("\r\n");
 }
 
 /* player_report_info: sends firmware version and hardware wiring profile. */
@@ -281,6 +334,42 @@ static uint8_t player_open_near_track(uint8_t start_index, int8_t direction)
     return 0u;
 }
 
+/* player_open_next_track_once: scans upward without wrapping at TRACK09.WAV. */
+static uint8_t player_open_next_track_once(void)
+{
+    uint8_t index;
+
+    index = (uint8_t)(g_player.track_index + 1u);
+    while (index <= PLAYER_MAX_TRACKS) {
+        if (player_open_track(index, 1u) != 0u) {
+            return 1u;
+        }
+        index++;
+    }
+
+    return 0u;
+}
+
+/* player_finish_track: handles end-of-track according to the selected order. */
+static void player_finish_track(void)
+{
+    if (g_player.order == PLAYER_ORDER_REPEAT_ONE) {
+        player_replay();
+        return;
+    }
+
+    if (g_player.order == PLAYER_ORDER_SEQUENCE) {
+        if (player_open_next_track_once() != 0u) {
+            return;
+        }
+        player_stop();
+        bluetooth_uart_write_line("end");
+        return;
+    }
+
+    player_next_track();
+}
+
 /* player_next_track: advances to the next playable numbered WAV file. */
 static void player_next_track(void)
 {
@@ -415,6 +504,20 @@ static void player_toggle_mute(void)
     }
 }
 
+/* player_cycle_order: rotates sequence -> repeat_all -> repeat_one -> sequence. */
+static void player_cycle_order(void)
+{
+    if (g_player.order == PLAYER_ORDER_SEQUENCE) {
+        g_player.order = PLAYER_ORDER_REPEAT_ALL;
+    } else if (g_player.order == PLAYER_ORDER_REPEAT_ALL) {
+        g_player.order = PLAYER_ORDER_REPEAT_ONE;
+    } else {
+        g_player.order = PLAYER_ORDER_SEQUENCE;
+    }
+
+    player_report_order();
+}
+
 /* player_run_test_tone: emits a local DAC tone without reading the TF card. */
 static void player_run_test_tone(void)
 {
@@ -475,6 +578,9 @@ static void player_handle_command(uint8_t command)
     case 'm':
         player_toggle_mute();
         break;
+    case 'o':
+        player_cycle_order();
+        break;
     case 't':
         player_run_test_tone();
         break;
@@ -503,7 +609,7 @@ static void player_handle_command(uint8_t command)
 
 static void player_write_prompt(void)
 {
-    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, t tone, i info, e selftest, l list, d display, 1-9 track, ? status");
+    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, 1-9 track, ? status");
 }
 
 void audio_player_init(void)
@@ -516,6 +622,7 @@ void audio_player_init(void)
     g_player.track_index = 1u;
     g_player.volume = PLAYER_DEFAULT_VOLUME;
     g_player.saved_volume = PLAYER_DEFAULT_VOLUME;
+    g_player.order = PLAYER_ORDER_REPEAT_ALL;
     g_player.bytes_per_frame = 4u;
     g_player.data_remaining = 0u;
     g_player.led_stamp_ms = board_millis();
@@ -601,7 +708,7 @@ void audio_player_service(void)
     }
 
     if ((g_player.file_open == 0u) || (g_player.data_remaining == 0u)) {
-        player_next_track();
+        player_finish_track();
         return;
     }
 
@@ -611,7 +718,7 @@ void audio_player_service(void)
     }
     request_bytes = (UINT)(request_bytes - (request_bytes % g_player.bytes_per_frame));
     if (request_bytes == 0u) {
-        player_next_track();
+        player_finish_track();
         return;
     }
 
@@ -642,7 +749,7 @@ void audio_player_service(void)
     }
 
     if (g_player.data_remaining == 0u) {
-        player_next_track();
+        player_finish_track();
     }
 }
 

@@ -72,6 +72,7 @@ b/<  上一曲
 +    音量加
 -    音量减
 m    静音/恢复
+o    切换播放顺序：顺序停止/全部循环/单曲循环
 t    DAC 测试音
 i    固件与硬件映射信息
 e    自检摘要
@@ -85,11 +86,12 @@ h    输出命令帮助
 自动状态上报格式示例：
 
 ```text
-status=playing track=1 volume=18 rate=16000Hz channels=2
-info name=MSP430F5529-BT-WAV version=1.1.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
+status=playing track=1 volume=18 order=repeat_all rate=16000Hz channels=2
+order=repeat_one
+info name=MSP430F5529-BT-WAV version=1.2.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
 selftest bt=ok sd=ok file=open dac=test-with-t
 tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--
-display 1:playing T1 V18
+display 1:playing T1 V18 ALL
 display 2:SD:OK WAV:OPEN
 display 3:16000Hz 2ch
 ```

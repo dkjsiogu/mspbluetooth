@@ -39,6 +39,7 @@ REQUIRED_COMMANDS = {
     "+": "volume up",
     "-": "volume down",
     "m": "mute",
+    "o": "play order",
     "t": "tone test",
     "i": "info",
     "e": "selftest",

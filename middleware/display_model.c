@@ -65,6 +65,8 @@ void display_model_build(const DisplayModelInput *input, DisplayFrame *frame)
     append_uint(frame->line1, input->track_index);
     append_text(frame->line1, " V");
     append_uint(frame->line1, input->volume);
+    append_text(frame->line1, " ");
+    append_text(frame->line1, input->order_text);
 
     append_text(frame->line2, "SD:");
     append_text(frame->line2, input->sd_ready != 0u ? "OK" : "NO");
@@ -80,4 +82,3 @@ void display_model_build(const DisplayModelInput *input, DisplayFrame *frame)
         append_text(frame->line3, "Use TF TRACK01.WAV");
     }
 }
-

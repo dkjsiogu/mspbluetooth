@@ -21,6 +21,16 @@ typedef enum {
     PLAYER_MODE_ERROR
 } PlayerMode;
 
+/* PlayerOrder: automatic behavior when the current WAV reaches its end. */
+typedef enum {
+    /* PLAYER_ORDER_SEQUENCE: play higher-numbered tracks once, then stop. */
+    PLAYER_ORDER_SEQUENCE = 0,
+    /* PLAYER_ORDER_REPEAT_ALL: keep advancing through TRACK01..TRACK09 in a loop. */
+    PLAYER_ORDER_REPEAT_ALL,
+    /* PLAYER_ORDER_REPEAT_ONE: restart the same selected track at end-of-file. */
+    PLAYER_ORDER_REPEAT_ONE
+} PlayerOrder;
+
 /* audio_player_init: mounts TF card, opens the first playable track, and reports boot status. */
 void audio_player_init(void);
 

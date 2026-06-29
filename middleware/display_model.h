@@ -19,6 +19,8 @@
 typedef struct {
     /* mode_text: stable ASCII playback mode such as playing, paused, or error. */
     const char *mode_text;
+    /* order_text: compact playback order text such as SEQ, ALL, or ONE. */
+    const char *order_text;
     /* track_index: current numbered TRACKxx.WAV selection. */
     uint8_t track_index;
     /* volume: current software volume step. */
@@ -47,4 +49,3 @@ typedef struct {
 void display_model_build(const DisplayModelInput *input, DisplayFrame *frame);
 
 #endif
-
