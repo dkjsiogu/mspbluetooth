@@ -44,6 +44,7 @@ REQUIRED_FILES = [
     "tools/generate_diagrams.py",
     "tools/generate_course_report.py",
     "tools/wav_asset_check.py",
+    "tools/readability_audit.py",
     "Debug/mspbluetooth.out",
 ]
 

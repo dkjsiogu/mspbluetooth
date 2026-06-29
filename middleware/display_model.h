@@ -47,7 +47,11 @@ typedef struct {
     char line3[DISPLAY_MODEL_LINE_BYTES];
 } DisplayFrame;
 
-/* display_model_build: formats input into frame using fixed-size safe buffers. */
+/*
+ * display_model_build: formats player state into fixed-size display lines.
+ * input: source player state snapshot to render.
+ * frame: output three-line display frame.
+ */
 void display_model_build(const DisplayModelInput *input, DisplayFrame *frame);
 
 #endif

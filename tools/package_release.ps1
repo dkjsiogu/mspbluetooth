@@ -54,6 +54,7 @@ try {
     } else {
         Invoke-Checked { & "D:\ccs\ccs\utils\bin\gmake.exe" -C Debug all }
         Invoke-Checked { powershell -ExecutionPolicy Bypass -File tools\build_android_apk.ps1 }
+        Invoke-Checked { python tools\readability_audit.py }
         Invoke-Checked { python tools\generate_diagrams.py }
         Invoke-Checked { python tools\generate_course_report.py }
         Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
@@ -84,6 +85,7 @@ try {
     Copy-RequiredFile "docs\acceptance_matrix.md" (Join-Path $packageRoot "docs\acceptance_matrix.md")
     Copy-RequiredFile "docs\report_outline.md" (Join-Path $packageRoot "docs\report_outline.md")
     Copy-RequiredFile "docs\course_report_draft.md" (Join-Path $packageRoot "docs\course_report_draft.md")
+    Copy-RequiredFile "docs\readability_report.md" (Join-Path $packageRoot "docs\readability_report.md")
     Copy-RequiredFile "docs\effect_acceptance_report.md" (Join-Path $packageRoot "docs\effect_acceptance_report.md")
     Copy-RequiredFile "docs\bluetooth_diagnostic_report.md" (Join-Path $packageRoot "docs\bluetooth_diagnostic_report.md")
     Copy-RequiredFile "docs\serial_acceptance_report.md" (Join-Path $packageRoot "docs\serial_acceptance_report.md")
@@ -133,6 +135,7 @@ try {
     }
     Invoke-Checked { python tools\end_to_end_demo_sim.py --report (Join-Path $packageRoot "docs\end_to_end_demo_report.md") }
     Invoke-Checked { python tools\generate_effect_report.py --input (Join-Path $packageRoot "sdcard") --output (Join-Path $packageRoot "docs\effect_acceptance_report.md") }
+    Invoke-Checked { python tools\readability_audit.py --report (Join-Path $packageRoot "docs\readability_report.md") }
 
     $manifestPath = Join-Path $packageRoot "MANIFEST.txt"
     $commitId = (git rev-parse --short HEAD).Trim()
@@ -151,6 +154,7 @@ try {
         "docs\acceptance_matrix.md",
         "docs\report_outline.md",
         "docs\course_report_draft.md",
+        "docs\readability_report.md",
         "docs\effect_acceptance_report.md",
         "docs\bluetooth_diagnostic_report.md",
         "docs\serial_acceptance_report.md",

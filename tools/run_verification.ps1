@@ -17,6 +17,7 @@ try {
     Invoke-Checked { & "D:\ccs\ccs\utils\bin\gmake.exe" -C Debug clean }
     Invoke-Checked { & "D:\ccs\ccs\utils\bin\gmake.exe" -C Debug all }
     Invoke-Checked { python tools\firmware_static_check.py }
+    Invoke-Checked { python tools\readability_audit.py }
     Invoke-Checked { python tools\bluetooth_protocol_sim.py }
     Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
     Invoke-Checked { python tools\serial_acceptance_check.py }

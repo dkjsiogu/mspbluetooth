@@ -15,10 +15,18 @@ unsigned char SDCard_init(void);
 /* SDCard_fastMode: switches to high-speed mode when supported by the adapter. */
 void SDCard_fastMode(void);
 
-/* SDCard_readFrame: reads size bytes into buffer; returns 1 on success. */
+/*
+ * SDCard_readFrame: reads bytes from the TF-card SPI bus.
+ * buffer: destination buffer for received bytes.
+ * size: number of bytes to read.
+ */
 uint8_t SDCard_readFrame(uint8_t *buffer, uint16_t size);
 
-/* SDCard_sendFrame: writes size bytes from buffer; returns 1 on success. */
+/*
+ * SDCard_sendFrame: writes bytes to the TF-card SPI bus.
+ * buffer: source buffer containing bytes to transmit.
+ * size: number of bytes to write.
+ */
 uint8_t SDCard_sendFrame(const uint8_t *buffer, uint16_t size);
 
 /* SDCard_setCSHigh: de-selects the TF card by driving chip select high. */

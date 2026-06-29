@@ -273,3 +273,15 @@ python tools\hardware_evidence_check.py --serial-log path\to\phone_log.txt --i2s
 Without inputs it runs against generated samples and clearly marks the report as
 software/sample evidence only. Real hardware completion still requires real
 input files plus observed speaker/headphone and button behavior.
+
+## Readability Audit
+
+The course-project code style is checked by an automated audit:
+
+```powershell
+python tools\readability_audit.py
+```
+
+It verifies project-owned headers, declaration parameter comments, documented
+`#define` values, and comments on `static` source items. The generated report is
+written to `docs\readability_report.md` and is included in the delivery package.

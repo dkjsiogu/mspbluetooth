@@ -31,8 +31,8 @@ void epaper_panel_init(void);
 uint8_t epaper_panel_enabled(void);
 
 /*
- * epaper_panel_show_frame: refreshes the optional panel with frame; frame holds
- * the three display lines already mirrored over Bluetooth and Android.
+ * epaper_panel_show_frame: refreshes the optional panel with one display frame.
+ * frame: three-line display model already mirrored over Bluetooth and Android.
  */
 void epaper_panel_show_frame(const DisplayFrame *frame);
 

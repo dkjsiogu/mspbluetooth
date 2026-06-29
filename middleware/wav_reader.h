@@ -41,10 +41,17 @@ typedef enum {
     WAV_RESULT_UNSUPPORTED
 } WavResult;
 
-/* wav_reader_open: parses file from its current start and fills *info on success. */
+/*
+ * wav_reader_open: parses a RIFF/WAV file and fills metadata on success.
+ * file: FatFs file object positioned at the start of the WAV file.
+ * info: output metadata filled when WAV_RESULT_OK is returned.
+ */
 WavResult wav_reader_open(FIL *file, WavInfo *info);
 
-/* wav_reader_result_text: returns a short constant diagnostic string for result. */
+/*
+ * wav_reader_result_text: returns a short constant diagnostic string.
+ * result: parser result code to translate for Bluetooth/status output.
+ */
 const char *wav_reader_result_text(WavResult result);
 
 #endif
