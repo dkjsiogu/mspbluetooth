@@ -60,6 +60,7 @@ try {
         Invoke-Checked { python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md }
         Invoke-Checked { python tools\audio_stream_sim.py }
         Invoke-Checked { python tools\i2s_frame_sim.py }
+        Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
         Invoke-Checked { python tools\generate_effect_report.py }
     }
 
@@ -77,6 +78,7 @@ try {
     Copy-RequiredFile "docs\report_outline.md" (Join-Path $packageRoot "docs\report_outline.md")
     Copy-RequiredFile "docs\course_report_draft.md" (Join-Path $packageRoot "docs\course_report_draft.md")
     Copy-RequiredFile "docs\effect_acceptance_report.md" (Join-Path $packageRoot "docs\effect_acceptance_report.md")
+    Copy-RequiredFile "docs\bluetooth_diagnostic_report.md" (Join-Path $packageRoot "docs\bluetooth_diagnostic_report.md")
     Copy-RequiredFile "docs\audio_stream_report.md" (Join-Path $packageRoot "docs\audio_stream_report.md")
     Copy-RequiredFile "docs\i2s_frame_report.md" (Join-Path $packageRoot "docs\i2s_frame_report.md")
     Copy-RequiredFile "docs\epaper_gallery_report.md" (Join-Path $packageRoot "docs\epaper_gallery_report.md")
@@ -97,6 +99,7 @@ try {
     Invoke-Checked { python tools\wav_asset_check.py --input (Join-Path $packageRoot "sdcard") --report (Join-Path $packageRoot "docs\wav_asset_report.md") }
     Invoke-Checked { python tools\audio_stream_sim.py --input (Join-Path $packageRoot "sdcard") --report (Join-Path $packageRoot "docs\audio_stream_report.md") }
     Invoke-Checked { python tools\i2s_frame_sim.py --report (Join-Path $packageRoot "docs\i2s_frame_report.md") }
+    Invoke-Checked { python tools\bluetooth_diagnostic_sim.py --report (Join-Path $packageRoot "docs\bluetooth_diagnostic_report.md") }
     Invoke-Checked { python tools\generate_effect_report.py --input (Join-Path $packageRoot "sdcard") --output (Join-Path $packageRoot "docs\effect_acceptance_report.md") }
 
     $manifestPath = Join-Path $packageRoot "MANIFEST.txt"
@@ -117,6 +120,7 @@ try {
         "docs\report_outline.md",
         "docs\course_report_draft.md",
         "docs\effect_acceptance_report.md",
+        "docs\bluetooth_diagnostic_report.md",
         "docs\audio_stream_report.md",
         "docs\i2s_frame_report.md",
         "docs\epaper_gallery_report.md",

@@ -31,6 +31,7 @@ REQUIRED_FILES = [
     "tools/audio_stream_sim.py",
     "tools/encoder_quadrature_sim.py",
     "tools/i2s_frame_sim.py",
+    "tools/bluetooth_diagnostic_sim.py",
     "tools/generate_effect_report.py",
     "tools/generate_diagrams.py",
     "tools/generate_course_report.py",

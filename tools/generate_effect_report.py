@@ -13,6 +13,7 @@ from pathlib import Path
 
 from android_ui_parser_sim import run_fragmented_flow
 from audio_stream_sim import run_audio_stream_simulation
+from bluetooth_diagnostic_sim import run_diagnostic_cases
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
 from board_scenario_sim import BoardState, apply_event
 from encoder_quadrature_sim import run_button_sequence, run_sequence
@@ -118,6 +119,7 @@ def row(columns: list[object]) -> str:
 def render_report(input_dir: Path) -> str:
     player = run_required_flow()
     run_order_flow()
+    diagnostic_results = run_diagnostic_cases()
     scenario, board_state = run_board_scenario()
     button_cases = run_button_cases()
     encoder_cases = run_encoder_cases()
@@ -142,17 +144,31 @@ def render_report(input_dir: Path) -> str:
         row(["Firmware command transcript", " -> ".join(player.transcript)]),
         row(["Final status line", status_line]),
         "",
-        "## Whole-Board Control Scenario",
+        "## Bluetooth UART Diagnostics",
         "",
-        row(["Input sequence", "Final state"]),
-        row(["---", "---"]),
-        row([", ".join(scenario), board_state]),
-        "",
-        "## Local Button Timing",
-        "",
-        row(["Case", "Expected event", "Actual event"]),
+        row(["Case", "Final state", "Transcript tail"]),
         row(["---", "---", "---"]),
     ]
+    for result in diagnostic_results:
+        final_state = f"mode={result.mode}, track={result.track}, volume={result.volume}, order={result.order}"
+        transcript_tail = " -> ".join(result.transcript[-4:])
+        lines.append(row([result.name, final_state, transcript_tail]))
+
+    lines.extend(
+        [
+            "",
+            "## Whole-Board Control Scenario",
+            "",
+            row(["Input sequence", "Final state"]),
+            row(["---", "---"]),
+            row([", ".join(scenario), board_state]),
+            "",
+            "## Local Button Timing",
+            "",
+            row(["Case", "Expected event", "Actual event"]),
+            row(["---", "---", "---"]),
+        ]
+    )
     for name, expected, actual in button_cases:
         lines.append(row([name, ", ".join(expected), ", ".join(actual)]))
 

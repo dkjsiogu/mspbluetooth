@@ -10,6 +10,15 @@ This report is generated from host-side simulations and source checks. It proves
 | Firmware command transcript | playing -> volume=19 -> volume=20 -> next track=2 -> previous track=1 -> volume=19 -> mute=on -> mute=off -> order=repeat_one -> stop -> open TRACK03.WAV -> replay -> tone start -> tone done -> info name=MSP430F5529-BT-WAV version=1.4.0 -> selftest bt=ok sd=ok file=open dac=test-with-t -> tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=-- -> display 1:playing T3 V19 ONE -> display 2:SD:OK WAV:OPEN -> display 3:16000Hz 2ch P0% -> status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0 |
 | Final status line | status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0 |
 
+## Bluetooth UART Diagnostics
+
+| Case | Final state | Transcript tail |
+| --- | --- | --- |
+| bring-up transcript | mode=paused, track=1, volume=18, order=repeat_all | display 1:paused T1 V18 ALL -> display 2:SD:OK WAV:OPEN -> display 3:16000Hz 2ch P0% -> status=paused track=1 volume=18 order=repeat_all rate=16000Hz channels=2 progress=0 |
+| fragmented android stream | mode=playing, track=3, volume=19, order=repeat_one | mute=off -> order=repeat_one -> open TRACK03.WAV -> status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0 |
+| uppercase aliases | mode=playing, track=1, volume=0, order=repeat_one | display 2:SD:OK WAV:OPEN -> display 3:16000Hz 2ch P0% -> order=repeat_one -> status=playing track=1 volume=0 order=repeat_one rate=16000Hz channels=2 progress=0 |
+| noise and line endings ignored | mode=paused, track=1, volume=18, order=repeat_all | status=paused track=1 volume=18 order=repeat_all rate=16000Hz channels=2 progress=0 |
+
 ## Whole-Board Control Scenario
 
 | Input sequence | Final state |
