@@ -17,6 +17,7 @@ from audio_stream_sim import run_audio_stream_simulation
 from bluetooth_diagnostic_sim import run_diagnostic_cases
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
 from board_scenario_sim import BoardState, apply_event
+from end_to_end_demo_sim import run_demo
 from encoder_quadrature_sim import run_button_sequence, run_sequence
 from local_button_sim import LONG_PRESS_TICKS, run_samples
 from wav_asset_check import DEFAULT_INPUT, WavAsset, find_tracks, parse_wav
@@ -121,6 +122,7 @@ def render_report(input_dir: Path) -> str:
     player = run_required_flow()
     run_order_flow()
     diagnostic_results = run_diagnostic_cases()
+    demo_snapshots = run_demo()
     scenario, board_state = run_board_scenario()
     button_cases = run_button_cases()
     encoder_cases = run_encoder_cases()
@@ -146,6 +148,7 @@ def render_report(input_dir: Path) -> str:
         row(["APK source command coverage", f"{sum(len(labels) for labels in android_buttons.values())} buttons verified in docs/android_command_coverage_report.md"]),
         row(["Firmware command transcript", " -> ".join(player.transcript)]),
         row(["Final status line", status_line]),
+        row(["End-to-end demo", f"{len(demo_snapshots)} APK button steps verified in docs/end_to_end_demo_report.md"]),
         "",
         "## Bluetooth UART Diagnostics",
         "",

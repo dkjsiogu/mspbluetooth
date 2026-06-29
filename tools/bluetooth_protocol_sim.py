@@ -25,6 +25,19 @@ class SimulatedPlayer:
     progress: int = 0
     transcript: list[str] = field(default_factory=list)
 
+    def open_track(self, track: int) -> None:
+        self.track = track
+        self.mode = "playing"
+        self.transcript.append(f"open TRACK0{self.track}.WAV")
+
+    def next_available_track(self) -> int:
+        higher_tracks = [track for track in AVAILABLE_TRACKS if track > self.track]
+        return (higher_tracks or list(AVAILABLE_TRACKS))[0]
+
+    def previous_available_track(self) -> int:
+        lower_tracks = [track for track in AVAILABLE_TRACKS if track < self.track]
+        return (lower_tracks or list(AVAILABLE_TRACKS))[-1]
+
     def finish_track(self) -> None:
         if self.order == "repeat_one":
             self.mode = "playing"
@@ -42,10 +55,7 @@ class SimulatedPlayer:
                 self.transcript.append("end")
             return
 
-        wrapped_tracks = higher_tracks or list(AVAILABLE_TRACKS)
-        self.track = wrapped_tracks[0]
-        self.mode = "playing"
-        self.transcript.append(f"open TRACK0{self.track}.WAV")
+        self.open_track((higher_tracks or list(AVAILABLE_TRACKS))[0])
 
     def send(self, command: str) -> None:
         command = command.lower()
@@ -63,13 +73,9 @@ class SimulatedPlayer:
             self.mode = "playing"
             self.transcript.append("replay")
         elif command in ("n", ">"):
-            self.track = 1 if self.track >= MAX_TRACKS else self.track + 1
-            self.mode = "playing"
-            self.transcript.append(f"next track={self.track}")
+            self.open_track(self.next_available_track())
         elif command in ("b", "<"):
-            self.track = MAX_TRACKS if self.track <= 1 else self.track - 1
-            self.mode = "playing"
-            self.transcript.append(f"previous track={self.track}")
+            self.open_track(self.previous_available_track())
         elif command in ("+", "="):
             self.volume = min(MAX_VOLUME, self.volume + 1)
             self.transcript.append(f"volume={self.volume}")

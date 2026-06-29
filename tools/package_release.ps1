@@ -62,6 +62,7 @@ try {
         Invoke-Checked { python tools\i2s_frame_sim.py }
         Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
         Invoke-Checked { python tools\android_command_coverage.py }
+        Invoke-Checked { python tools\end_to_end_demo_sim.py }
         Invoke-Checked { python tools\generate_effect_report.py }
     }
 
@@ -81,6 +82,7 @@ try {
     Copy-RequiredFile "docs\effect_acceptance_report.md" (Join-Path $packageRoot "docs\effect_acceptance_report.md")
     Copy-RequiredFile "docs\bluetooth_diagnostic_report.md" (Join-Path $packageRoot "docs\bluetooth_diagnostic_report.md")
     Copy-RequiredFile "docs\android_command_coverage_report.md" (Join-Path $packageRoot "docs\android_command_coverage_report.md")
+    Copy-RequiredFile "docs\end_to_end_demo_report.md" (Join-Path $packageRoot "docs\end_to_end_demo_report.md")
     Copy-RequiredFile "docs\audio_stream_report.md" (Join-Path $packageRoot "docs\audio_stream_report.md")
     Copy-RequiredFile "docs\i2s_frame_report.md" (Join-Path $packageRoot "docs\i2s_frame_report.md")
     Copy-RequiredFile "docs\epaper_gallery_report.md" (Join-Path $packageRoot "docs\epaper_gallery_report.md")
@@ -103,6 +105,7 @@ try {
     Invoke-Checked { python tools\i2s_frame_sim.py --report (Join-Path $packageRoot "docs\i2s_frame_report.md") }
     Invoke-Checked { python tools\bluetooth_diagnostic_sim.py --report (Join-Path $packageRoot "docs\bluetooth_diagnostic_report.md") }
     Invoke-Checked { python tools\android_command_coverage.py --report (Join-Path $packageRoot "docs\android_command_coverage_report.md") }
+    Invoke-Checked { python tools\end_to_end_demo_sim.py --report (Join-Path $packageRoot "docs\end_to_end_demo_report.md") }
     Invoke-Checked { python tools\generate_effect_report.py --input (Join-Path $packageRoot "sdcard") --output (Join-Path $packageRoot "docs\effect_acceptance_report.md") }
 
     $manifestPath = Join-Path $packageRoot "MANIFEST.txt"
@@ -125,6 +128,7 @@ try {
         "docs\effect_acceptance_report.md",
         "docs\bluetooth_diagnostic_report.md",
         "docs\android_command_coverage_report.md",
+        "docs\end_to_end_demo_report.md",
         "docs\audio_stream_report.md",
         "docs\i2s_frame_report.md",
         "docs\epaper_gallery_report.md",

@@ -33,6 +33,7 @@ REQUIRED_FILES = [
     "tools/i2s_frame_sim.py",
     "tools/bluetooth_diagnostic_sim.py",
     "tools/android_command_coverage.py",
+    "tools/end_to_end_demo_sim.py",
     "tools/generate_effect_report.py",
     "tools/generate_diagrams.py",
     "tools/generate_course_report.py",

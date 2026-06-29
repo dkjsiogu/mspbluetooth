@@ -7,6 +7,7 @@
 | 手机蓝牙上一曲/下一曲 | APK `Prev`/`Next` 发送 `b`/`n` | `tools/bluetooth_protocol_sim.py` |
 | 手机蓝牙曲目选择 | APK `Track 1-9` 发送 `1-9` | APK 源码检查、协议仿真 |
 | Android APK 命令覆盖 | APK 对固件全部蓝牙命令提供按钮，并声明 HC-05 SPP 所需蓝牙权限 | `tools/android_command_coverage.py`、`docs/android_command_coverage_report.md` |
+| 端到端演示效果 | APK 按钮发送 HC-05 命令，固件文本回包驱动手机状态面板、显示帧和曲目列表变化 | `tools/end_to_end_demo_sim.py`、`docs/end_to_end_demo_report.md` |
 | 手机蓝牙曲目扫描 | APK `Track List` 发送 `l`，并把 `tracks ...` 回传解析到曲目状态面板 | `tools/bluetooth_protocol_sim.py`、`tools/android_ui_parser_sim.py` |
 | 手机蓝牙播放顺序 | APK `Order` 发送 `o`，固件循环 sequence/repeat_all/repeat_one | `tools/bluetooth_protocol_sim.py`、`tools/board_scenario_sim.py` |
 | 蓝牙诊断与异常输入 | `i/e/l/d/?` 形成现场自检转录，分片输入、大小写命令、换行和无效字符不破坏状态 | `tools/bluetooth_diagnostic_sim.py`、`docs/bluetooth_diagnostic_report.md` |

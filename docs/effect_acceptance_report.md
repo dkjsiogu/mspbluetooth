@@ -8,8 +8,9 @@ This report is generated from host-side simulations and source checks. It proves
 | --- | --- |
 | Android command buttons | p, s, r, n, b, +, -, m, o, t, i, e, l, d, ? |
 | APK source command coverage | 24 buttons verified in docs/android_command_coverage_report.md |
-| Firmware command transcript | playing -> volume=19 -> volume=20 -> next track=2 -> previous track=1 -> volume=19 -> mute=on -> mute=off -> order=repeat_one -> stop -> open TRACK03.WAV -> replay -> tone start -> tone done -> info name=MSP430F5529-BT-WAV version=1.4.0 -> selftest bt=ok sd=ok file=open dac=test-with-t -> tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=-- -> display 1:playing T3 V19 ONE -> display 2:SD:OK WAV:OPEN -> display 3:16000Hz 2ch P0% -> status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0 |
+| Firmware command transcript | playing -> volume=19 -> volume=20 -> open TRACK03.WAV -> open TRACK01.WAV -> volume=19 -> mute=on -> mute=off -> order=repeat_one -> stop -> open TRACK03.WAV -> replay -> tone start -> tone done -> info name=MSP430F5529-BT-WAV version=1.4.0 -> selftest bt=ok sd=ok file=open dac=test-with-t -> tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=-- -> display 1:playing T3 V19 ONE -> display 2:SD:OK WAV:OPEN -> display 3:16000Hz 2ch P0% -> status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0 |
 | Final status line | status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0 |
+| End-to-end demo | 16 APK button steps verified in docs/end_to_end_demo_report.md |
 
 ## Bluetooth UART Diagnostics
 
