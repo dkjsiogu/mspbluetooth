@@ -298,7 +298,7 @@ public class MainActivity extends Activity {
                 connectButton.setEnabled(true);
                 setState("Connected " + device.getName());
                 appendLog("connected");
-                sendCommand("?");
+                syncInitialPanels();
             });
         } catch (IOException ex) {
             closeConnection();
@@ -330,6 +330,12 @@ public class MainActivity extends Activity {
             }
         });
         rxThread.start();
+    }
+
+    private void syncInitialPanels() {
+        sendCommand("?");
+        sendCommand("l");
+        sendCommand("d");
     }
 
     private void handleIncomingText(String text) {

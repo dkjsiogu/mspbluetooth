@@ -40,7 +40,8 @@ class DemoSnapshot:
 
 DEMO_STEPS = [
     DemoStep("Connect auto status", "?", "APK queries current state immediately after RFCOMM connect"),
-    DemoStep("Track List", "l", "phone shows which TRACKxx.WAV files are usable"),
+    DemoStep("Connect auto track list", "l", "APK syncs TRACKxx.WAV availability immediately after connect"),
+    DemoStep("Connect auto display", "d", "APK syncs the three-line display frame immediately after connect"),
     DemoStep("Play/Pause", "p", "firmware starts playback and immediately reports status"),
     DemoStep("Vol +", "+", "firmware raises software volume and immediately reports status"),
     DemoStep("Next", "n", "firmware skips to the next playable track and immediately reports status"),

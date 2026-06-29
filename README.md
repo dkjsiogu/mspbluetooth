@@ -127,7 +127,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟 HC-05 字节流诊断链路，覆盖分片输入、大小写命令、换行噪声和现场自检转录
 - 模拟 Android 端对碎片化蓝牙回传的状态面板和显示帧解析
-- 检查 Android APK 命令按钮覆盖、HC-05 SPP 权限和结构化回传解析覆盖
+- 检查 Android APK 命令按钮覆盖、HC-05 SPP 权限、连接后自动同步状态/曲目/显示帧和结构化回传解析覆盖
 - 模拟端到端演示流程：APK 按钮、HC-05 命令、固件回包、手机状态面板和显示帧变化
 - 模拟蓝牙、EC11、本地按键混合控制场景
 - 模拟 EC11 A/B 正交相位解码、反向抖动抵消和按键去抖

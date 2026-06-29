@@ -124,6 +124,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`status=...`", "`updateDashboard` extracts mode, track, volume, order, progress"]),
             row(["`display 1/2/3:...`", "`updateDisplayFrame` renders the three-line display model"]),
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),
+            row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
             "",
             "## Bluetooth APK Requirements",
             "",
@@ -166,8 +167,11 @@ def verify_coverage() -> tuple[dict[str, list[str]], str, str]:
     assert_contains(manifest, REQUIRED_MANIFEST_MARKERS, "Android manifest")
     if "createRfcommSocketToServiceRecord(SPP_UUID)" not in source:
         raise AssertionError("Android source does not create an RFCOMM SPP socket")
-    if "sendCommand(\"?\")" not in source:
-        raise AssertionError("Android source must query status immediately after connect")
+    if "syncInitialPanels()" not in source:
+        raise AssertionError("Android source must run syncInitialPanels after connect")
+    for command in ("?", "l", "d"):
+        if f'sendCommand("{command}")' not in source:
+            raise AssertionError(f"Android source must send {command!r} during initial panel sync")
     return commands, source, manifest
 
 
