@@ -27,6 +27,7 @@ REQUIRED_FILES = [
     "middleware/wav_reader.c",
     "fatfs/HAL_SDCard.c",
     "tools/epaper_preview_sim.py",
+    "tools/generate_effect_report.py",
     "tools/generate_diagrams.py",
     "tools/generate_course_report.py",
     "tools/wav_asset_check.py",
