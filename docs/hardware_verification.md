@@ -136,3 +136,11 @@ EC11：
 - P4.4/P4.5：HC-05
 
 其中 P3.2/P3.3、P2.2 等与参考墨水屏方案存在冲突。为了不影响音频播放器主功能，当前不把墨水屏并入默认构建。状态显示由 APK、蓝牙自动上报和 `d` 三行显示帧承担；如果后续确实要加墨水屏，应先重新分配硬件引脚，再把 `middleware/display_model.*` 输出的三行文本接到屏幕渲染层。
+
+软件侧可先用以下命令生成 296x128 黑白预览图，确认三行显示帧在墨水屏尺寸下的可读性：
+
+```powershell
+python tools\epaper_preview_sim.py --output dist\verification\epaper_preview.pgm
+```
+
+交付包会自动包含 `docs\epaper_preview.pgm`。

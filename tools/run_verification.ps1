@@ -20,6 +20,7 @@ try {
     Invoke-Checked { python tools\bluetooth_protocol_sim.py }
     Invoke-Checked { python tools\board_scenario_sim.py }
     Invoke-Checked { python tools\local_button_sim.py }
+    Invoke-Checked { python tools\epaper_preview_sim.py }
     Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
 } finally {
     Pop-Location

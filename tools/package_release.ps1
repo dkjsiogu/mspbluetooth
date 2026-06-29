@@ -71,6 +71,7 @@ try {
     Copy-RequiredFile "docs\report_outline.md" (Join-Path $packageRoot "docs\report_outline.md")
     Copy-RequiredFile "docs\test_record.csv" (Join-Path $packageRoot "docs\test_record.csv")
     Copy-RequiredFile "sdcard\README.md" (Join-Path $packageRoot "sdcard\README.md")
+    Invoke-Checked { python tools\epaper_preview_sim.py --output (Join-Path $packageRoot "docs\epaper_preview.pgm") }
 
     Get-ChildItem -LiteralPath "sdcard" -Filter "TRACK*.WAV" | ForEach-Object {
         Copy-RequiredFile $_.FullName (Join-Path $packageRoot ("sdcard\" + $_.Name))
@@ -93,6 +94,7 @@ try {
         "docs\acceptance_matrix.md",
         "docs\report_outline.md",
         "docs\test_record.csv",
+        "docs\epaper_preview.pgm",
         "",
         "Note: software build and simulations are verified by this package script.",
         "Physical flashing and board-level audio tests still need the real MSP430F5529 hardware."

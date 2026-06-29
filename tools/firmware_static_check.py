@@ -26,6 +26,7 @@ REQUIRED_FILES = [
     "middleware/display_model.c",
     "middleware/wav_reader.c",
     "fatfs/HAL_SDCard.c",
+    "tools/epaper_preview_sim.py",
     "Debug/mspbluetooth.out",
 ]
 

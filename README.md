@@ -14,6 +14,7 @@
 - 蓝牙 `i`/`e` 命令可输出固件版本、硬件映射和软件可见自检摘要。
 - 蓝牙 `l` 命令扫描 `TRACK01.WAV` 到 `TRACK09.WAV`，显示哪些曲目可播放。
 - 蓝牙 `d` 命令输出三行显示帧，当前由 APK/串口显示，后续可接到墨水屏渲染层。
+- `tools\epaper_preview_sim.py` 可把三行显示帧渲染成 296x128 黑白 PGM 预览图，用于未接墨水屏时确认显示效果。
 - DAC 模拟输出可同时接 PAM8403 功放输入和 3.5mm 耳机座。
 
 ## 代码结构
@@ -125,6 +126,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟蓝牙、EC11、本地按键混合控制场景
 - 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按
+- 生成并检查墨水屏风格黑白预览图，确认显示帧不是空白
 
 ## 交付打包
 
@@ -139,7 +141,7 @@ powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 dist\mspbluetooth_delivery\
 ```
 
-目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、报告提纲、测试记录表、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
+目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、报告提纲、测试记录表、墨水屏预览图、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
 
 ## 实物验证
 
