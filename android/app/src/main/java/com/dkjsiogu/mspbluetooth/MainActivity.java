@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
     private TextView dashboardView;
     private TextView displayView;
     private TextView trackListView;
+    private TextView acceptanceView;
     private TextView logView;
     private Button connectButton;
     private BluetoothSocket socket;
@@ -48,6 +49,17 @@ public class MainActivity extends Activity {
     private volatile boolean keepReading;
     private final StringBuilder rxLineBuffer = new StringBuilder();
     private final String[] displayLines = new String[]{"--", "--", "--"};
+    private boolean acceptanceSdMounted;
+    private boolean acceptanceInfo;
+    private boolean acceptanceSelftest;
+    private boolean acceptanceTracks;
+    private boolean acceptanceDisplay1;
+    private boolean acceptanceDisplay2;
+    private boolean acceptanceDisplay3;
+    private boolean acceptanceStatus;
+    private boolean acceptanceToneStart;
+    private boolean acceptanceToneDone;
+    private boolean acceptanceTrackOpen;
 
     private static final class DeviceEntry {
         final BluetoothDevice device;
@@ -121,6 +133,9 @@ public class MainActivity extends Activity {
         trackListView = panelText("Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --");
         root.addView(trackListView, new LinearLayout.LayoutParams(-1, dp(82)));
 
+        acceptanceView = panelText("Acceptance 0/8\nSD:-- Info:-- Selftest:-- Tracks:--\nDisplay:-- Status:-- Tone:-- Open:--");
+        root.addView(acceptanceView, new LinearLayout.LayoutParams(-1, dp(70)));
+
         LinearLayout connectionRow = row();
         connectButton = commandButton("Connect", 0xFF0F766E);
         connectButton.setOnClickListener(v -> toggleConnection());
@@ -166,7 +181,10 @@ public class MainActivity extends Activity {
         Button shareLogButton = commandButton("Share Log", 0xFF334155);
         shareLogButton.setOnClickListener(v -> shareLog());
         Button clearLogButton = commandButton("Clear Log", 0xFF475569);
-        clearLogButton.setOnClickListener(v -> logView.setText(""));
+        clearLogButton.setOnClickListener(v -> {
+            logView.setText("");
+            resetAcceptanceSummary();
+        });
         acceptanceRow.addView(acceptanceButton, new LinearLayout.LayoutParams(0, dp(44), 2));
         acceptanceRow.addView(shareLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         acceptanceRow.addView(clearLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
@@ -390,6 +408,7 @@ public class MainActivity extends Activity {
     }
 
     private void parseIncomingLine(String line) {
+        updateAcceptanceSummary(line);
         if (line.startsWith("status=")) {
             updateDashboard(line);
         } else if (line.startsWith("display 1:")) {
@@ -404,6 +423,72 @@ public class MainActivity extends Activity {
         } else if (line.startsWith("tracks")) {
             updateTrackList(line);
         }
+    }
+
+    private void resetAcceptanceSummary() {
+        acceptanceSdMounted = false;
+        acceptanceInfo = false;
+        acceptanceSelftest = false;
+        acceptanceTracks = false;
+        acceptanceDisplay1 = false;
+        acceptanceDisplay2 = false;
+        acceptanceDisplay3 = false;
+        acceptanceStatus = false;
+        acceptanceToneStart = false;
+        acceptanceToneDone = false;
+        acceptanceTrackOpen = false;
+        renderAcceptanceSummary();
+    }
+
+    private void updateAcceptanceSummary(String line) {
+        if (line.startsWith("sd mounted")) {
+            acceptanceSdMounted = true;
+        } else if (line.startsWith("info name=")) {
+            acceptanceInfo = true;
+        } else if (line.startsWith("selftest bt=ok")) {
+            acceptanceSelftest = true;
+        } else if (line.startsWith("tracks")) {
+            acceptanceTracks = true;
+        } else if (line.startsWith("display 1:")) {
+            acceptanceDisplay1 = true;
+        } else if (line.startsWith("display 2:")) {
+            acceptanceDisplay2 = true;
+        } else if (line.startsWith("display 3:")) {
+            acceptanceDisplay3 = true;
+        } else if (line.startsWith("status=")) {
+            acceptanceStatus = true;
+        } else if (line.startsWith("tone start")) {
+            acceptanceToneStart = true;
+        } else if (line.startsWith("tone done")) {
+            acceptanceToneDone = true;
+        } else if (line.startsWith("open TRACK0")) {
+            acceptanceTrackOpen = true;
+        }
+        renderAcceptanceSummary();
+    }
+
+    private void renderAcceptanceSummary() {
+        boolean displayOk = acceptanceDisplay1 && acceptanceDisplay2 && acceptanceDisplay3;
+        boolean toneOk = acceptanceToneStart && acceptanceToneDone;
+        int passed = 0;
+        passed += acceptanceSdMounted ? 1 : 0;
+        passed += acceptanceInfo ? 1 : 0;
+        passed += acceptanceSelftest ? 1 : 0;
+        passed += acceptanceTracks ? 1 : 0;
+        passed += displayOk ? 1 : 0;
+        passed += acceptanceStatus ? 1 : 0;
+        passed += toneOk ? 1 : 0;
+        passed += acceptanceTrackOpen ? 1 : 0;
+
+        acceptanceView.setText("Acceptance " + passed + "/8\n" +
+                "SD:" + mark(acceptanceSdMounted) + " Info:" + mark(acceptanceInfo) +
+                " Selftest:" + mark(acceptanceSelftest) + " Tracks:" + mark(acceptanceTracks) + "\n" +
+                "Display:" + mark(displayOk) + " Status:" + mark(acceptanceStatus) +
+                " Tone:" + mark(toneOk) + " Open:" + mark(acceptanceTrackOpen));
+    }
+
+    private String mark(boolean passed) {
+        return passed ? "OK" : "--";
     }
 
     private void updateDashboard(String statusLine) {

@@ -18,6 +18,16 @@ DISPLAY_LINES = [
     "display 3:16000Hz 2ch P42%",
 ]
 TRACKS_LINE = "tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--"
+BOOT_LINES = [
+    "sd mounted",
+    "open TRACK01.WAV",
+]
+INFO_LINE = "info name=MSP430F5529-BT-WAV version=1.4.1 profile=bt_wav_player"
+SELFTEST_LINE = "selftest bt=ok sd=ok wav=ok i2s=ok buttons=ok"
+TONE_LINES = [
+    "tone start",
+    "tone done",
+]
 
 
 @dataclass
@@ -27,8 +37,20 @@ class AndroidUiState:
     dashboard_text: str = "Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --"
     display_lines: list[str] = field(default_factory=lambda: ["--", "--", "--"])
     track_list_text: str = "Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --"
+    acceptance_text: str = "Acceptance 0/8\nSD:-- Info:-- Selftest:-- Tracks:--\nDisplay:-- Status:-- Tone:-- Open:--"
     rx_line_buffer: str = ""
     parsed_lines: list[str] = field(default_factory=list)
+    acceptance_sd_mounted: bool = False
+    acceptance_info: bool = False
+    acceptance_selftest: bool = False
+    acceptance_tracks: bool = False
+    acceptance_display_1: bool = False
+    acceptance_display_2: bool = False
+    acceptance_display_3: bool = False
+    acceptance_status: bool = False
+    acceptance_tone_start: bool = False
+    acceptance_tone_done: bool = False
+    acceptance_track_open: bool = False
 
     @property
     def display_text(self) -> str:
@@ -79,8 +101,63 @@ def update_track_list(state: AndroidUiState, tracks_line: str) -> None:
     state.track_list_text = "\n".join(lines)
 
 
+def mark(passed: bool) -> str:
+    return "OK" if passed else "--"
+
+
+def render_acceptance_summary(state: AndroidUiState) -> None:
+    display_ok = state.acceptance_display_1 and state.acceptance_display_2 and state.acceptance_display_3
+    tone_ok = state.acceptance_tone_start and state.acceptance_tone_done
+    passed = sum(
+        [
+            state.acceptance_sd_mounted,
+            state.acceptance_info,
+            state.acceptance_selftest,
+            state.acceptance_tracks,
+            display_ok,
+            state.acceptance_status,
+            tone_ok,
+            state.acceptance_track_open,
+        ]
+    )
+    state.acceptance_text = (
+        f"Acceptance {passed}/8\n"
+        f"SD:{mark(state.acceptance_sd_mounted)} Info:{mark(state.acceptance_info)} "
+        f"Selftest:{mark(state.acceptance_selftest)} Tracks:{mark(state.acceptance_tracks)}\n"
+        f"Display:{mark(display_ok)} Status:{mark(state.acceptance_status)} "
+        f"Tone:{mark(tone_ok)} Open:{mark(state.acceptance_track_open)}"
+    )
+
+
+def update_acceptance_summary(state: AndroidUiState, line: str) -> None:
+    if line.startswith("sd mounted"):
+        state.acceptance_sd_mounted = True
+    elif line.startswith("info name="):
+        state.acceptance_info = True
+    elif line.startswith("selftest bt=ok"):
+        state.acceptance_selftest = True
+    elif line.startswith("tracks"):
+        state.acceptance_tracks = True
+    elif line.startswith("display 1:"):
+        state.acceptance_display_1 = True
+    elif line.startswith("display 2:"):
+        state.acceptance_display_2 = True
+    elif line.startswith("display 3:"):
+        state.acceptance_display_3 = True
+    elif line.startswith("status="):
+        state.acceptance_status = True
+    elif line.startswith("tone start"):
+        state.acceptance_tone_start = True
+    elif line.startswith("tone done"):
+        state.acceptance_tone_done = True
+    elif line.startswith("open TRACK0"):
+        state.acceptance_track_open = True
+    render_acceptance_summary(state)
+
+
 def parse_incoming_line(state: AndroidUiState, line: str) -> None:
     state.parsed_lines.append(line)
+    update_acceptance_summary(state, line)
     if line.startswith("status="):
         update_dashboard(state, line)
     elif line.startswith("display 1:"):
@@ -105,7 +182,7 @@ def handle_incoming_text(state: AndroidUiState, text: str) -> None:
 
 def run_fragmented_flow() -> AndroidUiState:
     state = AndroidUiState()
-    stream = "\r\n".join([STATUS_LINE, *DISPLAY_LINES, TRACKS_LINE]) + "\r\n"
+    stream = "\r\n".join([*BOOT_LINES, INFO_LINE, SELFTEST_LINE, TRACKS_LINE, *DISPLAY_LINES, STATUS_LINE, *TONE_LINES]) + "\r\n"
     chunks = [stream[:7], stream[7:29], stream[29:61], stream[61:92], stream[92:130], stream[130:181], stream[181:]]
     for chunk in chunks:
         handle_incoming_text(state, chunk)
@@ -123,6 +200,8 @@ def run_fragmented_flow() -> AndroidUiState:
     expected_tracks = "Tracks\n1: ok  2: --  3: ok\n4: --  5: --  6: --\n7: --  8: --  9: --"
     if state.track_list_text != expected_tracks:
         raise AssertionError(f"track list mismatch: {state.track_list_text!r}")
+    if not state.acceptance_text.startswith("Acceptance 8/8"):
+        raise AssertionError(f"acceptance summary mismatch: {state.acceptance_text!r}")
     if state.rx_line_buffer != "":
         raise AssertionError(f"line buffer should be empty, got {state.rx_line_buffer!r}")
     return state
@@ -134,6 +213,7 @@ def main() -> int:
     print(state.dashboard_text.replace("\n", " | "))
     print(state.display_text.replace("\n", " | "))
     print(state.track_list_text.replace("\n", " | "))
+    print(state.acceptance_text.replace("\n", " | "))
     return 0
 
 

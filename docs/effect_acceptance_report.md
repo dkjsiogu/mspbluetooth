@@ -63,6 +63,7 @@ This report is generated from host-side simulations and source checks. It proves
 | Android parsed dashboard | Mode: playing / Track: 3 / Volume: 19 / Order: repeat_one / Progress: 42% |
 | Android parsed display | Display frame / playing T3 V19 ONE / SD:OK WAV:OPEN / 16000Hz 2ch P42% |
 | Android parsed track list | Tracks / 1: ok  2: --  3: ok / 4: --  5: --  6: -- / 7: --  8: --  9: -- |
+| Android acceptance summary | Acceptance 8/8 / SD:OK Info:OK Selftest:OK Tracks:OK / Display:OK Status:OK Tone:OK Open:OK |
 | E-paper preview | tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame |
 | E-paper gallery | playing, paused, stopped, and error previews are generated in docs/epaper_gallery_report.md |
 

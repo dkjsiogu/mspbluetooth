@@ -65,6 +65,21 @@ REQUIRED_PARSER_MARKERS = [
     "updateTrackList",
 ]
 
+REQUIRED_ACCEPTANCE_MARKERS = [
+    "acceptanceView",
+    "resetAcceptanceSummary",
+    "updateAcceptanceSummary",
+    "renderAcceptanceSummary",
+    "Acceptance 0/8",
+    "Acceptance \" + passed + \"/8",
+    'line.startsWith("sd mounted")',
+    'line.startsWith("info name=")',
+    'line.startsWith("selftest bt=ok")',
+    'line.startsWith("tone start")',
+    'line.startsWith("tone done")',
+    'line.startsWith("open TRACK0")',
+]
+
 REQUIRED_MANIFEST_MARKERS = [
     'android.permission.BLUETOOTH"',
     'android.permission.BLUETOOTH_ADMIN"',
@@ -128,6 +143,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),
             row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
             row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),
+            row(["Acceptance summary", "`acceptanceView` shows SD, info, selftest, tracks, display, status, tone, and file-open evidence as `Acceptance X/8`"]),
             row(["Acceptance log export", "`Share Log` uses Android `ACTION_SEND` with `EXTRA_TEXT` so logs can be saved and checked on PC"]),
             "",
             "## Bluetooth APK Requirements",
@@ -168,6 +184,7 @@ def verify_coverage() -> tuple[dict[str, list[str]], str, str]:
         raise AssertionError(f"Android APK UI has duplicate command buttons: {duplicates}")
 
     assert_contains(source, REQUIRED_PARSER_MARKERS, "Android parser")
+    assert_contains(source, REQUIRED_ACCEPTANCE_MARKERS, "Android acceptance summary")
     assert_contains(manifest, REQUIRED_MANIFEST_MARKERS, "Android manifest")
     if "createRfcommSocketToServiceRecord(SPP_UUID)" not in source:
         raise AssertionError("Android source does not create an RFCOMM SPP socket")

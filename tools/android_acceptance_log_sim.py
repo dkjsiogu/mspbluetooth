@@ -32,6 +32,7 @@ class AcceptanceResult:
     dashboard: str
     display: str
     tracks: str
+    acceptance: str
     passed_checks: int
     total_checks: int
 
@@ -62,6 +63,7 @@ def run_acceptance_flow() -> AcceptanceResult:
     player = SimulatedPlayer()
     android = AndroidUiState()
     log_lines = ["connected", "sd mounted", "open TRACK01.WAV", "acceptance start"]
+    fragmented_android_feed(android, log_lines[:3])
 
     for command in ACCEPTANCE_COMMANDS:
         before = len(player.transcript)
@@ -84,12 +86,15 @@ def run_acceptance_flow() -> AcceptanceResult:
         raise AssertionError(f"Android display frame did not mirror final track 3 state: {android.display_text!r}")
     if "1: ok" not in android.track_list_text or "3: ok" not in android.track_list_text:
         raise AssertionError(f"Android track list did not parse available tracks: {android.track_list_text!r}")
+    if not android.acceptance_text.startswith("Acceptance 8/8"):
+        raise AssertionError(f"Android acceptance summary did not reach 8/8: {android.acceptance_text!r}")
 
     return AcceptanceResult(
         log_lines=log_lines,
         dashboard=android.dashboard_text,
         display=android.display_text,
         tracks=android.track_list_text,
+        acceptance=android.acceptance_text,
         passed_checks=len(check_results),
         total_checks=len(check_results),
     )
@@ -118,6 +123,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["Final dashboard", result.dashboard]),
         row(["Final display", result.display]),
         row(["Track list", result.tracks]),
+        row(["Acceptance summary", result.acceptance]),
         "",
         "## Log Preview",
         "",
@@ -143,6 +149,7 @@ def main() -> int:
 
     print("Android acceptance script simulation passed")
     print(result.dashboard.replace("\n", " | "))
+    print(result.acceptance.replace("\n", " | "))
     print(f"acceptance log generated: {args.log}")
     print(f"acceptance report generated: {args.report}")
     return 0
