@@ -68,5 +68,7 @@ foreach ($marker in $requiredUiMarkers) {
     }
 }
 
+Invoke-Checked { python (Join-Path $root "tools\android_ui_parser_sim.py") }
+
 Write-Output "Android APK verification passed"
 Write-Output $apk

@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from android_ui_parser_sim import run_fragmented_flow
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
 from board_scenario_sim import BoardState, apply_event
 from local_button_sim import LONG_PRESS_TICKS, run_samples
@@ -104,6 +105,7 @@ def render_report(input_dir: Path) -> str:
     run_order_flow()
     scenario, board_state = run_board_scenario()
     button_cases = run_button_cases()
+    android_state = run_fragmented_flow()
     commands, parser_markers = android_source_evidence()
     wav_assets = parse_assets(input_dir)
 
@@ -146,6 +148,8 @@ def render_report(input_dir: Path) -> str:
             row(["---", "---"]),
             row(["Display frame", " / ".join(display_lines)]),
             row(["Android parser markers", ", ".join(parser_markers)]),
+            row(["Android parsed dashboard", android_state.dashboard_text.replace("\n", " / ")]),
+            row(["Android parsed display", android_state.display_text.replace("\n", " / ")]),
             row(["E-paper preview", "tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame"]),
             "",
             "## TF WAV Assets",

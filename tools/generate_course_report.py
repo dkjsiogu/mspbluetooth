@@ -61,7 +61,7 @@ def build_report() -> str:
 - 中间层：`middleware/wav_reader.*` 解析 16-bit PCM WAV，`middleware/display_model.*` 生成三行状态显示帧。
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
 - 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=` 和 `display 1/2/3:` 回传。
-- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、整板场景仿真、按键长按仿真、墨水屏预览、软件效果验收报告和交付打包。
+- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、整板场景仿真、按键长按仿真、墨水屏预览、软件效果验收报告和交付打包。
 - TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
 系统硬件框图见下图：
@@ -141,7 +141,7 @@ powershell -ExecutionPolicy Bypass -File tools\\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、整板场景仿真、本地按键长按仿真、墨水屏预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧解析仿真、整板场景仿真、本地按键长按仿真、墨水屏预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
@@ -175,6 +175,7 @@ def validate_report(text: str) -> None:
         "## 9. 风险与说明",
         "progress=0",
         "tools/wav_asset_check.py",
+        "Android 状态/显示帧解析仿真",
         "注释规范",
         "软件效果验收报告",
         "真实烧录",
