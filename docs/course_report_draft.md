@@ -23,6 +23,10 @@
 - 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=` 和 `display 1/2/3:` 回传。
 - 验证工具：`tools/` 提供固件构建、协议仿真、整板场景仿真、按键长按仿真、墨水屏预览和交付打包。
 
+系统硬件框图见下图：
+
+![硬件框图](hardware_block_diagram.svg)
+
 ## 4. 硬件连接
 
 核心引脚分配：
@@ -49,6 +53,10 @@
 - 蓝牙 `t` 命令输出 DAC 测试音，便于现场确认 DAC/功放/喇叭链路。
 - 蓝牙 `d` 命令输出三行显示帧；Android 面板和 PGM 预览图可模拟墨水屏效果。
 - 蓝牙状态包含播放模式、曲目、音量、播放顺序、采样率、声道和进度百分比。
+
+软件主流程见下图：
+
+![软件流程图](software_flowchart.svg)
 
 ## 6. 蓝牙命令协议
 
@@ -96,6 +104,7 @@ display 3:16000Hz 2ch P0%
 | PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame | 固件编译、`t` 测试音命令 |
 | 状态显示 | APK 日志、含播放进度的状态面板、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查 |
 | 墨水屏扩展 | 未默认接入，保留显示模型、APK 显示帧、PGM 黑白预览并说明引脚冲突 | `tools/epaper_preview_sim.py`、`docs/hardware_verification.md` |
+| 硬件框图/软件流程图 | 自动生成 SVG 图并纳入报告和交付包 | `tools/generate_diagrams.py`、`docs/hardware_block_diagram.svg`、`docs/software_flowchart.svg` |
 | 课程报告材料 | 自动生成课程设计报告初稿，保留实物验证待补项 | `tools/generate_course_report.py`、`docs/course_report_draft.md` |
 | 注释规范 | 自写头文件、声明、define、static 注释 | `tools/firmware_static_check.py` |
 | GitHub 仓库 | 已推送到 `dkjsiogu/mspbluetooth` | `git remote -v` / GitHub |

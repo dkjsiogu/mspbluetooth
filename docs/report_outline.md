@@ -8,6 +8,12 @@ python tools\generate_course_report.py
 
 输出文件为 `docs\course_report_draft.md`。实物测试完成后，应把 `docs\test_record.csv` 中的实际现象和照片/示波器截图补入正式报告。
 
+硬件框图和软件流程图可运行以下命令生成：
+
+```powershell
+python tools\generate_diagrams.py
+```
+
 ## 1. 课题名称
 
 蓝牙遥控音频播放器

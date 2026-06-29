@@ -21,6 +21,7 @@ try {
     Invoke-Checked { python tools\board_scenario_sim.py }
     Invoke-Checked { python tools\local_button_sim.py }
     Invoke-Checked { python tools\epaper_preview_sim.py }
+    Invoke-Checked { python tools\generate_diagrams.py }
     Invoke-Checked { python tools\generate_course_report.py }
     Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
 } finally {

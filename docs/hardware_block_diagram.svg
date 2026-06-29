@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#1f2937"/></marker></defs>
+<style>text{font-family:Arial,Helvetica,sans-serif;font-size:13px;fill:#111827}.title{font-size:18px;font-weight:bold}.box{fill:#f8fafc;stroke:#334155;stroke-width:1.5}.core{fill:#ecfeff;stroke:#0f766e;stroke-width:2}.note{font-size:12px;fill:#475569}.line{stroke:#1f2937;stroke-width:1.5;fill:none;marker-end:url(#arrow)}</style>
+<text class="title" x="30" y="34">MSP430F5529 蓝牙遥控音频播放器硬件框图</text>
+<rect class="core" x="390" y="210" width="210" height="120" rx="6"/>
+<text x="402" y="232" font-weight="bold">MSP430F5529</text>
+<text class="note" x="402" y="254">16 MHz MCLK/SMCLK</text>
+<text class="note" x="402" y="271">GPIO / UART / SPI / I2S</text>
+<text class="note" x="402" y="288">Timer / interrupt</text>
+<rect class="box" x="40" y="70" width="220" height="95" rx="6"/>
+<text x="52" y="92" font-weight="bold">Android + HC-05</text>
+<text class="note" x="52" y="114">SPP 串口透传</text>
+<text class="note" x="52" y="131">UCA1 P4.4/P4.5</text>
+<rect class="box" x="40" y="220" width="220" height="95" rx="6"/>
+<text x="52" y="242" font-weight="bold">TF 卡座</text>
+<text class="note" x="52" y="264">FATFS + WAV 文件</text>
+<text class="note" x="52" y="281">P3.1/P3.2/P3.3 + P4.0</text>
+<rect class="box" x="40" y="370" width="220" height="95" rx="6"/>
+<text x="52" y="392" font-weight="bold">本地输入</text>
+<text class="note" x="52" y="414">EC11: P2.1/P2.2/P2.3</text>
+<text class="note" x="52" y="431">S1/S2/S4 短按/长按</text>
+<rect class="box" x="720" y="100" width="220" height="95" rx="6"/>
+<text x="732" y="122" font-weight="bold">PCM5102A DAC</text>
+<text class="note" x="732" y="144">软件 I2S</text>
+<text class="note" x="732" y="161">BCK/LRCK/DIN=P4.1/4.2/4.3</text>
+<rect class="box" x="720" y="250" width="220" height="95" rx="6"/>
+<text x="732" y="272" font-weight="bold">PAM8403 + 喇叭</text>
+<text class="note" x="732" y="294">DAC 模拟输出</text>
+<text class="note" x="732" y="311">功放驱动无源喇叭</text>
+<rect class="box" x="720" y="400" width="220" height="95" rx="6"/>
+<text x="732" y="422" font-weight="bold">3.5mm 耳机座 / 状态显示</text>
+<text class="note" x="732" y="444">耳机并联输出</text>
+<text class="note" x="732" y="461">APK + 三行显示帧</text>
+<path class="line" d="M260,118 L390,240"/>
+<text class="note" text-anchor="middle" x="325" y="173">UART</text>
+<path class="line" d="M260,268 L390,270"/>
+<text class="note" text-anchor="middle" x="325" y="263">SPI</text>
+<path class="line" d="M260,418 L390,300"/>
+<text class="note" text-anchor="middle" x="325" y="353">GPIO</text>
+<path class="line" d="M600,250 L720,148"/>
+<text class="note" text-anchor="middle" x="660" y="193">I2S</text>
+<path class="line" d="M830,195 L830,250"/>
+<text class="note" text-anchor="middle" x="830" y="216">analog</text>
+<path class="line" d="M600,300 L720,448"/>
+<text class="note" text-anchor="middle" x="660" y="368">status</text>
+<text class="note" x="30" y="530">说明：课程资料中的 HC-05 P3.3/P3.4 与 TF MISO=P3.3 冲突，本工程默认使用 UCA1 P4.4/P4.5。</text>
+</svg>

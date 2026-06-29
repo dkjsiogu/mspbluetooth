@@ -63,6 +63,10 @@ def build_report() -> str:
 - 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=` 和 `display 1/2/3:` 回传。
 - 验证工具：`tools/` 提供固件构建、协议仿真、整板场景仿真、按键长按仿真、墨水屏预览和交付打包。
 
+系统硬件框图见下图：
+
+![硬件框图](hardware_block_diagram.svg)
+
 ## 4. 硬件连接
 
 核心引脚分配：
@@ -89,6 +93,10 @@ def build_report() -> str:
 - 蓝牙 `t` 命令输出 DAC 测试音，便于现场确认 DAC/功放/喇叭链路。
 - 蓝牙 `d` 命令输出三行显示帧；Android 面板和 PGM 预览图可模拟墨水屏效果。
 - 蓝牙状态包含播放模式、曲目、音量、播放顺序、采样率、声道和进度百分比。
+
+软件主流程见下图：
+
+![软件流程图](software_flowchart.svg)
 
 ## 6. 蓝牙命令协议
 
@@ -159,6 +167,8 @@ def validate_report(text: str) -> None:
     required = [
         "# 单片机技术课程设计报告",
         "## 4. 硬件连接",
+        "hardware_block_diagram.svg",
+        "software_flowchart.svg",
         "## 6. 蓝牙命令协议",
         "## 7. 验证证据",
         "## 9. 风险与说明",

@@ -54,6 +54,7 @@ try {
     } else {
         Invoke-Checked { & "D:\ccs\ccs\utils\bin\gmake.exe" -C Debug all }
         Invoke-Checked { powershell -ExecutionPolicy Bypass -File tools\build_android_apk.ps1 }
+        Invoke-Checked { python tools\generate_diagrams.py }
         Invoke-Checked { python tools\generate_course_report.py }
         Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
     }
@@ -72,6 +73,8 @@ try {
     Copy-RequiredFile "docs\report_outline.md" (Join-Path $packageRoot "docs\report_outline.md")
     Copy-RequiredFile "docs\course_report_draft.md" (Join-Path $packageRoot "docs\course_report_draft.md")
     Copy-RequiredFile "docs\test_record.csv" (Join-Path $packageRoot "docs\test_record.csv")
+    Copy-RequiredFile "docs\hardware_block_diagram.svg" (Join-Path $packageRoot "docs\hardware_block_diagram.svg")
+    Copy-RequiredFile "docs\software_flowchart.svg" (Join-Path $packageRoot "docs\software_flowchart.svg")
     Copy-RequiredFile "sdcard\README.md" (Join-Path $packageRoot "sdcard\README.md")
     Invoke-Checked { python tools\epaper_preview_sim.py --output (Join-Path $packageRoot "docs\epaper_preview.pgm") }
 
@@ -97,6 +100,8 @@ try {
         "docs\report_outline.md",
         "docs\course_report_draft.md",
         "docs\test_record.csv",
+        "docs\hardware_block_diagram.svg",
+        "docs\software_flowchart.svg",
         "docs\epaper_preview.pgm",
         "",
         "Note: software build and simulations are verified by this package script.",
