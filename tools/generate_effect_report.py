@@ -12,6 +12,7 @@ import argparse
 from pathlib import Path
 
 from android_ui_parser_sim import run_fragmented_flow
+from android_command_coverage import verify_coverage
 from audio_stream_sim import run_audio_stream_simulation
 from bluetooth_diagnostic_sim import run_diagnostic_cases
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
@@ -124,6 +125,7 @@ def render_report(input_dir: Path) -> str:
     button_cases = run_button_cases()
     encoder_cases = run_encoder_cases()
     android_state = run_fragmented_flow()
+    android_buttons, _, _ = verify_coverage()
     audio_config, audio_results = run_audio_stream_simulation(input_dir)
     commands, parser_markers = android_source_evidence()
     wav_assets = parse_assets(input_dir)
@@ -141,6 +143,7 @@ def render_report(input_dir: Path) -> str:
         row(["Effect", "Evidence"]),
         row(["---", "---"]),
         row(["Android command buttons", ", ".join(commands)]),
+        row(["APK source command coverage", f"{sum(len(labels) for labels in android_buttons.values())} buttons verified in docs/android_command_coverage_report.md"]),
         row(["Firmware command transcript", " -> ".join(player.transcript)]),
         row(["Final status line", status_line]),
         "",

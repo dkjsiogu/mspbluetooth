@@ -127,6 +127,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟 HC-05 字节流诊断链路，覆盖分片输入、大小写命令、换行噪声和现场自检转录
 - 模拟 Android 端对碎片化蓝牙回传的状态面板和显示帧解析
+- 检查 Android APK 命令按钮覆盖、HC-05 SPP 权限和结构化回传解析覆盖
 - 模拟蓝牙、EC11、本地按键混合控制场景
 - 模拟 EC11 A/B 正交相位解码、反向抖动抵消和按键去抖
 - 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按
@@ -149,7 +150,7 @@ powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 dist\mspbluetooth_delivery\
 ```
 
-目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、蓝牙诊断报告、音频流仿真报告、I2S 帧仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
+目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、蓝牙诊断报告、Android 命令覆盖报告、音频流仿真报告、I2S 帧仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
 
 ## 实物验证
 
@@ -161,6 +162,7 @@ dist\mspbluetooth_delivery\
 - [课程设计报告初稿](docs/course_report_draft.md)
 - [软件效果验收报告](docs/effect_acceptance_report.md)
 - [蓝牙诊断报告](docs/bluetooth_diagnostic_report.md)
+- [Android 命令覆盖报告](docs/android_command_coverage_report.md)
 - [音频流仿真报告](docs/audio_stream_report.md)
 - [I2S 帧仿真报告](docs/i2s_frame_report.md)
 - [墨水屏多状态预览报告](docs/epaper_gallery_report.md)
