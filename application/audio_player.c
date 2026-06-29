@@ -52,6 +52,9 @@ static void player_report_status(void);
 /* player_report_display_frame: sends the display model as three ASCII lines. */
 static void player_report_display_frame(void);
 
+/* player_report_ui_snapshot: sends status plus display lines after visible changes. */
+static void player_report_ui_snapshot(void);
+
 /* player_report_order: sends the current automatic track-advance mode. */
 static void player_report_order(void);
 
@@ -213,6 +216,13 @@ static void player_report_display_frame(void)
     bluetooth_uart_write_line(frame.line2);
     bluetooth_uart_write_str("display 3:");
     bluetooth_uart_write_line(frame.line3);
+}
+
+/* player_report_ui_snapshot: updates both Android dashboard and display panel. */
+static void player_report_ui_snapshot(void)
+{
+    player_report_status();
+    player_report_display_frame();
 }
 
 /* player_report_order: reports the active sequence/repeat mode after changes. */
@@ -593,7 +603,7 @@ static void player_handle_command(uint8_t command)
         if (player_open_track((uint8_t)(command - (uint8_t)'0'), 1u) == 0u) {
             bluetooth_uart_write_line("track not found");
         } else {
-            player_report_status();
+            player_report_ui_snapshot();
         }
         return;
     }
@@ -666,7 +676,7 @@ static void player_handle_command(uint8_t command)
     }
 
     if (report_status != 0u) {
-        player_report_status();
+        player_report_ui_snapshot();
     }
 }
 
@@ -769,7 +779,7 @@ void audio_player_poll_controls(void)
     }
 
     if (local_status_report != 0u) {
-        player_report_status();
+        player_report_ui_snapshot();
         g_player.status_stamp_ms = board_millis();
     }
 

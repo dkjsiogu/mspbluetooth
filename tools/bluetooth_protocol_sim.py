@@ -47,6 +47,18 @@ class SimulatedPlayer:
     def report_status(self) -> None:
         self.transcript.append(self.status_line())
 
+    def display_lines(self) -> list[str]:
+        order_short = {"sequence": "SEQ", "repeat_all": "ALL", "repeat_one": "ONE"}[self.order]
+        return [
+            f"display 1:{self.mode} T{self.track} V{self.volume} {order_short}",
+            "display 2:SD:OK WAV:OPEN",
+            f"display 3:16000Hz 2ch P{self.progress}%",
+        ]
+
+    def report_ui_snapshot(self) -> None:
+        self.report_status()
+        self.transcript.extend(self.display_lines())
+
     def finish_track(self) -> None:
         if self.order == "repeat_one":
             self.mode = "playing"
@@ -72,33 +84,33 @@ class SimulatedPlayer:
             self.track = int(command)
             self.mode = "playing"
             self.transcript.append(f"open TRACK0{self.track}.WAV")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command == "p":
             self.mode = "paused" if self.mode == "playing" else "playing"
             self.transcript.append(self.mode)
-            self.report_status()
+            self.report_ui_snapshot()
         elif command == "s":
             self.mode = "stopped"
             self.transcript.append("stop")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command == "r":
             self.mode = "playing"
             self.transcript.append("replay")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command in ("n", ">"):
             self.open_track(self.next_available_track())
-            self.report_status()
+            self.report_ui_snapshot()
         elif command in ("b", "<"):
             self.open_track(self.previous_available_track())
-            self.report_status()
+            self.report_ui_snapshot()
         elif command in ("+", "="):
             self.volume = min(MAX_VOLUME, self.volume + 1)
             self.transcript.append(f"volume={self.volume}")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command in ("-", "_"):
             self.volume = max(0, self.volume - 1)
             self.transcript.append(f"volume={self.volume}")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command == "m":
             if self.volume > 0:
                 self.saved_volume = self.volume
@@ -107,7 +119,7 @@ class SimulatedPlayer:
             else:
                 self.volume = self.saved_volume or 18
                 self.transcript.append("mute=off")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command == "o":
             if self.order == "sequence":
                 self.order = "repeat_all"
@@ -116,11 +128,11 @@ class SimulatedPlayer:
             else:
                 self.order = "sequence"
             self.transcript.append(f"order={self.order}")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command == "t":
             self.transcript.append("tone start")
             self.transcript.append("tone done")
-            self.report_status()
+            self.report_ui_snapshot()
         elif command == "i":
             self.transcript.append("info name=MSP430F5529-BT-WAV version=1.4.0")
         elif command == "e":
@@ -128,10 +140,7 @@ class SimulatedPlayer:
         elif command == "l":
             self.transcript.append("tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--")
         elif command == "d":
-            order_short = {"sequence": "SEQ", "repeat_all": "ALL", "repeat_one": "ONE"}[self.order]
-            self.transcript.append(f"display 1:{self.mode} T{self.track} V{self.volume} {order_short}")
-            self.transcript.append("display 2:SD:OK WAV:OPEN")
-            self.transcript.append(f"display 3:16000Hz 2ch P{self.progress}%")
+            self.transcript.extend(self.display_lines())
         elif command == "?":
             self.report_status()
         elif command == "h":

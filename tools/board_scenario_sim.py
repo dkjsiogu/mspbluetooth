@@ -19,6 +19,7 @@ class BoardState:
     order: str = "repeat_all"
     led_toggles: int = 0
     status_reports: int = 0
+    display_reports: int = 0
     tone_tests: int = 0
 
 
@@ -69,6 +70,7 @@ def apply_event(state: BoardState, event: str) -> None:
 
     if reports_status:
         state.status_reports += 1
+        state.display_reports += 1
 
 
 def main() -> int:
@@ -105,6 +107,7 @@ def main() -> int:
     assert state.order == "repeat_one", state
     assert state.led_toggles == 1, state
     assert state.status_reports == 19, state
+    assert state.display_reports == 18, state
     assert state.tone_tests == 1, state
 
     print("whole-board control scenario passed")
