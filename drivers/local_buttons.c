@@ -6,9 +6,16 @@
 
 /* ButtonDebounce: compact per-button state for active-low sampled inputs. */
 typedef struct {
+    /* sample: last raw pressed/not-pressed sample accepted by the debounce counter. */
     uint8_t sample;
+    /* stable: debounced pressed/not-pressed state used by application events. */
     uint8_t stable;
+    /* ticks: consecutive equal samples counted toward debounce. */
     uint8_t ticks;
+    /* hold_ticks: stable pressed scans counted toward long-press detection. */
+    uint16_t hold_ticks;
+    /* long_sent: nonzero after the long-press event has been emitted. */
+    uint8_t long_sent;
 } ButtonDebounce;
 
 /* g_button1: debounce state for S1, mapped to play/pause. */
@@ -26,8 +33,33 @@ static uint8_t g_pending_events = LOCAL_BUTTON_EVENT_NONE;
 /* g_last_poll_ms: millisecond timestamp used to pace the button scanner. */
 static uint32_t g_last_poll_ms = 0u;
 
-/* button_update: debounces one button and emits event_bit on a new press. */
-static void button_update(ButtonDebounce *button, uint8_t pressed, uint8_t event_bit)
+/* button_reset_hold: clears hold timing when a button enters pressed state. */
+static void button_reset_hold(ButtonDebounce *button)
+{
+    button->hold_ticks = 0u;
+    button->long_sent = 0u;
+}
+
+/* button_update_hold: emits long_event_bit once a stable press exceeds threshold. */
+static void button_update_hold(ButtonDebounce *button, uint8_t long_event_bit)
+{
+    if ((button->stable == 0u) || (button->long_sent != 0u)) {
+        return;
+    }
+
+    if (button->hold_ticks < LOCAL_BUTTON_LONG_PRESS_TICKS) {
+        button->hold_ticks++;
+    }
+
+    if (button->hold_ticks >= LOCAL_BUTTON_LONG_PRESS_TICKS) {
+        g_pending_events |= long_event_bit;
+        button->long_sent = 1u;
+    }
+}
+
+/* button_update: debounces one key and emits short or long press events. */
+static void button_update(ButtonDebounce *button, uint8_t pressed,
+                          uint8_t short_event_bit, uint8_t long_event_bit)
 {
     if (pressed != button->sample) {
         button->sample = pressed;
@@ -41,10 +73,15 @@ static void button_update(ButtonDebounce *button, uint8_t pressed, uint8_t event
             (button->stable != button->sample)) {
             button->stable = button->sample;
             if (button->stable != 0u) {
-                g_pending_events |= event_bit;
+                button_reset_hold(button);
+            } else if (button->long_sent == 0u) {
+                g_pending_events |= short_event_bit;
             }
         }
+        return;
     }
+
+    button_update_hold(button, long_event_bit);
 }
 
 /* read_button1: returns 1 while S1 is pressed, otherwise 0. */
@@ -85,12 +122,15 @@ void local_buttons_init(void)
     g_button1.sample = read_button1();
     g_button1.stable = g_button1.sample;
     g_button1.ticks = 0u;
+    button_reset_hold(&g_button1);
     g_button2.sample = read_button2();
     g_button2.stable = g_button2.sample;
     g_button2.ticks = 0u;
+    button_reset_hold(&g_button2);
     g_button4.sample = read_button4();
     g_button4.stable = g_button4.sample;
     g_button4.ticks = 0u;
+    button_reset_hold(&g_button4);
 }
 
 uint8_t local_buttons_take_events(void)
@@ -98,9 +138,12 @@ uint8_t local_buttons_take_events(void)
     uint8_t events;
 
     if (board_elapsed_ms(&g_last_poll_ms, LOCAL_BUTTON_POLL_PERIOD_MS) != 0u) {
-        button_update(&g_button1, read_button1(), LOCAL_BUTTON_EVENT_PLAY_PAUSE);
-        button_update(&g_button2, read_button2(), LOCAL_BUTTON_EVENT_PREVIOUS);
-        button_update(&g_button4, read_button4(), LOCAL_BUTTON_EVENT_NEXT);
+        button_update(&g_button1, read_button1(),
+                      LOCAL_BUTTON_EVENT_PLAY_PAUSE, LOCAL_BUTTON_EVENT_STOP);
+        button_update(&g_button2, read_button2(),
+                      LOCAL_BUTTON_EVENT_PREVIOUS, LOCAL_BUTTON_EVENT_MUTE);
+        button_update(&g_button4, read_button4(),
+                      LOCAL_BUTTON_EVENT_NEXT, LOCAL_BUTTON_EVENT_ORDER);
     }
 
     events = g_pending_events;

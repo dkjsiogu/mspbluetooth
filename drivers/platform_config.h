@@ -14,7 +14,7 @@
 #define PLAYER_FIRMWARE_NAME            "MSP430F5529-BT-WAV"
 
 /* PLAYER_FIRMWARE_VERSION: manually updated firmware version string. */
-#define PLAYER_FIRMWARE_VERSION         "1.2.0"
+#define PLAYER_FIRMWARE_VERSION         "1.3.0"
 
 /* PLAYER_HARDWARE_PROFILE: wiring profile name reported for lab debugging. */
 #define PLAYER_HARDWARE_PROFILE         "TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1"
@@ -77,5 +77,11 @@
 
 /* LOCAL_BUTTON_DEBOUNCE_TICKS: stable scans required before a button event. */
 #define LOCAL_BUTTON_DEBOUNCE_TICKS     4u
+
+/* LOCAL_BUTTON_LONG_PRESS_MS: hold time that promotes a local key to long press. */
+#define LOCAL_BUTTON_LONG_PRESS_MS      800u
+
+/* LOCAL_BUTTON_LONG_PRESS_TICKS: long-press threshold expressed in button polls. */
+#define LOCAL_BUTTON_LONG_PRESS_TICKS   (LOCAL_BUTTON_LONG_PRESS_MS / LOCAL_BUTTON_POLL_PERIOD_MS)
 
 #endif

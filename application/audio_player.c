@@ -682,6 +682,15 @@ void audio_player_poll_controls(void)
     if ((button_events & LOCAL_BUTTON_EVENT_NEXT) != 0u) {
         player_next_track();
     }
+    if ((button_events & LOCAL_BUTTON_EVENT_STOP) != 0u) {
+        player_stop();
+    }
+    if ((button_events & LOCAL_BUTTON_EVENT_MUTE) != 0u) {
+        player_toggle_mute();
+    }
+    if ((button_events & LOCAL_BUTTON_EVENT_ORDER) != 0u) {
+        player_cycle_order();
+    }
 
     if (board_elapsed_ms(&g_player.led_stamp_ms, 500u) != 0u) {
         board_status_led_toggle();

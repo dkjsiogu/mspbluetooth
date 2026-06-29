@@ -95,7 +95,7 @@ class SimulatedPlayer:
             self.transcript.append("tone start")
             self.transcript.append("tone done")
         elif command == "i":
-            self.transcript.append("info name=MSP430F5529-BT-WAV version=1.2.0")
+            self.transcript.append("info name=MSP430F5529-BT-WAV version=1.3.0")
         elif command == "e":
             self.transcript.append("selftest bt=ok sd=ok file=open dac=test-with-t")
         elif command == "l":

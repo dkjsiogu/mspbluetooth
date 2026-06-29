@@ -7,7 +7,7 @@
 - TF 卡读取 `TRACK01.WAV` 到 `TRACK09.WAV`。
 - 解析 16-bit PCM WAV 文件，并用软件 I2S 输出到 PCM5102A。
 - EC11 旋转编码器调节音量，按键播放/暂停。
-- S1/S2/S4 本地按键：播放/暂停、上一曲、下一曲。
+- S1/S2/S4 本地按键：短按播放/暂停、上一曲、下一曲；长按停止、静音、播放顺序切换。
 - HC-05 蓝牙串口接收遥控命令。
 - 蓝牙端每 5 秒自动推送一次当前状态，方便手机端和串口助手确认链路。
 - 蓝牙 `t` 命令可直接让 PCM5102A 输出测试音，不依赖 TF 卡音频文件，便于现场确认 DAC/功放/喇叭链路。
@@ -32,7 +32,7 @@ Debug/makefile             命令行编译入口
 - TF 卡：`CS=P4.0`，`SCK=P3.1`，`MOSI=P3.2`，`MISO=P3.3`
 - PCM5102A：`BCK=P4.1`，`LRCK=P4.2`，`DIN=P4.3`
 - EC11：`A=P2.1`，`B=P2.2`，`SW=P2.3`
-- 本地按键：`S1=P1.2` 播放/暂停，`S2=P1.3` 上一曲，`S4=P2.6` 下一曲
+- 本地按键：`S1=P1.2` 短按播放/暂停、长按停止；`S2=P1.3` 短按上一曲、长按静音；`S4=P2.6` 短按下一曲、长按切换播放顺序
 - 状态 LED：`P1.0`
 - 默认蓝牙：`HC-05 RXD<-P4.4`，`HC-05 TXD->P4.5`
 
@@ -88,7 +88,7 @@ h    输出命令帮助
 ```text
 status=playing track=1 volume=18 order=repeat_all rate=16000Hz channels=2
 order=repeat_one
-info name=MSP430F5529-BT-WAV version=1.2.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
+info name=MSP430F5529-BT-WAV version=1.3.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
 selftest bt=ok sd=ok file=open dac=test-with-t
 tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--
 display 1:playing T1 V18 ALL
@@ -124,6 +124,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 静态检查头文件注释、关键命令、引脚冲突说明、RAM 余量
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟蓝牙、EC11、本地按键混合控制场景
+- 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按
 
 ## 交付打包
 

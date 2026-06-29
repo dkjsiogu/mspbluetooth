@@ -137,6 +137,22 @@ def check_pin_conflict_documented() -> None:
         fail("README must document the P3.3 Bluetooth/TF-card conflict")
 
 
+def check_local_button_long_press() -> None:
+    local_header = read_text("drivers/local_buttons.h")
+    local_source = read_text("drivers/local_buttons.c")
+    config = read_text("drivers/platform_config.h")
+
+    for token in [
+        "LOCAL_BUTTON_EVENT_STOP",
+        "LOCAL_BUTTON_EVENT_MUTE",
+        "LOCAL_BUTTON_EVENT_ORDER",
+        "LOCAL_BUTTON_LONG_PRESS_MS",
+        "LOCAL_BUTTON_LONG_PRESS_TICKS",
+    ]:
+        if token not in local_header and token not in local_source and token not in config:
+            fail(f"local button long-press support missing token: {token}")
+
+
 def check_build_map() -> None:
     map_path = ROOT / "Debug/mspbluetooth.map"
     if not map_path.exists():
@@ -161,6 +177,7 @@ def main() -> int:
     check_header_comments()
     check_commands()
     check_pin_conflict_documented()
+    check_local_button_long_press()
     check_build_map()
     print("firmware static checks passed")
     return 0

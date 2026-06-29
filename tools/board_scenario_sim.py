@@ -25,16 +25,27 @@ class BoardState:
 def apply_event(state: BoardState, event: str) -> None:
     if event in ("bt:p", "enc:press", "s1"):
         state.mode = "paused" if state.mode == "playing" else "playing"
+    elif event == "s1:long":
+        state.mode = "stopped"
     elif event in ("bt:+", "enc:cw"):
         state.volume = min(32, state.volume + 1)
     elif event in ("bt:-", "enc:ccw"):
         state.volume = max(0, state.volume - 1)
+    elif event == "s2:long":
+        state.volume = 0
     elif event == "bt:t":
         state.tone_tests += 1
         state.mode = "paused"
     elif event == "bt:r":
         state.mode = "playing"
     elif event == "bt:o":
+        if state.order == "sequence":
+            state.order = "repeat_all"
+        elif state.order == "repeat_all":
+            state.order = "repeat_one"
+        else:
+            state.order = "sequence"
+    elif event == "s4:long":
         if state.order == "sequence":
             state.order = "repeat_all"
         elif state.order == "repeat_all":
@@ -62,13 +73,19 @@ def main() -> int:
         "enc:cw",
         "s1",
         "s1",
+        "s1:long",
+        "s1",
         "s4",
         "bt:n",
         "s2",
         "bt:-",
+        "s2:long",
+        "enc:cw",
+        "enc:cw",
+        "enc:cw",
         "bt:t",
         "bt:r",
-        "bt:o",
+        "s4:long",
         "enc:press",
         "tick:500ms",
         "tick:5s",
@@ -79,7 +96,7 @@ def main() -> int:
 
     assert state.mode == "paused", state
     assert state.track == 2, state
-    assert state.volume == 19, state
+    assert state.volume == 3, state
     assert state.order == "repeat_one", state
     assert state.led_toggles == 1, state
     assert state.status_reports == 1, state
