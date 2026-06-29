@@ -260,3 +260,16 @@ capture:
 ```powershell
 python tools\i2s_capture_check.py
 ```
+
+## Hardware Evidence Summary
+
+After real flashing, collect the exported APK/HC-05 log and the I2S logic
+capture, then generate one combined evidence report:
+
+```powershell
+python tools\hardware_evidence_check.py --serial-log path\to\phone_log.txt --i2s-csv path\to\i2s_capture.csv
+```
+
+Without inputs it runs against generated samples and clearly marks the report as
+software/sample evidence only. Real hardware completion still requires real
+input files plus observed speaker/headphone and button behavior.

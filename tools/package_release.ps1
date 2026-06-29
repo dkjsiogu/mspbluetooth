@@ -61,6 +61,7 @@ try {
         Invoke-Checked { python tools\audio_stream_sim.py }
         Invoke-Checked { python tools\i2s_frame_sim.py }
         Invoke-Checked { python tools\i2s_capture_check.py }
+        Invoke-Checked { python tools\hardware_evidence_check.py }
         Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
         Invoke-Checked { python tools\serial_acceptance_check.py }
         Invoke-Checked { python tools\epaper_driver_trace_sim.py }
@@ -92,6 +93,7 @@ try {
     Copy-RequiredFile "docs\audio_stream_report.md" (Join-Path $packageRoot "docs\audio_stream_report.md")
     Copy-RequiredFile "docs\i2s_frame_report.md" (Join-Path $packageRoot "docs\i2s_frame_report.md")
     Copy-RequiredFile "docs\i2s_capture_report.md" (Join-Path $packageRoot "docs\i2s_capture_report.md")
+    Copy-RequiredFile "docs\hardware_evidence_report.md" (Join-Path $packageRoot "docs\hardware_evidence_report.md")
     Copy-RequiredFile "docs\epaper_gallery_report.md" (Join-Path $packageRoot "docs\epaper_gallery_report.md")
     Copy-RequiredFile "docs\epaper_driver_report.md" (Join-Path $packageRoot "docs\epaper_driver_report.md")
     Copy-RequiredFile "docs\test_record.csv" (Join-Path $packageRoot "docs\test_record.csv")
@@ -161,6 +163,9 @@ try {
         "docs\i2s_frame_report.md",
         "docs\i2s_capture_report.md",
         "docs\i2s_capture_sample.csv",
+        "docs\hardware_evidence_report.md",
+        "docs\hardware_evidence_serial_sample.txt",
+        "docs\hardware_evidence_i2s_sample.csv",
         "docs\epaper_gallery_report.md",
         "docs\epaper_driver_report.md",
         "docs\test_record.csv",
@@ -176,6 +181,13 @@ try {
         "Note: software build and simulations are verified by this package script.",
         "Physical flashing and board-level audio tests still need the real MSP430F5529 hardware."
     ) | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+
+    Invoke-Checked {
+        python tools\hardware_evidence_check.py `
+            --serial-sample-out (Join-Path $packageRoot "docs\hardware_evidence_serial_sample.txt") `
+            --i2s-sample-out (Join-Path $packageRoot "docs\hardware_evidence_i2s_sample.csv") `
+            --report (Join-Path $packageRoot "docs\hardware_evidence_report.md")
+    }
 
     $hashPath = Join-Path $packageRoot "SHA256SUMS.txt"
     Get-ChildItem -LiteralPath $packageRoot -Recurse -File |

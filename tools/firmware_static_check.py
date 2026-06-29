@@ -34,6 +34,7 @@ REQUIRED_FILES = [
     "tools/encoder_quadrature_sim.py",
     "tools/i2s_frame_sim.py",
     "tools/i2s_capture_check.py",
+    "tools/hardware_evidence_check.py",
     "tools/bluetooth_diagnostic_sim.py",
     "tools/serial_acceptance_check.py",
     "tools/android_command_coverage.py",

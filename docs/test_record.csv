@@ -34,3 +34,4 @@ Serial acceptance transcript,tools/serial_acceptance_check.py --input captured_l
 Optional e-paper driver,tools/epaper_driver_trace_sim.py,296x128 driver source is compiled default-disabled and refresh trace sends one packed frame,,,
 Android acceptance script,tools/android_acceptance_log_sim.py,APK Run Acceptance command sequence updates Android panels and produces a serial-checkable TX log,,,
 Android log export,APK Share Log after Run Acceptance,Phone can export TX/RX text for serial_acceptance_check.py on PC,,,
+Hardware evidence summary,tools/hardware_evidence_check.py --serial-log phone_log.txt --i2s-csv i2s_capture.csv,Combined report marks real serial and I2S evidence as passed,,,

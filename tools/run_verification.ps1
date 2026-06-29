@@ -36,6 +36,7 @@ try {
     Invoke-Checked { python tools\audio_stream_sim.py }
     Invoke-Checked { python tools\i2s_frame_sim.py }
     Invoke-Checked { python tools\i2s_capture_check.py }
+    Invoke-Checked { python tools\hardware_evidence_check.py }
     Invoke-Checked { python tools\generate_effect_report.py }
 } finally {
     Pop-Location
