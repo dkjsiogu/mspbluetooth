@@ -42,6 +42,7 @@ REQUIRED_COMMANDS = {
     "t": "tone test",
     "i": "info",
     "e": "selftest",
+    "l": "track list",
     "d": "display frame",
     "?": "status",
 }

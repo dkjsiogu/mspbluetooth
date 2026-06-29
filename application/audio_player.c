@@ -149,6 +149,35 @@ static void player_report_selftest(void)
     bluetooth_uart_write_str(" dac=test-with-t\r\n");
 }
 
+/* player_report_track_list: scans TRACK01.WAV..TRACK09.WAV and reports support. */
+static void player_report_track_list(void)
+{
+    FIL probe_file;
+    WavInfo probe_info;
+    char name[12];
+    uint8_t track;
+
+    bluetooth_uart_write_str("tracks");
+    for (track = 1u; track <= PLAYER_MAX_TRACKS; track++) {
+        make_track_name(track, name);
+        bluetooth_uart_write_str(" ");
+        bluetooth_uart_write_uint(track);
+        bluetooth_uart_write_char('=');
+
+        if (f_open(&probe_file, name, FA_READ | FA_OPEN_EXISTING) == FR_OK) {
+            if (wav_reader_open(&probe_file, &probe_info) == WAV_RESULT_OK) {
+                bluetooth_uart_write_str("ok");
+            } else {
+                bluetooth_uart_write_str("bad");
+            }
+            (void)f_close(&probe_file);
+        } else {
+            bluetooth_uart_write_str("--");
+        }
+    }
+    bluetooth_uart_write_str("\r\n");
+}
+
 /* player_report_track_opened: reports the current WAV format after successful open. */
 static void player_report_track_opened(void)
 {
@@ -455,6 +484,9 @@ static void player_handle_command(uint8_t command)
     case 'e':
         player_report_selftest();
         break;
+    case 'l':
+        player_report_track_list();
+        break;
     case 'd':
         player_report_display_frame();
         break;
@@ -471,7 +503,7 @@ static void player_handle_command(uint8_t command)
 
 static void player_write_prompt(void)
 {
-    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, t tone, i info, e selftest, d display, 1-9 track, ? status");
+    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, t tone, i info, e selftest, l list, d display, 1-9 track, ? status");
 }
 
 void audio_player_init(void)

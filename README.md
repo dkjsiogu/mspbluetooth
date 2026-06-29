@@ -12,6 +12,7 @@
 - 蓝牙端每 5 秒自动推送一次当前状态，方便手机端和串口助手确认链路。
 - 蓝牙 `t` 命令可直接让 PCM5102A 输出测试音，不依赖 TF 卡音频文件，便于现场确认 DAC/功放/喇叭链路。
 - 蓝牙 `i`/`e` 命令可输出固件版本、硬件映射和软件可见自检摘要。
+- 蓝牙 `l` 命令扫描 `TRACK01.WAV` 到 `TRACK09.WAV`，显示哪些曲目可播放。
 - 蓝牙 `d` 命令输出三行显示帧，当前由 APK/串口显示，后续可接到墨水屏渲染层。
 - DAC 模拟输出可同时接 PAM8403 功放输入和 3.5mm 耳机座。
 
@@ -52,6 +53,14 @@ TRACK09.WAV
 
 当前播放器支持 PCM、16-bit、单声道或双声道 WAV。软件 I2S 由 CPU 翻转 GPIO 产生，建议测试文件先使用 8 kHz 或 16 kHz 采样率，便于课堂演示和逻辑分析仪观察。
 
+可直接生成测试音频：
+
+```powershell
+python tools\prepare_sdcard_assets.py
+```
+
+然后把 `sdcard\TRACK01.WAV`、`sdcard\TRACK02.WAV`、`sdcard\TRACK03.WAV` 复制到 TF 卡根目录。
+
 ## 蓝牙命令
 
 ```text
@@ -66,6 +75,7 @@ m    静音/恢复
 t    DAC 测试音
 i    固件与硬件映射信息
 e    自检摘要
+l    扫描曲目文件
 d    三行显示帧
 1-9  直接播放对应曲目
 ?    查询状态
@@ -78,6 +88,7 @@ h    输出命令帮助
 status=playing track=1 volume=18 rate=16000Hz channels=2
 info name=MSP430F5529-BT-WAV version=1.1.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
 selftest bt=ok sd=ok file=open dac=test-with-t
+tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--
 display 1:playing T1 V18
 display 2:SD:OK WAV:OPEN
 display 3:16000Hz 2ch

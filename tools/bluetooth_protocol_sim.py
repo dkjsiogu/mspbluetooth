@@ -66,6 +66,8 @@ class SimulatedPlayer:
             self.transcript.append("info name=MSP430F5529-BT-WAV version=1.1.0")
         elif command == "e":
             self.transcript.append("selftest bt=ok sd=ok file=open dac=test-with-t")
+        elif command == "l":
+            self.transcript.append("tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--")
         elif command == "d":
             self.transcript.append(f"display 1:{self.mode} T{self.track} V{self.volume}")
             self.transcript.append("display 2:SD:OK WAV:OPEN")
@@ -86,7 +88,7 @@ def assert_equal(actual: object, expected: object, label: str) -> None:
 def run_required_flow() -> SimulatedPlayer:
     player = SimulatedPlayer()
 
-    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "s", "3", "r", "t", "i", "e", "d", "?"]:
+    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "s", "3", "r", "t", "i", "e", "l", "d", "?"]:
         player.send(command)
 
     assert_equal(player.mode, "playing", "mode after direct track command")
@@ -95,6 +97,7 @@ def run_required_flow() -> SimulatedPlayer:
     assert "tone done" in player.transcript
     assert any(line.startswith("info name=") for line in player.transcript)
     assert any(line.startswith("selftest bt=ok") for line in player.transcript)
+    assert any(line.startswith("tracks 1=ok") for line in player.transcript)
     assert any(line.startswith("display 1:playing T3 V19") for line in player.transcript)
     assert "status=playing track=3 volume=19" in player.transcript[-1]
     return player

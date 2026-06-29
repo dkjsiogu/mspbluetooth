@@ -8,6 +8,7 @@
 - 确认 APK：`android\app\build\outputs\apk\debug\app-debug.apk`
 - TF 卡根目录准备 16-bit PCM WAV：`TRACK01.WAV` 到 `TRACK09.WAV`
 - 建议首测 WAV：8 kHz 或 16 kHz，双声道或单声道均可
+- 可运行 `python tools\prepare_sdcard_assets.py` 生成 `sdcard\TRACK01.WAV` 到 `TRACK03.WAV`
 
 ## 2. 最小系统
 
@@ -39,6 +40,7 @@
 ? -> status=...
 i -> info name=MSP430F5529-BT-WAV version=1.1.0 ...
 e -> selftest bt=ok sd=... file=...
+l -> tracks 1=ok 2=-- ...
 d -> display 1/2/3 ...
 ```
 
@@ -93,6 +95,7 @@ p -> play/pause
 n -> next track
 b -> previous track
 r -> replay
+l -> tracks 1=ok ...
 s -> stop
 ```
 
