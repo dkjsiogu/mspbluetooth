@@ -137,4 +137,32 @@
 /* BT_UCA0_RX_BIT: alternate UCA0 RXD bit mask. */
 #define BT_UCA0_RX_BIT                  BIT4
 
+/*
+ * Optional e-paper panel on P6.x. This is intentionally disabled in the default
+ * firmware build and exists for a later hardware spin where the audio player
+ * core remains unchanged.
+ */
+/* EPAPER_SEL: function-select register for optional e-paper GPIO pins. */
+#define EPAPER_SEL                      P6SEL
+/* EPAPER_DIR: direction register for optional e-paper GPIO pins. */
+#define EPAPER_DIR                      P6DIR
+/* EPAPER_OUT: output latch register for optional e-paper GPIO pins. */
+#define EPAPER_OUT                      P6OUT
+/* EPAPER_IN: input register for optional e-paper GPIO pins. */
+#define EPAPER_IN                       P6IN
+/* EPAPER_REN: pull resistor register for optional e-paper GPIO pins. */
+#define EPAPER_REN                      P6REN
+/* EPAPER_SCK_BIT: optional e-paper software SPI clock on P6.0. */
+#define EPAPER_SCK_BIT                  BIT0
+/* EPAPER_MOSI_BIT: optional e-paper software SPI MOSI on P6.1. */
+#define EPAPER_MOSI_BIT                 BIT1
+/* EPAPER_CS_BIT: optional e-paper chip select on P6.2, active low. */
+#define EPAPER_CS_BIT                   BIT2
+/* EPAPER_DC_BIT: optional e-paper data/command select on P6.3. */
+#define EPAPER_DC_BIT                   BIT3
+/* EPAPER_RST_BIT: optional e-paper reset output on P6.4, active low. */
+#define EPAPER_RST_BIT                  BIT4
+/* EPAPER_BUSY_BIT: optional e-paper busy input on P6.5, high while busy. */
+#define EPAPER_BUSY_BIT                 BIT5
+
 #endif

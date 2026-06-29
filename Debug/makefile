@@ -33,6 +33,7 @@ OBJS := \
 	board.obj \
 	bluetooth_uart.obj \
 	encoder.obj \
+	epaper_panel.obj \
 	local_buttons.obj \
 	i2s_dac.obj \
 	audio_player.obj \
@@ -64,6 +65,10 @@ bluetooth_uart.obj: ../drivers/bluetooth_uart.c
 encoder.obj: ../drivers/encoder.c
 	@echo MSP430 Compiler - building file: "$<"
 	$(CC) $(CFLAGS) --preproc_dependency="encoder.d_raw" "$<"
+
+epaper_panel.obj: ../drivers/epaper_panel.c
+	@echo MSP430 Compiler - building file: "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="epaper_panel.d_raw" "$<"
 
 local_buttons.obj: ../drivers/local_buttons.c
 	@echo MSP430 Compiler - building file: "$<"

@@ -27,6 +27,7 @@ try {
     Invoke-Checked { python tools\encoder_quadrature_sim.py }
     Invoke-Checked { python tools\local_button_sim.py }
     Invoke-Checked { python tools\epaper_preview_sim.py }
+    Invoke-Checked { python tools\epaper_driver_trace_sim.py }
     Invoke-Checked { python tools\generate_diagrams.py }
     Invoke-Checked { python tools\generate_course_report.py }
     Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }

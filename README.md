@@ -215,3 +215,19 @@ The checker looks for `sd mounted`, `info name=MSP430F5529-BT-WAV`,
 `tone start`, `tone done`, and `open TRACK01.WAV`/`open TRACK03.WAV`. If the
 log includes `TX>` command markers, it also verifies that state-changing
 commands immediately return `status=...` plus the three display lines.
+
+## Optional E-Paper Panel
+
+The default firmware keeps the real e-paper panel disabled with
+`PLAYER_ENABLE_EPAPER_PANEL=0u`, because the Bluetooth WAV player should remain
+the main project and the panel needs extra P6.x wiring. The optional driver is
+still compiled and checked:
+
+```powershell
+python tools\epaper_driver_trace_sim.py
+```
+
+When enabled, `drivers\epaper_panel.c` mirrors the same three-line
+`DisplayFrame` used by Bluetooth, APK, and PGM previews to a 296x128 SPI
+black/white e-paper panel. Suggested optional wiring is
+`P6.0=SCK`, `P6.1=MOSI`, `P6.2=CS`, `P6.3=DC`, `P6.4=RST`, `P6.5=BUSY`.

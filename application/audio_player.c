@@ -9,6 +9,7 @@
 #include "bluetooth_uart.h"
 #include "board.h"
 #include "display_model.h"
+#include "epaper_panel.h"
 #include "encoder.h"
 #include "ff.h"
 #include "i2s_dac.h"
@@ -216,6 +217,10 @@ static void player_report_display_frame(void)
     bluetooth_uart_write_line(frame.line2);
     bluetooth_uart_write_str("display 3:");
     bluetooth_uart_write_line(frame.line3);
+
+#if PLAYER_EPAPER_REFRESH_ON_CHANGE != 0u
+    epaper_panel_show_frame(&frame);
+#endif
 }
 
 /* player_report_ui_snapshot: updates both Android dashboard and display panel. */

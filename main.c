@@ -8,6 +8,7 @@
 #include "application/audio_player.h"
 #include "drivers/bluetooth_uart.h"
 #include "drivers/board.h"
+#include "drivers/epaper_panel.h"
 #include "drivers/encoder.h"
 #include "drivers/i2s_dac.h"
 #include "drivers/local_buttons.h"
@@ -23,6 +24,7 @@ int main(void)
     encoder_init();
     local_buttons_init();
     i2s_dac_init();
+    epaper_panel_init();
 
     __enable_interrupt();
 

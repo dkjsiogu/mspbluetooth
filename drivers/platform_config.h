@@ -66,6 +66,16 @@
 /* PLAYER_STATUS_PUSH_MS: periodic Bluetooth status interval; 0 disables it. */
 #define PLAYER_STATUS_PUSH_MS           5000u
 
+/* PLAYER_ENABLE_EPAPER_PANEL: 1 enables optional 296x128 SPI e-paper output. */
+#define PLAYER_ENABLE_EPAPER_PANEL      0u
+
+/*
+ * PLAYER_EPAPER_REFRESH_ON_CHANGE: nonzero refreshes the optional e-paper
+ * panel whenever the display model is reported. Keep PLAYER_ENABLE_EPAPER_PANEL
+ * at 0 unless the P6.x wiring is actually added, because e-paper refresh is slow.
+ */
+#define PLAYER_EPAPER_REFRESH_ON_CHANGE 1u
+
 /* ENCODER_POLL_PERIOD_MS: EC11 sample interval for quadrature decoding. */
 #define ENCODER_POLL_PERIOD_MS          2u
 
