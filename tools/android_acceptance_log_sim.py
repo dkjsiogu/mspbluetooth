@@ -30,6 +30,7 @@ ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b
 class AcceptanceResult:
     log_lines: list[str]
     dashboard: str
+    health: str
     display: str
     tracks: str
     link: str
@@ -90,6 +91,8 @@ def run_acceptance_flow() -> AcceptanceResult:
         raise AssertionError(f"acceptance log failed serial checks: {[failure.label for failure in failures]}")
     if "Mode: playing" not in android.dashboard_text or "Track: 3" not in android.dashboard_text:
         raise AssertionError(f"Android dashboard did not reach final track 3 state: {android.dashboard_text!r}")
+    if "SD:OK" not in android.health_text or "Tone:done" not in android.health_text or "File:TRACK03.WAV" not in android.health_text:
+        raise AssertionError(f"Android health panel did not parse storage/audio evidence: {android.health_text!r}")
     if "playing T3" not in android.display_text:
         raise AssertionError(f"Android display frame did not mirror final track 3 state: {android.display_text!r}")
     if "1: ok" not in android.track_list_text or "3: ok" not in android.track_list_text:
@@ -106,6 +109,7 @@ def run_acceptance_flow() -> AcceptanceResult:
     return AcceptanceResult(
         log_lines=log_lines,
         dashboard=android.dashboard_text,
+        health=android.health_text,
         display=android.display_text,
         tracks=android.track_list_text,
         link=android.link_text,
@@ -139,6 +143,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["Phone file save", "`Save Log` uses Android document picker with `ACTION_CREATE_DOCUMENT`"]),
         row(["Serial transcript checks", f"{result.passed_checks}/{result.total_checks} passed"]),
         row(["Final dashboard", result.dashboard]),
+        row(["Health panel", result.health]),
         row(["Final display", result.display]),
         row(["Track list", result.tracks]),
         row(["Link diagnostics", result.link]),
@@ -170,6 +175,7 @@ def main() -> int:
 
     print("Android acceptance script simulation passed")
     print(result.dashboard.replace("\n", " | "))
+    print(result.health.replace("\n", " | "))
     print(result.link.replace("\n", " | "))
     print(result.input.replace("\n", " | "))
     print(result.wiring.replace("\n", " | "))

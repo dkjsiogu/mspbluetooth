@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
     private Spinner deviceSpinner;
     private TextView stateView;
     private TextView dashboardView;
+    private TextView healthView;
     private TextView displayView;
     private TextView trackListView;
     private TextView linkView;
@@ -54,6 +55,12 @@ public class MainActivity extends Activity {
     private volatile boolean keepReading;
     private final StringBuilder rxLineBuffer = new StringBuilder();
     private final String[] displayLines = new String[]{"--", "--", "--"};
+    private String healthSd = "--";
+    private String healthInfo = "--";
+    private String healthSelftest = "--";
+    private String healthTone = "--";
+    private String healthFile = "--";
+    private String healthError = "--";
     private final String[] wiringLines = new String[]{
             "Profile: --", "TF: --", "I2S: --", "EC11: --", "Local: --", "BT: --", "E-paper: --"};
     private boolean acceptanceSdMounted;
@@ -134,6 +141,9 @@ public class MainActivity extends Activity {
 
         dashboardView = panelText("Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --");
         root.addView(dashboardView, new LinearLayout.LayoutParams(-1, dp(104)));
+
+        healthView = panelText("Health\nSD:-- Info:-- Selftest:-- Tone:--\nFile:--\nError:--");
+        root.addView(healthView, new LinearLayout.LayoutParams(-1, dp(88)));
 
         displayView = panelText("Display frame\n--\n--\n--");
         root.addView(displayView, new LinearLayout.LayoutParams(-1, dp(96)));
@@ -478,6 +488,11 @@ public class MainActivity extends Activity {
         updateAcceptanceSummary(line);
         if (line.startsWith("status=")) {
             updateDashboard(line);
+        } else if (line.startsWith("sd mounted") || line.startsWith("info name=") ||
+                line.startsWith("selftest ") || line.startsWith("tone start") ||
+                line.startsWith("tone done") || line.startsWith("open TRACK0") ||
+                line.startsWith("error: ")) {
+            updateHealthPanel(line);
         } else if (line.startsWith("display 1:")) {
             displayLines[0] = line.substring("display 1:".length());
             updateDisplayFrame();
@@ -578,6 +593,35 @@ public class MainActivity extends Activity {
         dashboardView.setText("Mode: " + mode + "\nTrack: " + track +
                 "\nVolume: " + volume + "\nOrder: " + order +
                 "\nProgress: " + progress + "%");
+    }
+
+    private void updateHealthPanel(String line) {
+        if (line.startsWith("sd mounted")) {
+            healthSd = "OK";
+        } else if (line.startsWith("info name=")) {
+            healthInfo = fieldValue(line, "version=");
+        } else if (line.startsWith("selftest ")) {
+            healthSelftest = line.substring("selftest ".length());
+        } else if (line.startsWith("tone start")) {
+            healthTone = "running";
+        } else if (line.startsWith("tone done")) {
+            healthTone = "done";
+        } else if (line.startsWith("open TRACK0")) {
+            healthFile = line.substring("open ".length());
+        } else if (line.startsWith("error: ")) {
+            healthError = line.substring("error: ".length());
+        }
+
+        healthView.setText("Health\nSD:" + healthSd + " Info:" + healthInfo +
+                " Selftest:" + compactHealth(healthSelftest) + " Tone:" + healthTone +
+                "\nFile:" + healthFile + "\nError:" + healthError);
+    }
+
+    private String compactHealth(String text) {
+        if (text.length() <= 24) {
+            return text;
+        }
+        return text.substring(0, 24);
     }
 
     private void updateDisplayFrame() {

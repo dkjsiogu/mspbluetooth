@@ -27,6 +27,9 @@ settings first, then open the app, select the paired device, and connect.
 ## Parsed Panels
 
 - `status=...`: dashboard mode, track, volume, order, and progress
+- `sd mounted` / `info name=...` / `selftest ...` / `tone ...` /
+  `open TRACK...` / `error: ...`: Health panel storage, firmware, self-test,
+  audio-test, file-open, and error evidence
 - `display 1/2/3:...`: three-line display frame for the e-paper mirror effect
 - `tracks ...`: track availability list
 - `link ...`: RX/status/display/bad-command/last-command/uptime counters
@@ -62,7 +65,7 @@ h i e l d ? t 1 p + n b o 3 k u w
 ```
 
 The app logs every command with `TX>` markers, parses firmware responses into
-the dashboard, display-frame, track-list, Link, Input, Wiring, and
+the dashboard, Health, display-frame, track-list, Link, Input, Wiring, and
 `Acceptance X/9` panels, then lets the operator save evidence through `Save Log`
 or export it through `Share Log`.
 

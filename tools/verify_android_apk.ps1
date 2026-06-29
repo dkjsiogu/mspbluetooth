@@ -53,6 +53,7 @@ foreach ($command in $requiredCommands) {
 
 $requiredUiMarkers = @(
     "dashboardView",
+    "healthView",
     "displayView",
     "trackListView",
     "linkView",
@@ -66,6 +67,14 @@ $requiredUiMarkers = @(
     "getContentResolver().openOutputStream",
     '"status="',
     '"progress="',
+    '"sd mounted"',
+    '"info name="',
+    '"selftest "',
+    '"tone start"',
+    '"tone done"',
+    '"open TRACK0"',
+    '"error: "',
+    "updateHealthPanel",
     '"tracks"',
     "updateTrackList",
     '"link "',

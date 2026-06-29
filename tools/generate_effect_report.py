@@ -118,7 +118,7 @@ def android_source_evidence() -> tuple[list[str], list[str]]:
     )
     commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k", "u", "w"]
     missing_commands = [command for command in commands if f'"{command}"' not in source]
-    parser_markers = ["status=", "progress=", "display 1:", "display 2:", "display 3:", "link ", "input ", "pin "]
+    parser_markers = ["status=", "progress=", "sd mounted", "info name=", "selftest ", "tone start", "open TRACK0", "display 1:", "display 2:", "display 3:", "link ", "input ", "pin "]
     missing_markers = [marker for marker in parser_markers if f'"{marker}"' not in source]
     if missing_commands:
         raise AssertionError(f"Android source missing command buttons: {missing_commands}")
@@ -228,6 +228,7 @@ def render_report(input_dir: Path) -> str:
             row(["Display frame", " / ".join(display_lines)]),
             row(["Android parser markers", ", ".join(parser_markers)]),
             row(["Android parsed dashboard", android_state.dashboard_text.replace("\n", " / ")]),
+            row(["Android parsed health", android_state.health_text.replace("\n", " / ")]),
             row(["Android parsed display", android_state.display_text.replace("\n", " / ")]),
             row(["Android parsed track list", android_state.track_list_text.replace("\n", " / ")]),
             row(["Android parsed link", android_state.link_text.replace("\n", " / ")]),

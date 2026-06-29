@@ -46,6 +46,12 @@ class AndroidUiState:
     """AndroidUiState: parsed dashboard, display frame, and raw line buffer."""
 
     dashboard_text: str = "Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --"
+    health_sd: str = "--"
+    health_info: str = "--"
+    health_selftest: str = "--"
+    health_tone: str = "--"
+    health_file: str = "--"
+    health_error: str = "--"
     display_lines: list[str] = field(default_factory=lambda: ["--", "--", "--"])
     track_list_text: str = "Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --"
     link_text: str = "Link\nRX: --  Status: --  Display: --\nBad: --  Last: --  Uptime: --"
@@ -70,6 +76,15 @@ class AndroidUiState:
     @property
     def display_text(self) -> str:
         return "Display frame\n" + "\n".join(self.display_lines)
+
+    @property
+    def health_text(self) -> str:
+        return (
+            "Health\n"
+            f"SD:{self.health_sd} Info:{self.health_info} "
+            f"Selftest:{compact_health(self.health_selftest)} Tone:{self.health_tone}\n"
+            f"File:{self.health_file}\nError:{self.health_error}"
+        )
 
     @property
     def wiring_text(self) -> str:
@@ -97,6 +112,29 @@ def update_dashboard(state: AndroidUiState, status_line: str) -> None:
         f"Mode: {mode}\nTrack: {track}\nVolume: {volume}\n"
         f"Order: {order}\nProgress: {progress}%"
     )
+
+
+def compact_health(text: str) -> str:
+    if len(text) <= 24:
+        return text
+    return text[:24]
+
+
+def update_health_panel(state: AndroidUiState, line: str) -> None:
+    if line.startswith("sd mounted"):
+        state.health_sd = "OK"
+    elif line.startswith("info name="):
+        state.health_info = field_value(line, "version=")
+    elif line.startswith("selftest "):
+        state.health_selftest = line[len("selftest ") :]
+    elif line.startswith("tone start"):
+        state.health_tone = "running"
+    elif line.startswith("tone done"):
+        state.health_tone = "done"
+    elif line.startswith("open TRACK0"):
+        state.health_file = line[len("open ") :]
+    elif line.startswith("error: "):
+        state.health_error = line[len("error: ") :]
 
 
 def update_track_list(state: AndroidUiState, tracks_line: str) -> None:
@@ -224,6 +262,16 @@ def parse_incoming_line(state: AndroidUiState, line: str) -> None:
     update_acceptance_summary(state, line)
     if line.startswith("status="):
         update_dashboard(state, line)
+    elif (
+        line.startswith("sd mounted")
+        or line.startswith("info name=")
+        or line.startswith("selftest ")
+        or line.startswith("tone start")
+        or line.startswith("tone done")
+        or line.startswith("open TRACK0")
+        or line.startswith("error: ")
+    ):
+        update_health_panel(state, line)
     elif line.startswith("display 1:"):
         state.display_lines[0] = line[len("display 1:") :]
     elif line.startswith("display 2:"):
@@ -265,6 +313,9 @@ def run_fragmented_flow() -> AndroidUiState:
     ]
     if state.dashboard_text != expected_dashboard:
         raise AssertionError(f"dashboard mismatch: {state.dashboard_text!r}")
+    expected_health = "Health\nSD:OK Info:1.4.1 Selftest:bt=ok sd=ok wav=ok i2s=o Tone:done\nFile:TRACK01.WAV\nError:--"
+    if state.health_text != expected_health:
+        raise AssertionError(f"health panel mismatch: {state.health_text!r}")
     if state.display_lines != expected_display:
         raise AssertionError(f"display mismatch: {state.display_lines!r}")
     expected_tracks = "Tracks\n1: ok  2: --  3: ok\n4: --  5: --  6: --\n7: --  8: --  9: --"
@@ -289,6 +340,7 @@ def main() -> int:
     state = run_fragmented_flow()
     print("Android UI parser simulation passed")
     print(state.dashboard_text.replace("\n", " | "))
+    print(state.health_text.replace("\n", " | "))
     print(state.display_text.replace("\n", " | "))
     print(state.track_list_text.replace("\n", " | "))
     print(state.link_text.replace("\n", " | "))

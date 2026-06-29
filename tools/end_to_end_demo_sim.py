@@ -34,6 +34,7 @@ class DemoSnapshot:
     note: str
     responses: list[str]
     dashboard: str
+    health: str
     display: str
     tracks: str
     link: str
@@ -90,6 +91,7 @@ def run_demo() -> list[DemoSnapshot]:
                 note=step.note,
                 responses=responses,
                 dashboard=android.dashboard_text,
+                health=android.health_text,
                 display=android.display_text,
                 tracks=android.track_list_text,
                 link=android.link_text,
@@ -104,6 +106,8 @@ def run_demo() -> list[DemoSnapshot]:
 
     if android.dashboard_text != expected_dashboard:
         raise AssertionError(f"final dashboard mismatch: {android.dashboard_text!r}")
+    if "File:TRACK03.WAV" not in android.health_text or "Tone:done" not in android.health_text:
+        raise AssertionError(f"final health panel mismatch: {android.health_text!r}")
     if android.display_text != expected_display:
         raise AssertionError(f"final display mismatch: {android.display_text!r}")
     if android.track_list_text != expected_tracks:
@@ -139,6 +143,8 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
         visible = (
             snapshot.dashboard.replace("\n", " / ")
             + " | "
+            + snapshot.health.replace("\n", " / ")
+            + " | "
             + snapshot.display.replace("\n", " / ")
             + " | "
             + snapshot.tracks.replace("\n", " / ")
@@ -159,6 +165,7 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
             row(["Panel", "Text"]),
             row(["---", "---"]),
             row(["Dashboard", snapshots[-1].dashboard]),
+            row(["Health", snapshots[-1].health]),
             row(["Display frame", snapshots[-1].display]),
             row(["Track list", snapshots[-1].tracks]),
             row(["Link", snapshots[-1].link]),
@@ -181,6 +188,7 @@ def main() -> int:
 
     print("end-to-end demo simulation passed")
     print(snapshots[-1].dashboard.replace("\n", " | "))
+    print(snapshots[-1].health.replace("\n", " | "))
     print(snapshots[-1].display.replace("\n", " | "))
     print(snapshots[-1].link.replace("\n", " | "))
     print(snapshots[-1].input.replace("\n", " | "))
