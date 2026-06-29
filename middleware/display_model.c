@@ -1,3 +1,9 @@
+/*
+ * display_model.c
+ * Hardware-independent formatter for the three-line status display. The same
+ * frame feeds Bluetooth diagnostics, Android display mirroring, and preview
+ * simulation for a future e-paper renderer.
+ */
 #include "display_model.h"
 
 /* clear_line: fills line with a null-terminated empty string. */

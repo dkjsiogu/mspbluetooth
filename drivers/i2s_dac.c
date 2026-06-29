@@ -1,3 +1,8 @@
+/*
+ * i2s_dac.c
+ * Software I2S transmitter for PCM5102A. The implementation bit-bangs GPIO
+ * clocks and applies simple integer volume scaling before output.
+ */
 #include "i2s_dac.h"
 
 #include <msp430.h>

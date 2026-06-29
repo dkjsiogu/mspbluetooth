@@ -1,3 +1,8 @@
+/*
+ * encoder.c
+ * EC11 rotary encoder implementation. It polls quadrature phase transitions and
+ * the active-low push switch, then exposes debounced semantic events.
+ */
 #include "encoder.h"
 
 #include <msp430.h>
@@ -65,6 +70,7 @@ void encoder_init(void)
 /* encoder_poll: samples A/B/SW, decodes movement, and debounces the button. */
 static void encoder_poll(void)
 {
+    /* transition_table: signed quadrature delta indexed by previous/current AB. */
     static const int8_t transition_table[16] = {
         0, -1,  1,  0,
         1,  0,  0, -1,

@@ -67,6 +67,19 @@ HEADER_FILES = [
     "middleware/wav_reader.h",
 ]
 
+SOURCE_FILES = [
+    "main.c",
+    "application/audio_player.c",
+    "drivers/bluetooth_uart.c",
+    "drivers/board.c",
+    "drivers/encoder.c",
+    "drivers/local_buttons.c",
+    "drivers/i2s_dac.c",
+    "middleware/display_model.c",
+    "middleware/wav_reader.c",
+    "fatfs/HAL_SDCard.c",
+]
+
 
 def fail(message: str) -> None:
     print(f"FAIL: {message}")
@@ -75,6 +88,55 @@ def fail(message: str) -> None:
 
 def read_text(relative: str) -> str:
     return (ROOT / relative).read_text(encoding="utf-8")
+
+
+def is_comment_line(line: str) -> bool:
+    stripped = line.strip()
+    return stripped.startswith("/*") or stripped.startswith("*") or stripped.endswith("*/")
+
+
+def previous_nonblank_line(lines: list[str], index: int) -> str:
+    previous_index = index - 1
+    while previous_index >= 0 and lines[previous_index].strip() == "":
+        previous_index -= 1
+    if previous_index < 0:
+        return ""
+    return lines[previous_index]
+
+
+def comment_block_before(lines: list[str], index: int) -> str:
+    previous_index = index - 1
+    while previous_index >= 0 and lines[previous_index].strip() == "":
+        previous_index -= 1
+    if previous_index < 0 or not is_comment_line(lines[previous_index]):
+        return ""
+
+    block: list[str] = []
+    while previous_index >= 0 and is_comment_line(lines[previous_index]):
+        block.append(lines[previous_index].strip())
+        previous_index -= 1
+    block.reverse()
+    return "\n".join(block)
+
+
+def declaration_parameter_names(declaration: str) -> list[str]:
+    match = re.search(r"\((.*)\)", declaration)
+    if not match:
+        return []
+
+    raw_params = match.group(1).strip()
+    if raw_params == "" or raw_params == "void":
+        return []
+
+    names: list[str] = []
+    for raw_param in raw_params.split(","):
+        cleaned = raw_param.strip()
+        if cleaned == "...":
+            continue
+        name_match = re.search(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?$", cleaned)
+        if name_match:
+            names.append(name_match.group(1))
+    return names
 
 
 def check_required_files() -> None:
@@ -89,28 +151,47 @@ def check_required_files() -> None:
 def check_header_comments() -> None:
     for relative in HEADER_FILES:
         text = read_text(relative)
+        lines = text.splitlines()
         stripped = text.lstrip()
         if not stripped.startswith("/*"):
             fail(f"{relative} must start with a module comment")
 
-        declarations = re.findall(r"^(?:[A-Za-z_][\\w\\s\\*]+\\s+)?[A-Za-z_]\\w+\\([^;{}]*\\);", text, re.M)
+        declarations = re.findall(r"^(?:[A-Za-z_][\w\s\*]+\s+)?[A-Za-z_]\w+\([^;{}]*\);", text, re.M)
         for declaration in declarations:
             start = text.find(declaration)
-            previous = text[:start].rstrip().splitlines()[-1] if text[:start].rstrip().splitlines() else ""
-            if "/*" not in previous:
+            line_index = text[:start].count("\n")
+            comment = comment_block_before(lines, line_index)
+            if comment == "":
                 fail(f"{relative} declaration lacks comment: {declaration.strip()}")
+            for param_name in declaration_parameter_names(declaration):
+                if param_name not in comment:
+                    fail(f"{relative} declaration comment must describe parameter {param_name}: {declaration.strip()}")
 
-        defines = re.findall(r"^#define\\s+([A-Za-z_]\\w+)", text, re.M)
+        defines = re.findall(r"^#define\s+([A-Za-z_]\w+)", text, re.M)
         for name in defines:
             if name.endswith("_H"):
                 continue
-            define_line = re.search(rf"^#define\\s+{name}\\b.*$", text, re.M)
+            define_line = re.search(rf"^#define\s+{name}\b.*$", text, re.M)
             if not define_line:
                 continue
-            start = define_line.start()
-            previous = text[:start].rstrip().splitlines()[-1] if text[:start].rstrip().splitlines() else ""
-            if "/*" not in previous:
+            line_index = text[:define_line.start()].count("\n")
+            if not is_comment_line(previous_nonblank_line(lines, line_index)):
                 fail(f"{relative} #define lacks comment: {name}")
+
+
+def check_source_comments() -> None:
+    for relative in SOURCE_FILES:
+        text = read_text(relative)
+        stripped = text.lstrip()
+        if not stripped.startswith("/*"):
+            fail(f"{relative} must start with a module comment")
+
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            if not re.match(r"^\s*static\s+", line):
+                continue
+            if not is_comment_line(previous_nonblank_line(lines, index)):
+                fail(f"{relative} static item lacks comment near line {index + 1}: {line.strip()}")
 
 
 def check_commands() -> None:
@@ -179,6 +260,7 @@ def check_build_map() -> None:
 def main() -> int:
     check_required_files()
     check_header_comments()
+    check_source_comments()
     check_commands()
     check_pin_conflict_documented()
     check_local_button_long_press()

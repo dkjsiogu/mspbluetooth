@@ -1,3 +1,8 @@
+/*
+ * wav_reader.c
+ * Minimal RIFF/WAVE parser used by the player before streaming TF-card audio.
+ * It accepts only formats that the MSP430 software I2S path can output safely.
+ */
 #include "wav_reader.h"
 
 #include <string.h>

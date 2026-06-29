@@ -1,3 +1,8 @@
+/*
+ * main.c
+ * Firmware entry point for the MSP430F5529 Bluetooth WAV player. The file
+ * keeps startup order and the foreground scheduler visible in one short place.
+ */
 #include <msp430.h>
 
 #include "application/audio_player.h"

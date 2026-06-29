@@ -1,3 +1,8 @@
+/*
+ * local_buttons.c
+ * Debounced S1/S2/S4 local button scanner. Short presses and long presses are
+ * converted into player events without blocking the main loop.
+ */
 #include "local_buttons.h"
 
 #include "board.h"

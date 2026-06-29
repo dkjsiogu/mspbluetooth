@@ -1,3 +1,9 @@
+/*
+ * audio_player.c
+ * Foreground audio-player state machine. It translates Bluetooth, EC11, and
+ * local button events into WAV file operations, software I2S output, and status
+ * messages for the Android app or serial terminal.
+ */
 #include "audio_player.h"
 
 #include "bluetooth_uart.h"
@@ -162,6 +168,7 @@ static uint8_t player_progress_percent(void)
     return (uint8_t)percent;
 }
 
+/* player_report_status: sends playback mode, track, volume, order, and WAV progress. */
 static void player_report_status(void)
 {
     bluetooth_uart_write_str("status=");
@@ -183,6 +190,7 @@ static void player_report_status(void)
     bluetooth_uart_write_str("\r\n");
 }
 
+/* player_report_display_frame: mirrors the display model through Bluetooth text. */
 static void player_report_display_frame(void)
 {
     DisplayModelInput input;
@@ -207,6 +215,7 @@ static void player_report_display_frame(void)
     bluetooth_uart_write_line(frame.line3);
 }
 
+/* player_report_order: reports the active sequence/repeat mode after changes. */
 static void player_report_order(void)
 {
     bluetooth_uart_write_str("order=");
@@ -641,6 +650,7 @@ static void player_handle_command(uint8_t command)
     }
 }
 
+/* player_write_prompt: prints all supported Bluetooth control commands. */
 static void player_write_prompt(void)
 {
     bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, 1-9 track, ? status");

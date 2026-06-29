@@ -123,7 +123,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 验证内容：
 
 - clean build 固件并生成 `Debug\mspbluetooth.out`
-- 静态检查头文件注释、关键命令、引脚冲突说明、RAM 余量
+- 静态检查头文件/源码文件头、声明参数说明、宏说明、static 项说明、关键命令、引脚冲突说明、RAM 余量
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟蓝牙、EC11、本地按键混合控制场景
 - 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按

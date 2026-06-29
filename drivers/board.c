@@ -1,3 +1,8 @@
+/*
+ * board.c
+ * Board support implementation for clock setup, millisecond timing, blocking
+ * delays, and the LaunchPad/Pocket Kit status LED.
+ */
 #include "board.h"
 
 #include <msp430.h>

@@ -1,3 +1,8 @@
+/*
+ * bluetooth_uart.c
+ * HC-05 UART implementation. The RX interrupt stores incoming command bytes in
+ * a small ring buffer while foreground code uses blocking transmit helpers.
+ */
 #include "bluetooth_uart.h"
 
 #include <msp430.h>

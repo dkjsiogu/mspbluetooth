@@ -1,3 +1,8 @@
+/*
+ * HAL_SDCard.c
+ * TF-card GPIO adapter for FatFs mmc.c. It provides chip-select control and a
+ * simple bit-banged SPI byte transfer on the course project pins.
+ */
 #include "HAL_SDCard.h"
 
 #include <msp430.h>
