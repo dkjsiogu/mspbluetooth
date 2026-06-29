@@ -15,6 +15,7 @@ typedef struct {
     uint8_t file_open;
     uint8_t track_index;
     uint8_t volume;
+    uint8_t saved_volume;
     uint16_t bytes_per_frame;
     uint32_t data_remaining;
     uint32_t led_stamp_ms;
@@ -36,6 +37,9 @@ static uint8_t g_audio_buffer[PLAYER_AUDIO_BUFFER_BYTES];
 
 /* player_write_prompt: prints the Bluetooth command cheat sheet. */
 static void player_write_prompt(void);
+
+/* player_report_status: sends a compact state snapshot over Bluetooth UART. */
+static void player_report_status(void);
 
 /* player_open_track: opens TRACKxx.WAV and optionally starts playback. */
 static uint8_t player_open_track(uint8_t track_index, uint8_t start_playing);
@@ -80,7 +84,6 @@ static const char *mode_text(PlayerMode mode)
     }
 }
 
-/* player_report_status: sends a compact state snapshot over Bluetooth UART. */
 static void player_report_status(void)
 {
     bluetooth_uart_write_str("status=");
@@ -96,6 +99,28 @@ static void player_report_status(void)
         bluetooth_uart_write_uint(g_player.wav.channels);
     }
     bluetooth_uart_write_str("\r\n");
+}
+
+/* player_report_info: sends firmware version and hardware wiring profile. */
+static void player_report_info(void)
+{
+    bluetooth_uart_write_str("info name=");
+    bluetooth_uart_write_str(PLAYER_FIRMWARE_NAME);
+    bluetooth_uart_write_str(" version=");
+    bluetooth_uart_write_str(PLAYER_FIRMWARE_VERSION);
+    bluetooth_uart_write_str(" profile=");
+    bluetooth_uart_write_str(PLAYER_HARDWARE_PROFILE);
+    bluetooth_uart_write_str("\r\n");
+}
+
+/* player_report_selftest: reports software-visible subsystem readiness. */
+static void player_report_selftest(void)
+{
+    bluetooth_uart_write_str("selftest bt=ok sd=");
+    bluetooth_uart_write_str(g_player.sd_ready != 0u ? "ok" : "fail");
+    bluetooth_uart_write_str(" file=");
+    bluetooth_uart_write_str(g_player.file_open != 0u ? "open" : "none");
+    bluetooth_uart_write_str(" dac=test-with-t\r\n");
 }
 
 /* player_report_track_opened: reports the current WAV format after successful open. */
@@ -271,6 +296,24 @@ static void player_stop(void)
     bluetooth_uart_write_line("stop");
 }
 
+/* player_replay: seeks to the beginning of the current track and starts playback. */
+static void player_replay(void)
+{
+    if (g_player.file_open == 0u) {
+        player_play();
+        return;
+    }
+
+    if (f_lseek(&g_audio_file, g_player.wav.data_start) != FR_OK) {
+        player_set_error("seek failed");
+        return;
+    }
+
+    g_player.data_remaining = g_player.wav.data_bytes;
+    g_player.mode = PLAYER_MODE_PLAYING;
+    bluetooth_uart_write_line("replay");
+}
+
 /* player_set_volume: clamps, stores, applies, and reports the requested volume. */
 static void player_set_volume(uint8_t volume)
 {
@@ -301,6 +344,39 @@ static void player_volume_down(void)
     }
 }
 
+/* player_toggle_mute: switches volume between zero and the last nonzero value. */
+static void player_toggle_mute(void)
+{
+    if (g_player.volume > 0u) {
+        g_player.saved_volume = g_player.volume;
+        player_set_volume(0u);
+        bluetooth_uart_write_line("mute=on");
+    } else {
+        if (g_player.saved_volume == 0u) {
+            g_player.saved_volume = PLAYER_DEFAULT_VOLUME;
+        }
+        player_set_volume(g_player.saved_volume);
+        bluetooth_uart_write_line("mute=off");
+    }
+}
+
+/* player_run_test_tone: emits a local DAC tone without reading the TF card. */
+static void player_run_test_tone(void)
+{
+    PlayerMode previous_mode;
+
+    previous_mode = g_player.mode;
+    g_player.mode = PLAYER_MODE_PAUSED;
+    bluetooth_uart_write_line("tone start");
+    i2s_dac_write_test_tone(PLAYER_TEST_TONE_FRAMES, PLAYER_TEST_TONE_AMPLITUDE);
+    i2s_dac_write_silence(16u);
+    bluetooth_uart_write_line("tone done");
+
+    if (previous_mode == PLAYER_MODE_PLAYING) {
+        g_player.mode = PLAYER_MODE_PLAYING;
+    }
+}
+
 /* player_handle_command: executes one ASCII Bluetooth/APK control byte. */
 static void player_handle_command(uint8_t command)
 {
@@ -322,6 +398,9 @@ static void player_handle_command(uint8_t command)
     case 's':
         player_stop();
         break;
+    case 'r':
+        player_replay();
+        break;
     case 'n':
     case '>':
         player_next_track();
@@ -338,6 +417,18 @@ static void player_handle_command(uint8_t command)
     case '_':
         player_volume_down();
         break;
+    case 'm':
+        player_toggle_mute();
+        break;
+    case 't':
+        player_run_test_tone();
+        break;
+    case 'i':
+        player_report_info();
+        break;
+    case 'e':
+        player_report_selftest();
+        break;
     case '?':
         player_report_status();
         break;
@@ -351,7 +442,7 @@ static void player_handle_command(uint8_t command)
 
 static void player_write_prompt(void)
 {
-    bluetooth_uart_write_line("cmd: p play/pause, s stop, n next, b prev, +/- volume, 1-9 track, ? status");
+    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, t tone, i info, e selftest, 1-9 track, ? status");
 }
 
 void audio_player_init(void)
@@ -363,6 +454,7 @@ void audio_player_init(void)
     g_player.file_open = 0u;
     g_player.track_index = 1u;
     g_player.volume = PLAYER_DEFAULT_VOLUME;
+    g_player.saved_volume = PLAYER_DEFAULT_VOLUME;
     g_player.bytes_per_frame = 4u;
     g_player.data_remaining = 0u;
     g_player.led_stamp_ms = board_millis();

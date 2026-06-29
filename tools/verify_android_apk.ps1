@@ -15,6 +15,7 @@ function Invoke-Checked {
 $root = Resolve-Path "$PSScriptRoot\.."
 $apk = Join-Path $root "android\app\build\outputs\apk\debug\app-debug.apk"
 $aapt = Join-Path $root ".tools\android-sdk\build-tools\35.0.0\aapt.exe"
+$mainActivity = Join-Path $root "android\app\src\main\java\com\dkjsiogu\mspbluetooth\MainActivity.java"
 
 Invoke-Checked { powershell -ExecutionPolicy Bypass -File (Join-Path $root "tools\build_android_apk.ps1") }
 
@@ -38,6 +39,15 @@ $required = @(
 foreach ($needle in $required) {
     if (($badging -join "`n").IndexOf($needle, [StringComparison]::Ordinal) -lt 0) {
         throw "APK badging missing: $needle"
+    }
+}
+
+$source = Get-Content -Raw $mainActivity
+$requiredCommands = @('"p"', '"s"', '"r"', '"n"', '"b"', '"+"', '"-"', '"m"', '"t"', '"i"', '"e"', '"?"')
+foreach ($command in $requiredCommands) {
+    if ($source.IndexOf("sendButton", [StringComparison]::Ordinal) -ge 0 -and
+        $source.IndexOf($command, [StringComparison]::Ordinal) -lt 0) {
+        throw "Android UI source missing command button for $command"
     }
 }
 

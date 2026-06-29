@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -21,17 +20,18 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+@SuppressWarnings("deprecation")
 public class MainActivity extends Activity {
     private static final UUID SPP_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
 
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
-    private ArrayAdapter<DeviceEntry> deviceAdapter;
     private Spinner deviceSpinner;
     private TextView stateView;
     private TextView logView;
@@ -89,14 +89,14 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(0xFFF7F8FA);
 
         TextView title = new TextView(this);
-        title.setText("MSP430 音频播放器");
+        title.setText("MSP430 Player");
         title.setTextSize(22);
         title.setTextColor(0xFF111827);
         title.setGravity(Gravity.CENTER_VERTICAL);
         root.addView(title, new LinearLayout.LayoutParams(-1, dp(40)));
 
         stateView = new TextView(this);
-        stateView.setText("未连接");
+        stateView.setText("Disconnected");
         stateView.setTextSize(14);
         stateView.setTextColor(0xFF374151);
         root.addView(stateView, new LinearLayout.LayoutParams(-1, dp(28)));
@@ -104,52 +104,56 @@ public class MainActivity extends Activity {
         deviceSpinner = new Spinner(this);
         root.addView(deviceSpinner, new LinearLayout.LayoutParams(-1, dp(48)));
 
-        LinearLayout connectionRow = new LinearLayout(this);
-        connectionRow.setOrientation(LinearLayout.HORIZONTAL);
-        connectButton = commandButton("连接", 0xFF0F766E);
+        LinearLayout connectionRow = row();
+        connectButton = commandButton("Connect", 0xFF0F766E);
         connectButton.setOnClickListener(v -> toggleConnection());
-        Button refreshButton = commandButton("刷新", 0xFF475569);
+        Button refreshButton = commandButton("Refresh", 0xFF475569);
         refreshButton.setOnClickListener(v -> refreshBondedDevices());
         connectionRow.addView(connectButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         connectionRow.addView(refreshButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(connectionRow);
 
-        LinearLayout transportRow = new LinearLayout(this);
-        transportRow.setOrientation(LinearLayout.HORIZONTAL);
-        transportRow.addView(sendButton("上一曲", "b"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        transportRow.addView(sendButton("播放/暂停", "p"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        transportRow.addView(sendButton("下一曲", "n"), new LinearLayout.LayoutParams(0, dp(48), 1));
+        LinearLayout transportRow = row();
+        transportRow.addView(sendButton("Prev", "b"), new LinearLayout.LayoutParams(0, dp(48), 1));
+        transportRow.addView(sendButton("Play/Pause", "p"), new LinearLayout.LayoutParams(0, dp(48), 1));
+        transportRow.addView(sendButton("Next", "n"), new LinearLayout.LayoutParams(0, dp(48), 1));
         root.addView(transportRow);
 
-        LinearLayout volumeRow = new LinearLayout(this);
-        volumeRow.setOrientation(LinearLayout.HORIZONTAL);
-        volumeRow.addView(sendButton("音量 -", "-"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        volumeRow.addView(sendButton("停止", "s"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        volumeRow.addView(sendButton("音量 +", "+"), new LinearLayout.LayoutParams(0, dp(48), 1));
+        LinearLayout volumeRow = row();
+        volumeRow.addView(sendButton("Vol -", "-"), new LinearLayout.LayoutParams(0, dp(48), 1));
+        volumeRow.addView(sendButton("Stop", "s"), new LinearLayout.LayoutParams(0, dp(48), 1));
+        volumeRow.addView(sendButton("Vol +", "+"), new LinearLayout.LayoutParams(0, dp(48), 1));
         root.addView(volumeRow);
+
+        LinearLayout toolsRow = row();
+        toolsRow.addView(sendButton("Replay", "r"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        toolsRow.addView(sendButton("Mute", "m"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        toolsRow.addView(sendButton("Tone", "t"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(toolsRow);
+
+        LinearLayout diagRow = row();
+        diagRow.addView(sendButton("Info", "i"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        diagRow.addView(sendButton("Selftest", "e"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        diagRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(diagRow);
 
         LinearLayout trackGrid = new LinearLayout(this);
         trackGrid.setOrientation(LinearLayout.VERTICAL);
-        for (int row = 0; row < 3; row++) {
-            LinearLayout trackRow = new LinearLayout(this);
-            trackRow.setOrientation(LinearLayout.HORIZONTAL);
+        for (int gridRow = 0; gridRow < 3; gridRow++) {
+            LinearLayout trackRow = row();
             for (int col = 0; col < 3; col++) {
-                int track = row * 3 + col + 1;
-                trackRow.addView(sendButton("曲目 " + track, String.valueOf(track)),
+                int track = gridRow * 3 + col + 1;
+                trackRow.addView(sendButton("Track " + track, String.valueOf(track)),
                         new LinearLayout.LayoutParams(0, dp(42), 1));
             }
             trackGrid.addView(trackRow);
         }
         root.addView(trackGrid);
 
-        Button statusButton = commandButton("查询状态", 0xFF2563EB);
-        statusButton.setOnClickListener(v -> sendCommand("?"));
-        root.addView(statusButton, new LinearLayout.LayoutParams(-1, dp(44)));
-
         logView = new TextView(this);
         logView.setTextSize(13);
         logView.setTextColor(0xFF111827);
-        logView.setText("等待连接 HC-05...\n");
+        logView.setText("Pair HC-05 in Android Bluetooth settings first.\n");
         ScrollView scrollView = new ScrollView(this);
         scrollView.setBackgroundColor(0xFFFFFFFF);
         scrollView.setPadding(dp(10), dp(10), dp(10), dp(10));
@@ -157,6 +161,12 @@ public class MainActivity extends Activity {
         root.addView(scrollView, new LinearLayout.LayoutParams(-1, 0, 1));
 
         setContentView(root);
+    }
+
+    private LinearLayout row() {
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+        return layout;
     }
 
     private Button commandButton(String text, int color) {
@@ -192,26 +202,27 @@ public class MainActivity extends Activity {
 
     private void refreshBondedDevices() {
         if (!hasBluetoothPermission()) {
-            setState("等待蓝牙权限");
+            setState("Waiting for Bluetooth permission");
             return;
         }
 
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         devices.clear();
         if (adapter == null) {
-            setState("此手机不支持蓝牙");
+            setState("Bluetooth is not supported on this phone");
         } else if (!adapter.isEnabled()) {
-            setState("请先打开系统蓝牙并配对 HC-05");
+            setState("Enable Bluetooth and pair HC-05 first");
         } else {
             Set<BluetoothDevice> bonded = adapter.getBondedDevices();
             for (BluetoothDevice device : bonded) {
                 devices.add(new DeviceEntry(device));
             }
-            setState(devices.isEmpty() ? "没有已配对设备，请先在系统蓝牙中配对 HC-05" : "选择设备后连接");
+            setState(devices.isEmpty() ? "No paired devices; pair HC-05 first" : "Select a device and connect");
         }
 
-        deviceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, devices);
-        deviceSpinner.setAdapter(deviceAdapter);
+        ArrayAdapter<DeviceEntry> adapterView =
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, devices);
+        deviceSpinner.setAdapter(adapterView);
     }
 
     private void toggleConnection() {
@@ -221,19 +232,19 @@ public class MainActivity extends Activity {
         }
 
         if (devices.isEmpty()) {
-            toast("没有已配对设备");
+            toast("No paired devices");
             refreshBondedDevices();
             return;
         }
 
         DeviceEntry entry = (DeviceEntry) deviceSpinner.getSelectedItem();
         if (entry == null) {
-            toast("请选择设备");
+            toast("Select a device");
             return;
         }
 
         connectButton.setEnabled(false);
-        setState("正在连接 " + entry.label);
+        setState("Connecting " + entry.label);
         new Thread(() -> connectToDevice(entry.device)).start();
     }
 
@@ -253,9 +264,9 @@ public class MainActivity extends Activity {
             outputStream = newSocket.getOutputStream();
             startReader(newSocket.getInputStream());
             runOnUiThread(() -> {
-                connectButton.setText("断开");
+                connectButton.setText("Disconnect");
                 connectButton.setEnabled(true);
-                setState("已连接 " + device.getName());
+                setState("Connected " + device.getName());
                 appendLog("connected");
                 sendCommand("?");
             });
@@ -263,7 +274,7 @@ public class MainActivity extends Activity {
             closeConnection();
             runOnUiThread(() -> {
                 connectButton.setEnabled(true);
-                setState("连接失败");
+                setState("Connect failed");
                 appendLog("connect error: " + ex.getMessage());
             });
         }
@@ -277,7 +288,7 @@ public class MainActivity extends Activity {
                 try {
                     int count = inputStream.read(buffer);
                     if (count > 0) {
-                        String text = new String(buffer, 0, count);
+                        String text = new String(buffer, 0, count, StandardCharsets.US_ASCII);
                         runOnUiThread(() -> appendLog(text));
                     }
                 } catch (IOException ex) {
@@ -293,12 +304,12 @@ public class MainActivity extends Activity {
 
     private void sendCommand(String command) {
         if (outputStream == null) {
-            toast("未连接 HC-05");
+            toast("Not connected to HC-05");
             return;
         }
 
         try {
-            outputStream.write(command.getBytes());
+            outputStream.write(command.getBytes(StandardCharsets.US_ASCII));
             outputStream.flush();
             appendLog("> " + command);
         } catch (IOException ex) {
@@ -318,9 +329,9 @@ public class MainActivity extends Activity {
         socket = null;
         outputStream = null;
         runOnUiThread(() -> {
-            connectButton.setText("连接");
+            connectButton.setText("Connect");
             connectButton.setEnabled(true);
-            setState("未连接");
+            setState("Disconnected");
         });
     }
 
@@ -339,4 +350,3 @@ public class MainActivity extends Activity {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
     }
 }
-

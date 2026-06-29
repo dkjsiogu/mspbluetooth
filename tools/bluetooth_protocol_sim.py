@@ -19,6 +19,7 @@ class SimulatedPlayer:
     mode: str = "paused"
     track: int = 1
     volume: int = 18
+    saved_volume: int = 18
     transcript: list[str] = field(default_factory=list)
 
     def send(self, command: str) -> None:
@@ -33,6 +34,9 @@ class SimulatedPlayer:
         elif command == "s":
             self.mode = "stopped"
             self.transcript.append("stop")
+        elif command == "r":
+            self.mode = "playing"
+            self.transcript.append("replay")
         elif command in ("n", ">"):
             self.track = 1 if self.track >= MAX_TRACKS else self.track + 1
             self.mode = "playing"
@@ -47,6 +51,21 @@ class SimulatedPlayer:
         elif command in ("-", "_"):
             self.volume = max(0, self.volume - 1)
             self.transcript.append(f"volume={self.volume}")
+        elif command == "m":
+            if self.volume > 0:
+                self.saved_volume = self.volume
+                self.volume = 0
+                self.transcript.append("mute=on")
+            else:
+                self.volume = self.saved_volume or 18
+                self.transcript.append("mute=off")
+        elif command == "t":
+            self.transcript.append("tone start")
+            self.transcript.append("tone done")
+        elif command == "i":
+            self.transcript.append("info name=MSP430F5529-BT-WAV version=1.1.0")
+        elif command == "e":
+            self.transcript.append("selftest bt=ok sd=ok file=open dac=test-with-t")
         elif command == "?":
             self.transcript.append(
                 f"status={self.mode} track={self.track} volume={self.volume}"
@@ -63,12 +82,15 @@ def assert_equal(actual: object, expected: object, label: str) -> None:
 def run_required_flow() -> SimulatedPlayer:
     player = SimulatedPlayer()
 
-    for command in ["p", "+", "+", "n", "b", "-", "s", "3", "?"]:
+    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "s", "3", "r", "t", "i", "e", "?"]:
         player.send(command)
 
     assert_equal(player.mode, "playing", "mode after direct track command")
     assert_equal(player.track, 3, "direct track command")
     assert_equal(player.volume, 19, "volume plus/minus flow")
+    assert "tone done" in player.transcript
+    assert any(line.startswith("info name=") for line in player.transcript)
+    assert any(line.startswith("selftest bt=ok") for line in player.transcript)
     assert "status=playing track=3 volume=19" in player.transcript[-1]
     return player
 
@@ -83,4 +105,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

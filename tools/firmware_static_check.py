@@ -32,10 +32,15 @@ REQUIRED_FILES = [
 REQUIRED_COMMANDS = {
     "p": "play/pause",
     "s": "stop",
+    "r": "replay",
     "n": "next",
     "b": "previous",
     "+": "volume up",
     "-": "volume down",
+    "m": "mute",
+    "t": "tone test",
+    "i": "info",
+    "e": "selftest",
     "?": "status",
 }
 

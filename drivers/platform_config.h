@@ -10,6 +10,15 @@
 
 #include <stdint.h>
 
+/* PLAYER_FIRMWARE_NAME: ASCII product name reported by the info command. */
+#define PLAYER_FIRMWARE_NAME            "MSP430F5529-BT-WAV"
+
+/* PLAYER_FIRMWARE_VERSION: manually updated firmware version string. */
+#define PLAYER_FIRMWARE_VERSION         "1.1.0"
+
+/* PLAYER_HARDWARE_PROFILE: wiring profile name reported for lab debugging. */
+#define PLAYER_HARDWARE_PROFILE         "TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1"
+
 /* MCLK_HZ: CPU clock frequency used by delay loops and timing calculations. */
 #define MCLK_HZ                         16000000UL
 
@@ -47,6 +56,12 @@
 
 /* PLAYER_AUDIO_BUFFER_BYTES: one SD read chunk; keep small for MSP430 RAM. */
 #define PLAYER_AUDIO_BUFFER_BYTES       192u
+
+/* PLAYER_TEST_TONE_FRAMES: stereo frames emitted by the DAC self-test command. */
+#define PLAYER_TEST_TONE_FRAMES         900u
+
+/* PLAYER_TEST_TONE_AMPLITUDE: signed PCM amplitude used by the DAC self-test. */
+#define PLAYER_TEST_TONE_AMPLITUDE      12000
 
 /* PLAYER_STATUS_PUSH_MS: periodic Bluetooth status interval; 0 disables it. */
 #define PLAYER_STATUS_PUSH_MS           5000u

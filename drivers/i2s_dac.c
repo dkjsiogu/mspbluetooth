@@ -105,3 +105,23 @@ void i2s_dac_write_silence(uint16_t frames)
         frames--;
     }
 }
+
+void i2s_dac_write_test_tone(uint16_t frames, int16_t amplitude)
+{
+    uint8_t phase;
+
+    phase = 0u;
+    while (frames > 0u) {
+        if (phase < 8u) {
+            i2s_dac_write_stereo(amplitude, amplitude);
+        } else {
+            i2s_dac_write_stereo((int16_t)-amplitude, (int16_t)-amplitude);
+        }
+
+        phase++;
+        if (phase >= 16u) {
+            phase = 0u;
+        }
+        frames--;
+    }
+}

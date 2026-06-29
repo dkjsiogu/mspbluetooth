@@ -10,6 +10,8 @@
 - S1/S2/S4 本地按键：播放/暂停、上一曲、下一曲。
 - HC-05 蓝牙串口接收遥控命令。
 - 蓝牙端每 5 秒自动推送一次当前状态，方便手机端和串口助手确认链路。
+- 蓝牙 `t` 命令可直接让 PCM5102A 输出测试音，不依赖 TF 卡音频文件，便于现场确认 DAC/功放/喇叭链路。
+- 蓝牙 `i`/`e` 命令可输出固件版本、硬件映射和软件可见自检摘要。
 - DAC 模拟输出可同时接 PAM8403 功放输入和 3.5mm 耳机座。
 
 ## 代码结构
@@ -54,10 +56,15 @@ TRACK09.WAV
 ```text
 p    播放/暂停
 s    停止并回到当前曲目开头
+r    重播当前曲目
 n/>  下一曲
 b/<  上一曲
 +    音量加
 -    音量减
+m    静音/恢复
+t    DAC 测试音
+i    固件与硬件映射信息
+e    自检摘要
 1-9  直接播放对应曲目
 ?    查询状态
 h    输出命令帮助
@@ -67,6 +74,8 @@ h    输出命令帮助
 
 ```text
 status=playing track=1 volume=18 rate=16000Hz channels=2
+info name=MSP430F5529-BT-WAV version=1.1.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
+selftest bt=ok sd=ok file=open dac=test-with-t
 ```
 
 ## 编译
@@ -97,6 +106,10 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 静态检查头文件注释、关键命令、引脚冲突说明、RAM 余量
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟蓝牙、EC11、本地按键混合控制场景
+
+## 实物验证
+
+上板前按 [硬件现场验证清单](docs/hardware_verification.md) 分阶段检查蓝牙、DAC 测试音、TF 卡 WAV 播放、EC11 和本地按键。墨水屏引脚冲突分析也在该文档中。
 
 ## Android 控制端
 

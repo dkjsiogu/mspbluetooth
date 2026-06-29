@@ -18,6 +18,7 @@ class BoardState:
     volume: int = 18
     led_toggles: int = 0
     status_reports: int = 0
+    tone_tests: int = 0
 
 
 def apply_event(state: BoardState, event: str) -> None:
@@ -27,6 +28,11 @@ def apply_event(state: BoardState, event: str) -> None:
         state.volume = min(32, state.volume + 1)
     elif event in ("bt:-", "enc:ccw"):
         state.volume = max(0, state.volume - 1)
+    elif event == "bt:t":
+        state.tone_tests += 1
+        state.mode = "paused"
+    elif event == "bt:r":
+        state.mode = "playing"
     elif event in ("bt:n", "s4"):
         state.track = 1 if state.track >= 9 else state.track + 1
         state.mode = "playing"
@@ -52,6 +58,8 @@ def main() -> int:
         "bt:n",
         "s2",
         "bt:-",
+        "bt:t",
+        "bt:r",
         "enc:press",
         "tick:500ms",
         "tick:5s",
@@ -65,6 +73,7 @@ def main() -> int:
     assert state.volume == 19, state
     assert state.led_toggles == 1, state
     assert state.status_reports == 1, state
+    assert state.tone_tests == 1, state
 
     print("whole-board control scenario passed")
     print(state)
@@ -73,4 +82,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
