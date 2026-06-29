@@ -68,6 +68,7 @@ REQUIRED_COMMANDS = {
     "?": "status",
     "k": "Bluetooth link counters",
     "u": "local input counters",
+    "w": "active wiring diagnostics",
 }
 
 

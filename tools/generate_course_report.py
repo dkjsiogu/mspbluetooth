@@ -60,7 +60,7 @@ def build_report() -> str:
 - 驱动层：`drivers/` 负责 MSP430 时钟、UART、EC11、本地按键、软件 I2S 和板级 GPIO。
 - 中间层：`middleware/wav_reader.*` 解析 16-bit PCM WAV，`middleware/display_model.*` 生成三行状态显示帧。
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
-- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、`display 1/2/3:`、`tracks` 和 `link` 回传。
+- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、`display 1/2/3:`、`tracks`、`link`、`input` 和 `pin` 回传。
 - 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
 - TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
@@ -95,6 +95,7 @@ def build_report() -> str:
 - 蓝牙 `d` 命令输出三行显示帧；Android 面板和 PGM 预览图可模拟墨水屏效果。
 - 蓝牙 `k` 命令输出 RX、状态上报、显示帧上报、异常命令、最后命令和运行时间计数，便于确认手机到 HC-05 到固件再回手机的闭环。
 - 蓝牙 `u` 命令输出 EC11 与 S1/S2/S4 短按、长按计数，便于确认本地输入链路。
+- 蓝牙 `w` 命令输出 TF、I2S、EC11、本地按键、HC-05 和可选墨水屏接线，便于现场核对 P3.3 冲突和 P4.4/P4.5 蓝牙改线。
 - Android `Save Log` 可把手机 TX/RX 验收日志直接保存为文本文件，便于课后用脚本复查。
 - 蓝牙状态包含播放模式、曲目、音量、播放顺序、采样率、声道和进度百分比。
 
@@ -124,6 +125,7 @@ def build_report() -> str:
 | `?` | 查询状态 |
 | `k` | 查询蓝牙链路计数 |
 | `u` | 查询 EC11 和本地按键计数 |
+| `w` | 查询实际硬件接线 |
 
 示例回传：
 
@@ -134,6 +136,7 @@ display 2:SD:OK WAV:OPEN
 display 3:16000Hz 2ch P0%
 link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms
 input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1
+pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict
 ```
 
 ## 7. 验证证据
@@ -148,14 +151,14 @@ powershell -ExecutionPolicy Bypass -File tools\\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧/Link/Input 面板解析和日志保存路径、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧/Link/Input/Wiring 面板解析和日志保存路径、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
 实物验收按 `docs/hardware_verification.md` 执行：
 
 - 先只烧录 MSP430F5529，确认 P1.0 状态 LED 模式和无复位循环。
-- 接 HC-05，使用 APK 连接并测试 `?`、`i`、`e`、`l`、`d`、`k`、`u`。
+- 接 HC-05，使用 APK 连接并测试 `?`、`i`、`e`、`l`、`d`、`k`、`u`、`w`。
 - 接 PCM5102A/PAM8403/喇叭，先用 `t` 测试音确认音频链路。
 - 插入 TF 卡并放置 `TRACK01.WAV` 等文件，测试播放、暂停、上下曲和进度上报。
 - 测试 EC11 旋转、短按、长按，以及本地按键短按和长按。
@@ -183,8 +186,9 @@ def validate_report(text: str) -> None:
         "progress=0",
         "link rx=",
         "input ecw=",
+        "pin bt tx=P4.4",
         "tools/wav_asset_check.py",
-        "Android 状态/显示帧/Link/Input 面板解析和日志保存路径",
+        "Android 状态/显示帧/Link/Input/Wiring 面板解析和日志保存路径",
         "音频流仿真",
         "I2S 帧仿真",
         "EC11 正交解码仿真",

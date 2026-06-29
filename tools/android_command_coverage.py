@@ -45,6 +45,7 @@ REQUIRED_COMMANDS = [
     RequiredCommand("?", "current status query", "Status"),
     RequiredCommand("k", "Bluetooth link counters", "Link"),
     RequiredCommand("u", "local input counters", "Input"),
+    RequiredCommand("w", "active wiring diagnostics", "Wiring"),
     RequiredCommand("1", "direct track 1", "Track 1"),
     RequiredCommand("2", "direct track 2", "Track 2"),
     RequiredCommand("3", "direct track 3", "Track 3"),
@@ -64,11 +65,13 @@ REQUIRED_PARSER_MARKERS = [
     'line.startsWith("tracks")',
     'line.startsWith("link ")',
     'line.startsWith("input ")',
+    'line.startsWith("pin ")',
     "updateDashboard",
     "updateDisplayFrame",
     "updateTrackList",
     "updateLinkPanel",
     "updateInputPanel",
+    "updateWiringPanel",
 ]
 
 REQUIRED_ACCEPTANCE_MARKERS = [
@@ -76,14 +79,15 @@ REQUIRED_ACCEPTANCE_MARKERS = [
     "resetAcceptanceSummary",
     "updateAcceptanceSummary",
     "renderAcceptanceSummary",
-    "Acceptance 0/8",
-    "Acceptance \" + passed + \"/8",
+    "Acceptance 0/9",
+    "Acceptance \" + passed + \"/9",
     'line.startsWith("sd mounted")',
     'line.startsWith("info name=")',
     'line.startsWith("selftest bt=ok")',
     'line.startsWith("tone start")',
     'line.startsWith("tone done")',
     'line.startsWith("open TRACK0")',
+    'line.startsWith("pin bt ")',
 ]
 
 REQUIRED_MANIFEST_MARKERS = [
@@ -95,7 +99,7 @@ REQUIRED_MANIFEST_MARKERS = [
     'android:label="MSP430 Player"',
 ]
 
-REQUIRED_ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u"]
+REQUIRED_ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "w"]
 
 
 def extract_send_buttons(source: str) -> dict[str, list[str]]:
@@ -149,9 +153,10 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),
             row(["`link ...`", "`updateLinkPanel` renders RX/status/display/error counters for Bluetooth round-trip evidence"]),
             row(["`input ...`", "`updateInputPanel` renders EC11 and S1/S2/S4 short/long event counters"]),
+            row(["`pin ...`", "`updateWiringPanel` renders TF/I2S/EC11/local/BT/e-paper wiring diagnostics"]),
             row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
             row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),
-            row(["Acceptance summary", "`acceptanceView` shows SD, info, selftest, tracks, display, status, tone, and file-open evidence as `Acceptance X/8`"]),
+            row(["Acceptance summary", "`acceptanceView` shows SD, info, selftest, tracks, wiring, display, status, tone, and file-open evidence as `Acceptance X/9`"]),
             row(["Acceptance log export", "`Share Log` uses Android `ACTION_SEND` with `EXTRA_TEXT` so logs can be saved and checked on PC"]),
             row(["Acceptance log file save", "`Save Log` uses Android `ACTION_CREATE_DOCUMENT` and `openOutputStream` to write the phone log as text"]),
             "",

@@ -31,6 +31,15 @@ def platform_define(name: str) -> str:
 FIRMWARE_NAME = platform_define("PLAYER_FIRMWARE_NAME")
 FIRMWARE_VERSION = platform_define("PLAYER_FIRMWARE_VERSION")
 HARDWARE_PROFILE = platform_define("PLAYER_HARDWARE_PROFILE")
+WIRING_LINES = [
+    f"pin profile={HARDWARE_PROFILE}",
+    "pin tf cs=P4.0 sck=P3.1 mosi=P3.2 miso=P3.3",
+    "pin i2s bck=P4.1 lrck=P4.2 din=P4.3",
+    "pin ec11 a=P2.1 b=P2.2 sw=P2.3",
+    "pin local s1=P1.2 s2=P1.3 s4=P2.6 led=P1.0",
+    "pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict",
+    "pin epaper optional=P6.0-P6.5 default=disabled",
+]
 
 
 @dataclass
@@ -196,6 +205,8 @@ class SimulatedPlayer:
                 f"s2={self.input_s2_short} s2l={self.input_s2_long} "
                 f"s4={self.input_s4_short} s4l={self.input_s4_long}"
             )
+        elif command == "w":
+            self.transcript.extend(WIRING_LINES)
         else:
             self.bad_count += 1
 
@@ -208,7 +219,7 @@ def assert_equal(actual: object, expected: object, label: str) -> None:
 def run_required_flow() -> SimulatedPlayer:
     player = SimulatedPlayer()
 
-    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?", "k", "u"]:
+    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?", "k", "u", "w"]:
         player.send(command)
 
     assert_equal(player.mode, "playing", "mode after direct track command")
@@ -225,6 +236,7 @@ def run_required_flow() -> SimulatedPlayer:
     assert link_lines
     assert "last=k" in link_lines[-1]
     assert any(line.startswith("input ecw=") for line in player.transcript)
+    assert any(line.startswith("pin bt tx=P4.4") for line in player.transcript)
     return player
 
 

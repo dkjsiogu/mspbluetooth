@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
     private static final int REQUEST_SAVE_LOG = 431;
     private static final String[] ACCEPTANCE_COMMANDS =
-            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u"};
+            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "w"};
 
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
     private Spinner deviceSpinner;
@@ -44,6 +44,7 @@ public class MainActivity extends Activity {
     private TextView trackListView;
     private TextView linkView;
     private TextView inputView;
+    private TextView wiringView;
     private TextView acceptanceView;
     private TextView logView;
     private Button connectButton;
@@ -53,6 +54,8 @@ public class MainActivity extends Activity {
     private volatile boolean keepReading;
     private final StringBuilder rxLineBuffer = new StringBuilder();
     private final String[] displayLines = new String[]{"--", "--", "--"};
+    private final String[] wiringLines = new String[]{
+            "Profile: --", "TF: --", "I2S: --", "EC11: --", "Local: --", "BT: --", "E-paper: --"};
     private boolean acceptanceSdMounted;
     private boolean acceptanceInfo;
     private boolean acceptanceSelftest;
@@ -64,6 +67,7 @@ public class MainActivity extends Activity {
     private boolean acceptanceToneStart;
     private boolean acceptanceToneDone;
     private boolean acceptanceTrackOpen;
+    private boolean acceptanceWiring;
 
     private static final class DeviceEntry {
         final BluetoothDevice device;
@@ -143,7 +147,10 @@ public class MainActivity extends Activity {
         inputView = panelText("Input\nEC11 CW:-- CCW:-- SW:-- Long:--\nS1:--/-- S2:--/-- S4:--/--");
         root.addView(inputView, new LinearLayout.LayoutParams(-1, dp(70)));
 
-        acceptanceView = panelText("Acceptance 0/8\nSD:-- Info:-- Selftest:-- Tracks:--\nDisplay:-- Status:-- Tone:-- Open:--");
+        wiringView = panelText("Wiring\nProfile: --\nTF: --\nI2S: --\nEC11: --\nLocal: --\nBT: --\nE-paper: --");
+        root.addView(wiringView, new LinearLayout.LayoutParams(-1, dp(146)));
+
+        acceptanceView = panelText("Acceptance 0/9\nSD:-- Info:-- Selftest:-- Tracks:-- Wiring:--\nDisplay:-- Status:-- Tone:-- Open:--");
         root.addView(acceptanceView, new LinearLayout.LayoutParams(-1, dp(70)));
 
         LinearLayout connectionRow = row();
@@ -177,6 +184,7 @@ public class MainActivity extends Activity {
         diagRow.addView(sendButton("Info", "i"), new LinearLayout.LayoutParams(0, dp(44), 1));
         diagRow.addView(sendButton("Selftest", "e"), new LinearLayout.LayoutParams(0, dp(44), 1));
         diagRow.addView(sendButton("Display", "d"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        diagRow.addView(sendButton("Wiring", "w"), new LinearLayout.LayoutParams(0, dp(44), 1));
         diagRow.addView(sendButton("Input", "u"), new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(diagRow);
 
@@ -485,6 +493,8 @@ public class MainActivity extends Activity {
             updateLinkPanel(line);
         } else if (line.startsWith("input ")) {
             updateInputPanel(line);
+        } else if (line.startsWith("pin ")) {
+            updateWiringPanel(line);
         }
     }
 
@@ -500,6 +510,7 @@ public class MainActivity extends Activity {
         acceptanceToneStart = false;
         acceptanceToneDone = false;
         acceptanceTrackOpen = false;
+        acceptanceWiring = false;
         renderAcceptanceSummary();
     }
 
@@ -526,6 +537,8 @@ public class MainActivity extends Activity {
             acceptanceToneDone = true;
         } else if (line.startsWith("open TRACK0")) {
             acceptanceTrackOpen = true;
+        } else if (line.startsWith("pin bt ")) {
+            acceptanceWiring = true;
         }
         renderAcceptanceSummary();
     }
@@ -542,10 +555,12 @@ public class MainActivity extends Activity {
         passed += acceptanceStatus ? 1 : 0;
         passed += toneOk ? 1 : 0;
         passed += acceptanceTrackOpen ? 1 : 0;
+        passed += acceptanceWiring ? 1 : 0;
 
-        acceptanceView.setText("Acceptance " + passed + "/8\n" +
+        acceptanceView.setText("Acceptance " + passed + "/9\n" +
                 "SD:" + mark(acceptanceSdMounted) + " Info:" + mark(acceptanceInfo) +
-                " Selftest:" + mark(acceptanceSelftest) + " Tracks:" + mark(acceptanceTracks) + "\n" +
+                " Selftest:" + mark(acceptanceSelftest) + " Tracks:" + mark(acceptanceTracks) +
+                " Wiring:" + mark(acceptanceWiring) + "\n" +
                 "Display:" + mark(displayOk) + " Status:" + mark(acceptanceStatus) +
                 " Tone:" + mark(toneOk) + " Open:" + mark(acceptanceTrackOpen));
     }
@@ -621,6 +636,28 @@ public class MainActivity extends Activity {
         inputView.setText("Input\nEC11 CW:" + ecw + " CCW:" + eccw +
                 " SW:" + eb + " Long:" + elong + "\nS1:" + s1 + "/" + s1l +
                 " S2:" + s2 + "/" + s2l + " S4:" + s4 + "/" + s4l);
+    }
+
+    private void updateWiringPanel(String pinLine) {
+        if (pinLine.startsWith("pin profile=")) {
+            wiringLines[0] = "Profile: " + pinLine.substring("pin profile=".length());
+        } else if (pinLine.startsWith("pin tf ")) {
+            wiringLines[1] = "TF: " + pinLine.substring("pin tf ".length());
+        } else if (pinLine.startsWith("pin i2s ")) {
+            wiringLines[2] = "I2S: " + pinLine.substring("pin i2s ".length());
+        } else if (pinLine.startsWith("pin ec11 ")) {
+            wiringLines[3] = "EC11: " + pinLine.substring("pin ec11 ".length());
+        } else if (pinLine.startsWith("pin local ")) {
+            wiringLines[4] = "Local: " + pinLine.substring("pin local ".length());
+        } else if (pinLine.startsWith("pin bt ")) {
+            wiringLines[5] = "BT: " + pinLine.substring("pin bt ".length());
+        } else if (pinLine.startsWith("pin epaper ")) {
+            wiringLines[6] = "E-paper: " + pinLine.substring("pin epaper ".length());
+        }
+
+        wiringView.setText("Wiring\n" + wiringLines[0] + "\n" + wiringLines[1] + "\n" +
+                wiringLines[2] + "\n" + wiringLines[3] + "\n" + wiringLines[4] + "\n" +
+                wiringLines[5] + "\n" + wiringLines[6]);
     }
 
     private String fieldValue(String line, String key) {

@@ -23,7 +23,7 @@ DEFAULT_LOG = ROOT / "dist" / "verification" / "android_acceptance_log.txt"
 DEFAULT_REPORT = ROOT / "docs" / "android_acceptance_script_report.md"
 MAIN_ACTIVITY = ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dkjsiogu" / "mspbluetooth" / "MainActivity.java"
 
-ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u"]
+ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "w"]
 
 
 @dataclass
@@ -34,6 +34,7 @@ class AcceptanceResult:
     tracks: str
     link: str
     input: str
+    wiring: str
     acceptance: str
     passed_checks: int
     total_checks: int
@@ -93,12 +94,14 @@ def run_acceptance_flow() -> AcceptanceResult:
         raise AssertionError(f"Android display frame did not mirror final track 3 state: {android.display_text!r}")
     if "1: ok" not in android.track_list_text or "3: ok" not in android.track_list_text:
         raise AssertionError(f"Android track list did not parse available tracks: {android.track_list_text!r}")
-    if not android.acceptance_text.startswith("Acceptance 8/8"):
-        raise AssertionError(f"Android acceptance summary did not reach 8/8: {android.acceptance_text!r}")
+    if not android.acceptance_text.startswith("Acceptance 9/9"):
+        raise AssertionError(f"Android acceptance summary did not reach 9/9: {android.acceptance_text!r}")
     if "RX: 15" not in android.link_text or "Last: k" not in android.link_text:
         raise AssertionError(f"Android link panel did not parse link diagnostics: {android.link_text!r}")
     if "EC11 CW:0" not in android.input_text or "S4:0/0" not in android.input_text:
         raise AssertionError(f"Android input panel did not parse input diagnostics: {android.input_text!r}")
+    if "BT: tx=P4.4 rx=P4.5" not in android.wiring_text:
+        raise AssertionError(f"Android wiring panel did not parse pin diagnostics: {android.wiring_text!r}")
 
     return AcceptanceResult(
         log_lines=log_lines,
@@ -107,6 +110,7 @@ def run_acceptance_flow() -> AcceptanceResult:
         tracks=android.track_list_text,
         link=android.link_text,
         input=android.input_text,
+        wiring=android.wiring_text,
         acceptance=android.acceptance_text,
         passed_checks=len(check_results),
         total_checks=len(check_results),
@@ -139,6 +143,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["Track list", result.tracks]),
         row(["Link diagnostics", result.link]),
         row(["Input diagnostics", result.input]),
+        row(["Wiring diagnostics", result.wiring]),
         row(["Acceptance summary", result.acceptance]),
         "",
         "## Log Preview",
@@ -167,6 +172,7 @@ def main() -> int:
     print(result.dashboard.replace("\n", " | "))
     print(result.link.replace("\n", " | "))
     print(result.input.replace("\n", " | "))
+    print(result.wiring.replace("\n", " | "))
     print(result.acceptance.replace("\n", " | "))
     print(f"acceptance log generated: {args.log}")
     print(f"acceptance report generated: {args.report}")

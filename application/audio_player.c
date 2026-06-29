@@ -82,6 +82,9 @@ static void player_report_link(void);
 /* player_report_input: reports EC11 and local button event counters. */
 static void player_report_input(void);
 
+/* player_report_wiring: reports the active lab wiring map for field checks. */
+static void player_report_wiring(void);
+
 /* player_update_status_led: maps playback state to visible P1.0 LED patterns. */
 static void player_update_status_led(void);
 
@@ -352,6 +355,24 @@ static void player_report_input(void)
     bluetooth_uart_write_str(" s4l=");
     bluetooth_uart_write_uint(g_player.input_s4_long);
     bluetooth_uart_write_str("\r\n");
+}
+
+/* player_report_wiring: sends module-to-pin wiring lines for phone-side checks. */
+static void player_report_wiring(void)
+{
+    bluetooth_uart_write_str("pin profile=");
+    bluetooth_uart_write_str(PLAYER_HARDWARE_PROFILE);
+    bluetooth_uart_write_str("\r\n");
+    bluetooth_uart_write_line("pin tf cs=P4.0 sck=P3.1 mosi=P3.2 miso=P3.3");
+    bluetooth_uart_write_line("pin i2s bck=P4.1 lrck=P4.2 din=P4.3");
+    bluetooth_uart_write_line("pin ec11 a=P2.1 b=P2.2 sw=P2.3");
+    bluetooth_uart_write_line("pin local s1=P1.2 s2=P1.3 s4=P2.6 led=P1.0");
+#if PLAYER_BT_UART_MODE == PLAYER_BT_UART_UCA1_P45
+    bluetooth_uart_write_line("pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict");
+#else
+    bluetooth_uart_write_line("pin bt tx=P3.3 rx=P3.4 mode=UCA0 note=tf-miso-conflict");
+#endif
+    bluetooth_uart_write_line("pin epaper optional=P6.0-P6.5 default=disabled");
 }
 
 /* player_report_info: sends firmware version and hardware wiring profile. */
@@ -800,6 +821,9 @@ static void player_handle_command(uint8_t command)
     case 'u':
         player_report_input();
         break;
+    case 'w':
+        player_report_wiring();
+        break;
     default:
         g_player.bt_bad_count++;
         break;
@@ -813,7 +837,7 @@ static void player_handle_command(uint8_t command)
 /* player_write_prompt: prints all supported Bluetooth control commands. */
 static void player_write_prompt(void)
 {
-    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, k link, u input, 1-9 track, ? status");
+    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, k link, u input, w wiring, 1-9 track, ? status");
 }
 
 void audio_player_init(void)
