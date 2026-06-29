@@ -29,6 +29,7 @@ REQUIRED_FILES = [
     "tools/epaper_preview_sim.py",
     "tools/generate_diagrams.py",
     "tools/generate_course_report.py",
+    "tools/wav_asset_check.py",
     "Debug/mspbluetooth.out",
 ]
 

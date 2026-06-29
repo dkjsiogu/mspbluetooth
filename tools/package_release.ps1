@@ -57,6 +57,7 @@ try {
         Invoke-Checked { python tools\generate_diagrams.py }
         Invoke-Checked { python tools\generate_course_report.py }
         Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
+        Invoke-Checked { python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md }
     }
 
     if (Test-Path -LiteralPath $distRoot) {
@@ -81,6 +82,7 @@ try {
     Get-ChildItem -LiteralPath "sdcard" -Filter "TRACK*.WAV" | ForEach-Object {
         Copy-RequiredFile $_.FullName (Join-Path $packageRoot ("sdcard\" + $_.Name))
     }
+    Invoke-Checked { python tools\wav_asset_check.py --input (Join-Path $packageRoot "sdcard") --report (Join-Path $packageRoot "docs\wav_asset_report.md") }
 
     $manifestPath = Join-Path $packageRoot "MANIFEST.txt"
     $commitId = (git rev-parse --short HEAD).Trim()
@@ -103,6 +105,7 @@ try {
         "docs\hardware_block_diagram.svg",
         "docs\software_flowchart.svg",
         "docs\epaper_preview.pgm",
+        "docs\wav_asset_report.md",
         "",
         "Note: software build and simulations are verified by this package script.",
         "Physical flashing and board-level audio tests still need the real MSP430F5529 hardware."

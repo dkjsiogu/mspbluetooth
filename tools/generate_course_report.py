@@ -62,6 +62,7 @@ def build_report() -> str:
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
 - 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=` 和 `display 1/2/3:` 回传。
 - 验证工具：`tools/` 提供固件构建、协议仿真、整板场景仿真、按键长按仿真、墨水屏预览和交付打包。
+- TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
 系统硬件框图见下图：
 
@@ -140,7 +141,7 @@ powershell -ExecutionPolicy Bypass -File tools\\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、关键命令、引脚冲突说明、蓝牙协议仿真、整板场景仿真、本地按键长按仿真、墨水屏预览图生成、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、关键命令、引脚冲突说明、蓝牙协议仿真、整板场景仿真、本地按键长按仿真、墨水屏预览图生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
@@ -173,6 +174,7 @@ def validate_report(text: str) -> None:
         "## 7. 验证证据",
         "## 9. 风险与说明",
         "progress=0",
+        "tools/wav_asset_check.py",
         "真实烧录",
     ]
     for token in required:

@@ -22,6 +22,7 @@
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
 - 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=` 和 `display 1/2/3:` 回传。
 - 验证工具：`tools/` 提供固件构建、协议仿真、整板场景仿真、按键长按仿真、墨水屏预览和交付打包。
+- TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
 系统硬件框图见下图：
 
@@ -100,7 +101,7 @@ display 3:16000Hz 2ch P0%
 | EC11 音量和按键 | `drivers/encoder.*` 事件映射到音量和播放/暂停 | `tools/board_scenario_sim.py` |
 | 本地按键 | S1/S2/S4 短按映射播放/上一曲/下一曲，长按映射停止/静音/播放顺序 | `tools/board_scenario_sim.py`、`tools/local_button_sim.py` |
 | TF 卡 WAV | FatFs + `wav_reader` 支持 16-bit PCM | 固件编译、WAV 解析静态覆盖 |
-| TF 卡测试音频 | `tools/prepare_sdcard_assets.py` 生成 TRACK01-03.WAV | `tools/run_verification.ps1` |
+| TF 卡测试音频 | `tools/prepare_sdcard_assets.py` 生成 TRACK01-03.WAV，并用 RIFF chunk 校验 | `tools/wav_asset_check.py`、`tools/run_verification.ps1` |
 | PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame | 固件编译、`t` 测试音命令 |
 | 状态显示 | APK 日志、含播放进度的状态面板、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查 |
 | 墨水屏扩展 | 未默认接入，保留显示模型、APK 显示帧、PGM 黑白预览并说明引脚冲突 | `tools/epaper_preview_sim.py`、`docs/hardware_verification.md` |
@@ -117,7 +118,7 @@ powershell -ExecutionPolicy Bypass -File tools\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、关键命令、引脚冲突说明、蓝牙协议仿真、整板场景仿真、本地按键长按仿真、墨水屏预览图生成、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、关键命令、引脚冲突说明、蓝牙协议仿真、整板场景仿真、本地按键长按仿真、墨水屏预览图生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 

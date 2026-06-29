@@ -58,6 +58,7 @@ TRACK09.WAV
 
 ```powershell
 python tools\prepare_sdcard_assets.py
+python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md
 ```
 
 然后把 `sdcard\TRACK01.WAV`、`sdcard\TRACK02.WAV`、`sdcard\TRACK03.WAV` 复制到 TF 卡根目录。
@@ -127,6 +128,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟蓝牙、EC11、本地按键混合控制场景
 - 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按
 - 生成并检查墨水屏风格黑白预览图，确认显示帧不是空白
+- 校验 TF 卡测试 WAV 是否为固件支持的 RIFF/WAVE PCM、16-bit、单/双声道格式
 
 ## 交付打包
 
