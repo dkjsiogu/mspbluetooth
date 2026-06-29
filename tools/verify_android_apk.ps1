@@ -53,6 +53,11 @@ foreach ($command in $requiredCommands) {
 
 $requiredUiMarkers = @(
     "dashboardView",
+    "volumeBar",
+    "progressBar",
+    "boundedInt",
+    "volumeBar.setMax(32)",
+    "progressBar.setMax(100)",
     "healthView",
     "displayView",
     "trackListView",

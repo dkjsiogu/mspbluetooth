@@ -30,6 +30,8 @@ ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b
 class AcceptanceResult:
     log_lines: list[str]
     dashboard: str
+    volume_bar: int
+    progress_bar: int
     health: str
     display: str
     tracks: str
@@ -91,6 +93,8 @@ def run_acceptance_flow() -> AcceptanceResult:
         raise AssertionError(f"acceptance log failed serial checks: {[failure.label for failure in failures]}")
     if "Mode: playing" not in android.dashboard_text or "Track: 3" not in android.dashboard_text:
         raise AssertionError(f"Android dashboard did not reach final track 3 state: {android.dashboard_text!r}")
+    if android.volume_bar != 19 or android.progress_bar != 0:
+        raise AssertionError(f"Android visual bars did not reach expected state: volume={android.volume_bar}, progress={android.progress_bar}")
     if "SD:OK" not in android.health_text or "Tone:done" not in android.health_text or "File:TRACK03.WAV" not in android.health_text:
         raise AssertionError(f"Android health panel did not parse storage/audio evidence: {android.health_text!r}")
     if "playing T3" not in android.display_text:
@@ -109,6 +113,8 @@ def run_acceptance_flow() -> AcceptanceResult:
     return AcceptanceResult(
         log_lines=log_lines,
         dashboard=android.dashboard_text,
+        volume_bar=android.volume_bar,
+        progress_bar=android.progress_bar,
         health=android.health_text,
         display=android.display_text,
         tracks=android.track_list_text,
@@ -143,6 +149,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["Phone file save", "`Save Log` uses Android document picker with `ACTION_CREATE_DOCUMENT`"]),
         row(["Serial transcript checks", f"{result.passed_checks}/{result.total_checks} passed"]),
         row(["Final dashboard", result.dashboard]),
+        row(["Visual bars", f"volume={result.volume_bar}/32 progress={result.progress_bar}/100"]),
         row(["Health panel", result.health]),
         row(["Final display", result.display]),
         row(["Track list", result.tracks]),
@@ -175,6 +182,7 @@ def main() -> int:
 
     print("Android acceptance script simulation passed")
     print(result.dashboard.replace("\n", " | "))
+    print(f"Bars volume={result.volume_bar}/32 progress={result.progress_bar}/100")
     print(result.health.replace("\n", " | "))
     print(result.link.replace("\n", " | "))
     print(result.input.replace("\n", " | "))

@@ -80,6 +80,11 @@ REQUIRED_PARSER_MARKERS = [
     "updateLinkPanel",
     "updateInputPanel",
     "updateWiringPanel",
+    "volumeBar",
+    "progressBar",
+    "boundedInt",
+    "volumeBar.setMax(32)",
+    "progressBar.setMax(100)",
 ]
 
 REQUIRED_ACCEPTANCE_MARKERS = [
@@ -157,6 +162,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["Response", "APK handler evidence"]),
             row(["---", "---"]),
             row(["`status=...`", "`updateDashboard` extracts mode, track, volume, order, progress"]),
+            row(["Dashboard visual bars", "`volumeBar` and `progressBar` render bounded status values as 0-32 volume and 0-100 progress bars"]),
             row(["`sd/info/selftest/tone/open/error`", "`updateHealthPanel` renders storage, firmware, self-test, audio-test, file-open, and error evidence"]),
             row(["`display 1/2/3:...`", "`updateDisplayFrame` renders the three-line display model"]),
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),

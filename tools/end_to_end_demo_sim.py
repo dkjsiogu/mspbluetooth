@@ -34,6 +34,8 @@ class DemoSnapshot:
     note: str
     responses: list[str]
     dashboard: str
+    volume_bar: int
+    progress_bar: int
     health: str
     display: str
     tracks: str
@@ -91,6 +93,8 @@ def run_demo() -> list[DemoSnapshot]:
                 note=step.note,
                 responses=responses,
                 dashboard=android.dashboard_text,
+                volume_bar=android.volume_bar,
+                progress_bar=android.progress_bar,
                 health=android.health_text,
                 display=android.display_text,
                 tracks=android.track_list_text,
@@ -106,6 +110,8 @@ def run_demo() -> list[DemoSnapshot]:
 
     if android.dashboard_text != expected_dashboard:
         raise AssertionError(f"final dashboard mismatch: {android.dashboard_text!r}")
+    if android.volume_bar != 19 or android.progress_bar != 0:
+        raise AssertionError(f"final visual bars mismatch: volume={android.volume_bar}, progress={android.progress_bar}")
     if "File:TRACK03.WAV" not in android.health_text or "Tone:done" not in android.health_text:
         raise AssertionError(f"final health panel mismatch: {android.health_text!r}")
     if android.display_text != expected_display:
@@ -142,6 +148,7 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
     for snapshot in snapshots:
         visible = (
             snapshot.dashboard.replace("\n", " / ")
+            + f" | Bars volume={snapshot.volume_bar}/32 progress={snapshot.progress_bar}/100"
             + " | "
             + snapshot.health.replace("\n", " / ")
             + " | "
@@ -165,6 +172,7 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
             row(["Panel", "Text"]),
             row(["---", "---"]),
             row(["Dashboard", snapshots[-1].dashboard]),
+            row(["Visual bars", f"volume={snapshots[-1].volume_bar}/32 progress={snapshots[-1].progress_bar}/100"]),
             row(["Health", snapshots[-1].health]),
             row(["Display frame", snapshots[-1].display]),
             row(["Track list", snapshots[-1].tracks]),
@@ -188,6 +196,7 @@ def main() -> int:
 
     print("end-to-end demo simulation passed")
     print(snapshots[-1].dashboard.replace("\n", " | "))
+    print(f"Bars volume={snapshots[-1].volume_bar}/32 progress={snapshots[-1].progress_bar}/100")
     print(snapshots[-1].health.replace("\n", " | "))
     print(snapshots[-1].display.replace("\n", " | "))
     print(snapshots[-1].link.replace("\n", " | "))

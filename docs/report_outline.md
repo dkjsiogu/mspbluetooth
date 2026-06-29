@@ -25,7 +25,7 @@ python tools\generate_diagrams.py
 - 使用 TF 卡存储 WAV 音频文件
 - 使用 PCM5102A I2S DAC 输出音频
 - 使用 EC11 和本地按键完成离线控制
-- 使用 APK 和蓝牙日志显示状态、Health/Storage 与自检结果
+- 使用 APK 和蓝牙日志显示状态、音量/进度条、Health/Storage 与自检结果
 
 ## 3. 系统方案
 

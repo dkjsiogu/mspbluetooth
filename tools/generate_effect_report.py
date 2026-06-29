@@ -119,12 +119,16 @@ def android_source_evidence() -> tuple[list[str], list[str]]:
     commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k", "u", "w"]
     missing_commands = [command for command in commands if f'"{command}"' not in source]
     parser_markers = ["status=", "progress=", "sd mounted", "info name=", "selftest ", "tone start", "open TRACK0", "display 1:", "display 2:", "display 3:", "link ", "input ", "pin "]
+    visual_markers = ["volumeBar", "progressBar", "boundedInt", "volumeBar.setMax(32)", "progressBar.setMax(100)"]
     missing_markers = [marker for marker in parser_markers if f'"{marker}"' not in source]
+    missing_visual_markers = [marker for marker in visual_markers if marker not in source]
     if missing_commands:
         raise AssertionError(f"Android source missing command buttons: {missing_commands}")
     if missing_markers:
         raise AssertionError(f"Android source missing parser markers: {missing_markers}")
-    return commands, parser_markers
+    if missing_visual_markers:
+        raise AssertionError(f"Android source missing visual bar markers: {missing_visual_markers}")
+    return commands, parser_markers + visual_markers
 
 
 def parse_assets(input_dir: Path) -> list[WavAsset]:
@@ -228,6 +232,7 @@ def render_report(input_dir: Path) -> str:
             row(["Display frame", " / ".join(display_lines)]),
             row(["Android parser markers", ", ".join(parser_markers)]),
             row(["Android parsed dashboard", android_state.dashboard_text.replace("\n", " / ")]),
+            row(["Android parsed visual bars", f"volume={android_state.volume_bar}/32 progress={android_state.progress_bar}/100"]),
             row(["Android parsed health", android_state.health_text.replace("\n", " / ")]),
             row(["Android parsed display", android_state.display_text.replace("\n", " / ")]),
             row(["Android parsed track list", android_state.track_list_text.replace("\n", " / ")]),

@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -40,6 +41,8 @@ public class MainActivity extends Activity {
     private Spinner deviceSpinner;
     private TextView stateView;
     private TextView dashboardView;
+    private ProgressBar volumeBar;
+    private ProgressBar progressBar;
     private TextView healthView;
     private TextView displayView;
     private TextView trackListView;
@@ -141,6 +144,14 @@ public class MainActivity extends Activity {
 
         dashboardView = panelText("Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --");
         root.addView(dashboardView, new LinearLayout.LayoutParams(-1, dp(104)));
+
+        volumeBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        volumeBar.setMax(32);
+        root.addView(volumeBar, new LinearLayout.LayoutParams(-1, dp(16)));
+
+        progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progressBar.setMax(100);
+        root.addView(progressBar, new LinearLayout.LayoutParams(-1, dp(16)));
 
         healthView = panelText("Health\nSD:-- Info:-- Selftest:-- Tone:--\nFile:--\nError:--");
         root.addView(healthView, new LinearLayout.LayoutParams(-1, dp(88)));
@@ -593,6 +604,8 @@ public class MainActivity extends Activity {
         dashboardView.setText("Mode: " + mode + "\nTrack: " + track +
                 "\nVolume: " + volume + "\nOrder: " + order +
                 "\nProgress: " + progress + "%");
+        volumeBar.setProgress(boundedInt(volume, 0, 32));
+        progressBar.setProgress(boundedInt(progress, 0, 100));
     }
 
     private void updateHealthPanel(String line) {
@@ -715,6 +728,21 @@ public class MainActivity extends Activity {
             end = line.length();
         }
         return line.substring(start, end);
+    }
+
+    private int boundedInt(String text, int min, int max) {
+        try {
+            int value = Integer.parseInt(text.replace("%", "").trim());
+            if (value < min) {
+                return min;
+            }
+            if (value > max) {
+                return max;
+            }
+            return value;
+        } catch (NumberFormatException ex) {
+            return min;
+        }
     }
 
     private void sendCommand(String command) {

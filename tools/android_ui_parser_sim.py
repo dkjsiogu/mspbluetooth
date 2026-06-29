@@ -46,6 +46,8 @@ class AndroidUiState:
     """AndroidUiState: parsed dashboard, display frame, and raw line buffer."""
 
     dashboard_text: str = "Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --"
+    volume_bar: int = 0
+    progress_bar: int = 0
     health_sd: str = "--"
     health_info: str = "--"
     health_selftest: str = "--"
@@ -102,6 +104,14 @@ def field_value(line: str, key: str) -> str:
     return line[start:end]
 
 
+def bounded_int(text: str, minimum: int, maximum: int) -> int:
+    try:
+        value = int(text.replace("%", "").strip())
+    except ValueError:
+        return minimum
+    return min(max(value, minimum), maximum)
+
+
 def update_dashboard(state: AndroidUiState, status_line: str) -> None:
     mode = field_value(status_line, "status=")
     track = field_value(status_line, "track=")
@@ -112,6 +122,8 @@ def update_dashboard(state: AndroidUiState, status_line: str) -> None:
         f"Mode: {mode}\nTrack: {track}\nVolume: {volume}\n"
         f"Order: {order}\nProgress: {progress}%"
     )
+    state.volume_bar = bounded_int(volume, 0, 32)
+    state.progress_bar = bounded_int(progress, 0, 100)
 
 
 def compact_health(text: str) -> str:
@@ -313,6 +325,8 @@ def run_fragmented_flow() -> AndroidUiState:
     ]
     if state.dashboard_text != expected_dashboard:
         raise AssertionError(f"dashboard mismatch: {state.dashboard_text!r}")
+    if state.volume_bar != 19 or state.progress_bar != 42:
+        raise AssertionError(f"visual bars mismatch: volume={state.volume_bar}, progress={state.progress_bar}")
     expected_health = "Health\nSD:OK Info:1.4.1 Selftest:bt=ok sd=ok wav=ok i2s=o Tone:done\nFile:TRACK01.WAV\nError:--"
     if state.health_text != expected_health:
         raise AssertionError(f"health panel mismatch: {state.health_text!r}")
@@ -340,6 +354,7 @@ def main() -> int:
     state = run_fragmented_flow()
     print("Android UI parser simulation passed")
     print(state.dashboard_text.replace("\n", " | "))
+    print(f"Bars volume={state.volume_bar}/32 progress={state.progress_bar}/100")
     print(state.health_text.replace("\n", " | "))
     print(state.display_text.replace("\n", " | "))
     print(state.track_list_text.replace("\n", " | "))
