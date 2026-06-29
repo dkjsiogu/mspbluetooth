@@ -150,6 +150,7 @@ dist\mspbluetooth_delivery\
 课程报告和验收材料：
 
 - [课程设计报告提纲](docs/report_outline.md)
+- [课程设计报告初稿](docs/course_report_draft.md)
 - [功能验收矩阵](docs/acceptance_matrix.md)
 - [测试记录表](docs/test_record.csv)
 
