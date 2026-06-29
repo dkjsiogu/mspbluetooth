@@ -29,6 +29,7 @@ REQUIRED_FILES = [
     "tools/epaper_preview_sim.py",
     "tools/android_ui_parser_sim.py",
     "tools/audio_stream_sim.py",
+    "tools/encoder_quadrature_sim.py",
     "tools/generate_effect_report.py",
     "tools/generate_diagrams.py",
     "tools/generate_course_report.py",

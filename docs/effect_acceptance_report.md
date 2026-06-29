@@ -24,6 +24,15 @@ This report is generated from host-side simulations and source checks. It proves
 | S1 long press | stop | stop |
 | S2 bounce then short | previous | previous |
 
+## EC11 Encoder Signal Decoding
+
+| Case | Expected event | Actual event |
+| --- | --- | --- |
+| EC11 clockwise detent | cw | cw |
+| EC11 counter-clockwise detent | ccw | ccw |
+| EC11 back-and-forth jitter | none | none |
+| EC11 switch debounce | button | button |
+
 ## Display And APK Parsing
 
 | Effect | Evidence |

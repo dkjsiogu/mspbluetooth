@@ -127,6 +127,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟 Android 端对碎片化蓝牙回传的状态面板和显示帧解析
 - 模拟蓝牙、EC11、本地按键混合控制场景
+- 模拟 EC11 A/B 正交相位解码、反向抖动抵消和按键去抖
 - 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按
 - 生成并检查墨水屏风格黑白预览图，确认显示帧不是空白
 - 校验 TF 卡测试 WAV 是否为固件支持的 RIFF/WAVE PCM、16-bit、单/双声道格式

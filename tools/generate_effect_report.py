@@ -15,6 +15,7 @@ from android_ui_parser_sim import run_fragmented_flow
 from audio_stream_sim import run_audio_stream_simulation
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
 from board_scenario_sim import BoardState, apply_event
+from encoder_quadrature_sim import run_button_sequence, run_sequence
 from local_button_sim import LONG_PRESS_TICKS, run_samples
 from wav_asset_check import DEFAULT_INPUT, WavAsset, find_tracks, parse_wav
 
@@ -78,6 +79,19 @@ def run_button_cases() -> list[tuple[str, list[str], list[str]]]:
     return cases
 
 
+def run_encoder_cases() -> list[tuple[str, list[str], list[str]]]:
+    cases = [
+        ("EC11 clockwise detent", ["cw"], run_sequence([0, 2, 3, 1, 0])),
+        ("EC11 counter-clockwise detent", ["ccw"], run_sequence([0, 1, 3, 2, 0])),
+        ("EC11 back-and-forth jitter", [], run_sequence([0, 2, 0, 1, 0])),
+        ("EC11 switch debounce", ["button"], run_button_sequence([0, 1, 0, 1, 1, 1, 1, 1, 1])),
+    ]
+    for name, expected, actual in cases:
+        if actual != expected:
+            raise AssertionError(f"{name}: expected {expected}, got {actual}")
+    return cases
+
+
 def android_source_evidence() -> tuple[list[str], list[str]]:
     source = (ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dkjsiogu" / "mspbluetooth" / "MainActivity.java").read_text(
         encoding="utf-8"
@@ -106,6 +120,7 @@ def render_report(input_dir: Path) -> str:
     run_order_flow()
     scenario, board_state = run_board_scenario()
     button_cases = run_button_cases()
+    encoder_cases = run_encoder_cases()
     android_state = run_fragmented_flow()
     audio_config, audio_results = run_audio_stream_simulation(input_dir)
     commands, parser_markers = android_source_evidence()
@@ -140,6 +155,18 @@ def render_report(input_dir: Path) -> str:
     ]
     for name, expected, actual in button_cases:
         lines.append(row([name, ", ".join(expected), ", ".join(actual)]))
+
+    lines.extend(
+        [
+            "",
+            "## EC11 Encoder Signal Decoding",
+            "",
+            row(["Case", "Expected event", "Actual event"]),
+            row(["---", "---", "---"]),
+        ]
+    )
+    for name, expected, actual in encoder_cases:
+        lines.append(row([name, ", ".join(expected) if expected else "none", ", ".join(actual) if actual else "none"]))
 
     lines.extend(
         [
