@@ -97,3 +97,24 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 静态检查头文件注释、关键命令、引脚冲突说明、RAM 余量
 - 模拟 HC-05 单字符蓝牙命令链路
 - 模拟蓝牙、EC11、本地按键混合控制场景
+
+## Android 控制端
+
+仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。构建 APK：
+
+```powershell
+cd E:\code\ccs\mspbluetooth
+powershell -ExecutionPolicy Bypass -File tools\build_android_apk.ps1
+```
+
+生成文件：
+
+```text
+android\app\build\outputs\apk\debug\app-debug.apk
+```
+
+验证 APK 包名、SDK 和蓝牙权限：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\verify_android_apk.ps1
+```

@@ -9,4 +9,8 @@ Debug/*.opt
 .settings/
 .theia/
 .vscode/.browse.VC.db*
-
+.tools/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
