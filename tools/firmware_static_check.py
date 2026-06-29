@@ -32,6 +32,7 @@ REQUIRED_FILES = [
     "tools/android_ui_parser_sim.py",
     "tools/audio_stream_sim.py",
     "tools/encoder_quadrature_sim.py",
+    "tools/status_led_pattern_sim.py",
     "tools/i2s_frame_sim.py",
     "tools/i2s_capture_check.py",
     "tools/hardware_evidence_check.py",

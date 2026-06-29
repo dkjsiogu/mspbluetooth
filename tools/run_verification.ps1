@@ -28,6 +28,7 @@ try {
     Invoke-Checked { python tools\board_scenario_sim.py }
     Invoke-Checked { python tools\encoder_quadrature_sim.py }
     Invoke-Checked { python tools\local_button_sim.py }
+    Invoke-Checked { python tools\status_led_pattern_sim.py }
     Invoke-Checked { python tools\epaper_preview_sim.py }
     Invoke-Checked { python tools\epaper_driver_trace_sim.py }
     Invoke-Checked { python tools\generate_diagrams.py }

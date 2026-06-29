@@ -21,7 +21,7 @@
 - 中间层：`middleware/wav_reader.*` 解析 16-bit PCM WAV，`middleware/display_model.*` 生成三行状态显示帧。
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
 - 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、`display 1/2/3:` 和 `tracks` 回传。
-- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
+- 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
 - TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
 系统硬件框图见下图：
@@ -39,7 +39,7 @@
 | EC11 | A=P2.1，B=P2.2，SW=P2.3 |
 | 本地按键 | S1=P1.2，S2=P1.3，S4=P2.6 |
 | HC-05 | RXD<-P4.4，TXD->P4.5 |
-| 状态 LED | P1.0 |
+| 状态 LED | P1.0，播放快闪、暂停慢闪、停止常亮、错误双闪 |
 
 课程资料中 HC-05 和 TF 卡 MISO 都涉及 P3.3。为了避免同一引脚冲突，本工程默认将 HC-05 改到 UCA1 的 P4.4/P4.5，保证 TF 卡和蓝牙可同时工作。
 
@@ -109,6 +109,7 @@ display 3:16000Hz 2ch P0%
 | PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame，32-bit 左/右声道 slot，标准 I2S MSB 延迟 | 固件编译、`t` 测试音命令、`tools/audio_stream_sim.py`、`tools/i2s_frame_sim.py` |
 | 音频流效果 | TF WAV 按固件读块大小解码为非静音、音量缩放后的 stereo 样本，进度到 100% | `tools/audio_stream_sim.py`、`docs/audio_stream_report.md` |
 | 状态显示 | APK 日志、含播放进度的状态面板、蓝牙/EC11/本地按键控制后即时状态和显示帧、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`tools/end_to_end_demo_sim.py`、`tools/board_scenario_sim.py`、`docs/effect_acceptance_report.md` |
+| 状态 LED | P1.0 表示播放器模式：播放快闪、暂停慢闪、停止常亮、错误双闪 | `tools/status_led_pattern_sim.py`、`docs/status_led_report.md` |
 | 墨水屏扩展 | 未默认接入，保留显示模型、APK 显示帧、PGM 黑白预览和播放/暂停/停止/错误多状态画廊，并说明引脚冲突 | `tools/epaper_preview_sim.py`、`docs/epaper_gallery_report.md`、`docs/hardware_verification.md` |
 | 硬件框图/软件流程图 | 自动生成 SVG 图并纳入报告和交付包 | `tools/generate_diagrams.py`、`docs/hardware_block_diagram.svg`、`docs/software_flowchart.svg` |
 | 课程报告材料 | 自动生成课程设计报告初稿，保留实物验证待补项 | `tools/generate_course_report.py`、`docs/course_report_draft.md` |
@@ -124,13 +125,13 @@ powershell -ExecutionPolicy Bypass -File tools\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
 实物验收按 `docs/hardware_verification.md` 执行：
 
-- 先只烧录 MSP430F5529，确认 P1.0 状态 LED 和无复位循环。
+- 先只烧录 MSP430F5529，确认 P1.0 状态 LED 模式和无复位循环。
 - 接 HC-05，使用 APK 连接并测试 `?`、`i`、`e`、`l`、`d`。
 - 接 PCM5102A/PAM8403/喇叭，先用 `t` 测试音确认音频链路。
 - 插入 TF 卡并放置 `TRACK01.WAV` 等文件，测试播放、暂停、上下曲和进度上报。

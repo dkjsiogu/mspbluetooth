@@ -9,6 +9,7 @@ Android command coverage,tools/android_command_coverage.py,All firmware commands
 End-to-end demo simulation,tools/end_to_end_demo_sim.py,APK button commands receive immediate status/display responses and drive visible phone panel state changes,,,
 Bluetooth diagnostic simulation,tools/bluetooth_diagnostic_sim.py,Fragmented uppercase noisy and diagnostic command streams produce expected responses,,,
 Whole-board control scenario,tools/board_scenario_sim.py,Bluetooth/encoder/local button mixed sequence reaches expected state and emits immediate status/display reports,,,
+Status LED pattern simulation,tools/status_led_pattern_sim.py,Playing/paused/stopped/error modes produce expected P1.0 LED patterns,,,
 Audio stream simulation,tools/audio_stream_sim.py,TRACK01-03.WAV produce non-silent scaled stereo samples and 100% progress,,,
 I2S frame simulation,tools/i2s_frame_sim.py,One stereo frame has 64 BCK pulses LRCK slots MSB delay and padding,,,
 I2S logic capture,tools/i2s_capture_check.py --input capture.csv --left none --right none,Logic analyzer CSV shows 64-edge frames with 32-low/32-high LRCK slots,,,

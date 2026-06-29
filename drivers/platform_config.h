@@ -66,6 +66,15 @@
 /* PLAYER_STATUS_PUSH_MS: periodic Bluetooth status interval; 0 disables it. */
 #define PLAYER_STATUS_PUSH_MS           5000u
 
+/* PLAYER_LED_PLAYING_MS: status LED toggle period while audio is playing. */
+#define PLAYER_LED_PLAYING_MS           200u
+
+/* PLAYER_LED_PAUSED_MS: status LED toggle period while playback is paused. */
+#define PLAYER_LED_PAUSED_MS            1000u
+
+/* PLAYER_LED_ERROR_STEP_MS: status LED step period for error double-blink. */
+#define PLAYER_LED_ERROR_STEP_MS        150u
+
 /* PLAYER_ENABLE_EPAPER_PANEL: 1 enables optional 296x128 SPI e-paper output. */
 #define PLAYER_ENABLE_EPAPER_PANEL      0u
 

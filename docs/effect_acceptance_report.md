@@ -45,6 +45,15 @@ This report is generated from host-side simulations and source checks. It proves
 | EC11 switch short press | button | button |
 | EC11 switch long press | button_long | button_long |
 
+## Status LED Patterns
+
+| Mode | Expected effect | Observed transitions |
+| --- | --- | --- |
+| playing | fast blink every 200 ms | [(0, 1), (200, 0), (400, 1), (600, 0), (800, 1), (1000, 0)] |
+| paused | slow blink every 1000 ms | [(0, 0), (1000, 1), (2000, 0)] |
+| stopped | steady on | [(0, 1)] |
+| error | repeating double blink | [(0, 1), (150, 0), (300, 1), (450, 0), (1200, 1), (1350, 0), (1500, 1)] |
+
 ## Display And APK Parsing
 
 | Effect | Evidence |

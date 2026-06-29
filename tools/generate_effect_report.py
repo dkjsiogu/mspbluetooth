@@ -20,6 +20,7 @@ from board_scenario_sim import BoardState, apply_event
 from end_to_end_demo_sim import run_demo
 from encoder_quadrature_sim import ENCODER_DEBOUNCE_TICKS, ENCODER_LONG_PRESS_TICKS, run_button_sequence, run_sequence
 from local_button_sim import LONG_PRESS_TICKS, run_samples
+from status_led_pattern_sim import assert_patterns
 from wav_asset_check import DEFAULT_INPUT, WavAsset, find_tracks, parse_wav
 
 
@@ -132,6 +133,7 @@ def render_report(input_dir: Path) -> str:
     scenario, board_state = run_board_scenario()
     button_cases = run_button_cases()
     encoder_cases = run_encoder_cases()
+    led_models = assert_patterns()
     android_state = run_fragmented_flow()
     android_buttons, _, _ = verify_coverage()
     audio_config, audio_results = run_audio_stream_simulation(input_dir)
@@ -198,6 +200,15 @@ def render_report(input_dir: Path) -> str:
 
     lines.extend(
         [
+            "",
+            "## Status LED Patterns",
+            "",
+            row(["Mode", "Expected effect", "Observed transitions"]),
+            row(["---", "---", "---"]),
+            row(["playing", "fast blink every 200 ms", led_models["playing"].timeline]),
+            row(["paused", "slow blink every 1000 ms", led_models["paused"].timeline]),
+            row(["stopped", "steady on", led_models["stopped"].timeline]),
+            row(["error", "repeating double blink", led_models["error"].timeline]),
             "",
             "## Display And APK Parsing",
             "",

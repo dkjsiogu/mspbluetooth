@@ -29,6 +29,8 @@ typedef struct {
     uint32_t data_remaining;
     uint32_t led_stamp_ms;
     uint32_t status_stamp_ms;
+    PlayerMode led_mode;
+    uint8_t led_error_step;
     WavInfo wav;
 } PlayerState;
 
@@ -59,6 +61,9 @@ static void player_report_ui_snapshot(void);
 /* player_report_order: sends the current automatic track-advance mode. */
 static void player_report_order(void);
 
+/* player_update_status_led: maps playback state to visible P1.0 LED patterns. */
+static void player_update_status_led(void);
+
 /* player_progress_percent: returns current WAV data position as 0..100 percent. */
 static uint8_t player_progress_percent(void);
 
@@ -73,6 +78,46 @@ static void player_stop(void);
 
 /* player_replay: restarts the selected WAV file from its data section. */
 static void player_replay(void);
+
+/* player_reset_status_led: restarts the LED pattern for the current player mode. */
+static void player_reset_status_led(void)
+{
+    g_player.led_mode = g_player.mode;
+    g_player.led_stamp_ms = board_millis();
+    g_player.led_error_step = 0u;
+
+    if (g_player.mode == PLAYER_MODE_PAUSED) {
+        board_status_led_set(0u);
+    } else {
+        board_status_led_set(1u);
+    }
+}
+
+/* player_update_status_led: drives a visible mode pattern on the status LED. */
+static void player_update_status_led(void)
+{
+    if (g_player.led_mode != g_player.mode) {
+        player_reset_status_led();
+    }
+
+    if (g_player.mode == PLAYER_MODE_PLAYING) {
+        if (board_elapsed_ms(&g_player.led_stamp_ms, PLAYER_LED_PLAYING_MS) != 0u) {
+            board_status_led_toggle();
+        }
+    } else if (g_player.mode == PLAYER_MODE_PAUSED) {
+        if (board_elapsed_ms(&g_player.led_stamp_ms, PLAYER_LED_PAUSED_MS) != 0u) {
+            board_status_led_toggle();
+        }
+    } else if (g_player.mode == PLAYER_MODE_ERROR) {
+        if (board_elapsed_ms(&g_player.led_stamp_ms, PLAYER_LED_ERROR_STEP_MS) != 0u) {
+            g_player.led_error_step = (uint8_t)((g_player.led_error_step + 1u) & 0x07u);
+            board_status_led_set((uint8_t)((g_player.led_error_step == 0u) ||
+                                           (g_player.led_error_step == 2u)));
+        }
+    } else {
+        board_status_led_set(1u);
+    }
+}
 
 /* read_sample16: decodes one little-endian signed PCM sample from data. */
 static int16_t read_sample16(const uint8_t *data)
@@ -706,6 +751,9 @@ void audio_player_init(void)
     g_player.data_remaining = 0u;
     g_player.led_stamp_ms = board_millis();
     g_player.status_stamp_ms = board_millis();
+    g_player.led_mode = PLAYER_MODE_STOPPED;
+    g_player.led_error_step = 0u;
+    player_reset_status_led();
 
     i2s_dac_set_volume(g_player.volume);
 
@@ -792,9 +840,7 @@ void audio_player_poll_controls(void)
         g_player.status_stamp_ms = board_millis();
     }
 
-    if (board_elapsed_ms(&g_player.led_stamp_ms, 500u) != 0u) {
-        board_status_led_toggle();
-    }
+    player_update_status_led();
 
 #if PLAYER_STATUS_PUSH_MS > 0
     if (board_elapsed_ms(&g_player.status_stamp_ms, PLAYER_STATUS_PUSH_MS) != 0u) {
