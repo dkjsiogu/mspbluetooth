@@ -12,7 +12,7 @@
 | 本地按键 | S1/S2/S4 短按映射播放/上一曲/下一曲，长按映射停止/静音/播放顺序 | `tools/board_scenario_sim.py`、`tools/local_button_sim.py` |
 | TF 卡 WAV | FatFs + `wav_reader` 支持 16-bit PCM | 固件编译、WAV 解析静态覆盖 |
 | TF 卡测试音频 | `tools/prepare_sdcard_assets.py` 生成 TRACK01-03.WAV，并用 RIFF chunk 校验 | `tools/wav_asset_check.py`、`tools/run_verification.ps1` |
-| PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame | 固件编译、`t` 测试音命令、`tools/audio_stream_sim.py` |
+| PCM5102A 输出 | 软件 I2S 输出 16-bit stereo frame，32-bit 左/右声道 slot，标准 I2S MSB 延迟 | 固件编译、`t` 测试音命令、`tools/audio_stream_sim.py`、`tools/i2s_frame_sim.py` |
 | 音频流效果 | TF WAV 按固件读块大小解码为非静音、音量缩放后的 stereo 样本，进度到 100% | `tools/audio_stream_sim.py`、`docs/audio_stream_report.md` |
 | 状态显示 | APK 日志、含播放进度的状态面板、自动状态、`d` 三行显示帧 | 协议仿真、APK 构建、APK 源码检查、`tools/android_ui_parser_sim.py`、`docs/effect_acceptance_report.md` |
 | 墨水屏扩展 | 未默认接入，保留显示模型、APK 显示帧、PGM 黑白预览和播放/暂停/停止/错误多状态画廊，并说明引脚冲突 | `tools/epaper_preview_sim.py`、`docs/epaper_gallery_report.md`、`docs/hardware_verification.md` |

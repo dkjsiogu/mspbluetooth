@@ -55,6 +55,12 @@ Firmware stream buffer: 192 bytes. Volume scale: 18/32.
 | TRACK02.WAV | 84 | 4000 | -6750..6750 | 100% |
 | TRACK03.WAV | 84 | 4000 | -6750..6750 | 100% |
 
+## I2S Frame Simulation
+
+| Effect | Evidence |
+| --- | --- |
+| PCM5102A frame layout | docs/i2s_frame_report.md verifies 64 BCK pulses, LRCK left/right slots, one-bit MSB delay, and 15 padding bits |
+
 ## TF WAV Assets
 
 | File | Channels | Rate | Bits | Frames | Data bytes |

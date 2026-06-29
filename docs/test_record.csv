@@ -6,6 +6,7 @@ WAV asset check,tools/wav_asset_check.py,TRACK01-03.WAV are valid RIFF PCM 16-bi
 Software effect report,tools/generate_effect_report.py,Bluetooth/board/buttons/display/APK/WAV evidence report generated,,,
 Android parser simulation,tools/android_ui_parser_sim.py,Fragmented status/display/tracks input updates dashboard display frame and track list,,,
 Audio stream simulation,tools/audio_stream_sim.py,TRACK01-03.WAV produce non-silent scaled stereo samples and 100% progress,,,
+I2S frame simulation,tools/i2s_frame_sim.py,One stereo frame has 64 BCK pulses LRCK slots MSB delay and padding,,,
 EC11 quadrature simulation,tools/encoder_quadrature_sim.py,CW/CCW detents and debounced switch produce expected events,,,
 E-paper gallery,tools/epaper_preview_sim.py,Playing/paused/stopped/error PGM previews are nonblank,,,
 Bluetooth connect,APK connect to paired HC-05,Connected and status response,,,

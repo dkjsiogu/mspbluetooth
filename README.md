@@ -132,6 +132,7 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 - 生成并检查墨水屏风格黑白预览图和多状态预览画廊，确认显示帧不是空白
 - 校验 TF 卡测试 WAV 是否为固件支持的 RIFF/WAVE PCM、16-bit、单/双声道格式
 - 模拟 TF WAV 到软件 I2S 样本流，确认读块、音量缩放、非静音输出和播放进度
+- 模拟 PCM5102A 软件 I2S 帧结构，确认 64 个 BCK、LRCK 左右槽、MSB 延迟和 padding
 - 生成软件效果验收报告，汇总蓝牙命令、整板场景、按键、显示帧、APK 解析和 WAV 资产证据
 
 ## 交付打包
@@ -147,7 +148,7 @@ powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 dist\mspbluetooth_delivery\
 ```
 
-目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、音频流仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
+目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、音频流仿真报告、I2S 帧仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
 
 ## 实物验证
 
@@ -159,6 +160,7 @@ dist\mspbluetooth_delivery\
 - [课程设计报告初稿](docs/course_report_draft.md)
 - [软件效果验收报告](docs/effect_acceptance_report.md)
 - [音频流仿真报告](docs/audio_stream_report.md)
+- [I2S 帧仿真报告](docs/i2s_frame_report.md)
 - [墨水屏多状态预览报告](docs/epaper_gallery_report.md)
 - [硬件框图](docs/hardware_block_diagram.svg)
 - [软件流程图](docs/software_flowchart.svg)

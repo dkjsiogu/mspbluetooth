@@ -207,6 +207,12 @@ def render_report(input_dir: Path) -> str:
     lines.extend(
         [
             "",
+            "## I2S Frame Simulation",
+            "",
+            row(["Effect", "Evidence"]),
+            row(["---", "---"]),
+            row(["PCM5102A frame layout", "docs/i2s_frame_report.md verifies 64 BCK pulses, LRCK left/right slots, one-bit MSB delay, and 15 padding bits"]),
+            "",
             "## TF WAV Assets",
             "",
             row(["File", "Channels", "Rate", "Bits", "Frames", "Data bytes"]),
