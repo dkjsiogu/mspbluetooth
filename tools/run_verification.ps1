@@ -19,6 +19,7 @@ try {
     Invoke-Checked { python tools\firmware_static_check.py }
     Invoke-Checked { python tools\bluetooth_protocol_sim.py }
     Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
+    Invoke-Checked { python tools\serial_acceptance_check.py }
     Invoke-Checked { python tools\android_ui_parser_sim.py }
     Invoke-Checked { python tools\android_command_coverage.py }
     Invoke-Checked { python tools\end_to_end_demo_sim.py }

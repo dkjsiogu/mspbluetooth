@@ -193,3 +193,25 @@ android\app\build\outputs\apk\debug\app-debug.apk
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools\verify_android_apk.ps1
 ```
+
+## Serial Acceptance Transcript
+
+Before real flashing, the software verifier generates a no-hardware HC-05
+acceptance transcript and checks that the expected evidence is present:
+
+```powershell
+python tools\serial_acceptance_check.py
+```
+
+After real board testing, save the Bluetooth/serial-assistant log as text and
+run:
+
+```powershell
+python tools\serial_acceptance_check.py --input path\to\capture.txt
+```
+
+The checker looks for `sd mounted`, `info name=MSP430F5529-BT-WAV`,
+`selftest bt=ok`, `tracks 1=ok`, `display 1/2/3:`, `status=...`,
+`tone start`, `tone done`, and `open TRACK01.WAV`/`open TRACK03.WAV`. If the
+log includes `TX>` command markers, it also verifies that state-changing
+commands immediately return `status=...` plus the three display lines.
