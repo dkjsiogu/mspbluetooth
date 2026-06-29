@@ -60,6 +60,7 @@ try {
         Invoke-Checked { python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md }
         Invoke-Checked { python tools\audio_stream_sim.py }
         Invoke-Checked { python tools\i2s_frame_sim.py }
+        Invoke-Checked { python tools\i2s_capture_check.py }
         Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
         Invoke-Checked { python tools\serial_acceptance_check.py }
         Invoke-Checked { python tools\epaper_driver_trace_sim.py }
@@ -90,6 +91,7 @@ try {
     Copy-RequiredFile "docs\end_to_end_demo_report.md" (Join-Path $packageRoot "docs\end_to_end_demo_report.md")
     Copy-RequiredFile "docs\audio_stream_report.md" (Join-Path $packageRoot "docs\audio_stream_report.md")
     Copy-RequiredFile "docs\i2s_frame_report.md" (Join-Path $packageRoot "docs\i2s_frame_report.md")
+    Copy-RequiredFile "docs\i2s_capture_report.md" (Join-Path $packageRoot "docs\i2s_capture_report.md")
     Copy-RequiredFile "docs\epaper_gallery_report.md" (Join-Path $packageRoot "docs\epaper_gallery_report.md")
     Copy-RequiredFile "docs\epaper_driver_report.md" (Join-Path $packageRoot "docs\epaper_driver_report.md")
     Copy-RequiredFile "docs\test_record.csv" (Join-Path $packageRoot "docs\test_record.csv")
@@ -109,6 +111,11 @@ try {
     Invoke-Checked { python tools\wav_asset_check.py --input (Join-Path $packageRoot "sdcard") --report (Join-Path $packageRoot "docs\wav_asset_report.md") }
     Invoke-Checked { python tools\audio_stream_sim.py --input (Join-Path $packageRoot "sdcard") --report (Join-Path $packageRoot "docs\audio_stream_report.md") }
     Invoke-Checked { python tools\i2s_frame_sim.py --report (Join-Path $packageRoot "docs\i2s_frame_report.md") }
+    Invoke-Checked {
+        python tools\i2s_capture_check.py `
+            --sample-out (Join-Path $packageRoot "docs\i2s_capture_sample.csv") `
+            --report (Join-Path $packageRoot "docs\i2s_capture_report.md")
+    }
     Invoke-Checked { python tools\bluetooth_diagnostic_sim.py --report (Join-Path $packageRoot "docs\bluetooth_diagnostic_report.md") }
     Invoke-Checked {
         python tools\serial_acceptance_check.py `
@@ -152,6 +159,8 @@ try {
         "docs\end_to_end_demo_report.md",
         "docs\audio_stream_report.md",
         "docs\i2s_frame_report.md",
+        "docs\i2s_capture_report.md",
+        "docs\i2s_capture_sample.csv",
         "docs\epaper_gallery_report.md",
         "docs\epaper_driver_report.md",
         "docs\test_record.csv",

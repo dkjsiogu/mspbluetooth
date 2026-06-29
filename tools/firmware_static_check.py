@@ -33,6 +33,7 @@ REQUIRED_FILES = [
     "tools/audio_stream_sim.py",
     "tools/encoder_quadrature_sim.py",
     "tools/i2s_frame_sim.py",
+    "tools/i2s_capture_check.py",
     "tools/bluetooth_diagnostic_sim.py",
     "tools/serial_acceptance_check.py",
     "tools/android_command_coverage.py",

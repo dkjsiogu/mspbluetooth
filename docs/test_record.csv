@@ -11,6 +11,7 @@ Bluetooth diagnostic simulation,tools/bluetooth_diagnostic_sim.py,Fragmented upp
 Whole-board control scenario,tools/board_scenario_sim.py,Bluetooth/encoder/local button mixed sequence reaches expected state and emits immediate status/display reports,,,
 Audio stream simulation,tools/audio_stream_sim.py,TRACK01-03.WAV produce non-silent scaled stereo samples and 100% progress,,,
 I2S frame simulation,tools/i2s_frame_sim.py,One stereo frame has 64 BCK pulses LRCK slots MSB delay and padding,,,
+I2S logic capture,tools/i2s_capture_check.py --input capture.csv --left none --right none,Logic analyzer CSV shows 64-edge frames with 32-low/32-high LRCK slots,,,
 EC11 quadrature simulation,tools/encoder_quadrature_sim.py,CW/CCW detents and debounced switch produce expected events,,,
 E-paper gallery,tools/epaper_preview_sim.py,Playing/paused/stopped/error PGM previews are nonblank,,,
 Bluetooth connect,APK connect to paired HC-05,Connected and status response,,,

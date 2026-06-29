@@ -242,3 +242,21 @@ When enabled, `drivers\epaper_panel.c` mirrors the same three-line
 `DisplayFrame` used by Bluetooth, APK, and PGM previews to a 296x128 SPI
 black/white e-paper panel. Suggested optional wiring is
 `P6.0=SCK`, `P6.1=MOSI`, `P6.2=CS`, `P6.3=DC`, `P6.4=RST`, `P6.5=BUSY`.
+
+## I2S Logic Capture Check
+
+Before blaming the PCM5102A, amplifier, or speaker, the digital audio bus can
+be checked with a logic analyzer. Connect `P4.1=BCK`, `P4.2=LRCK`, and
+`P4.3=DIN`, send Bluetooth command `t`, export CSV columns named
+`time,bck,lrck,din`, then run:
+
+```powershell
+python tools\i2s_capture_check.py --input path\to\capture.csv --left none --right none
+```
+
+Without hardware, the same tool generates and validates a deterministic sample
+capture:
+
+```powershell
+python tools\i2s_capture_check.py
+```
