@@ -1,0 +1,15 @@
+Item,Method,Expected,Actual,Result,Notes
+Firmware build,tools/run_verification.ps1,mspbluetooth.out generated,,,
+APK build,tools/verify_android_apk.ps1,app-debug.apk generated,,,
+Bluetooth connect,APK connect to paired HC-05,Connected and status response,,,
+Info command,Send i,info name=MSP430F5529-BT-WAV version=1.1.0,,,
+Selftest command,Send e,selftest bt=ok and SD/file status visible,,,
+Display frame,Send d,display 1/2/3 lines returned,,,
+DAC test tone,Send t,tone start/done and audible tone,,,
+TF mount,Insert TF card with TRACK01.WAV,sd mounted and open TRACK01.WAV,,,
+Play pause,Send p or press EC11/S1,playing/paused toggles,,,
+Next previous,Send n/b or press S4/S2,track changes correctly,,,
+Volume,Rotate EC11 or send +/- ,volume changes in log and audio level,,,
+Mute,Send m,volume 0 then restored,,,
+Replay,Send r,current track restarts,,,
+

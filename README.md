@@ -12,6 +12,7 @@
 - 蓝牙端每 5 秒自动推送一次当前状态，方便手机端和串口助手确认链路。
 - 蓝牙 `t` 命令可直接让 PCM5102A 输出测试音，不依赖 TF 卡音频文件，便于现场确认 DAC/功放/喇叭链路。
 - 蓝牙 `i`/`e` 命令可输出固件版本、硬件映射和软件可见自检摘要。
+- 蓝牙 `d` 命令输出三行显示帧，当前由 APK/串口显示，后续可接到墨水屏渲染层。
 - DAC 模拟输出可同时接 PAM8403 功放输入和 3.5mm 耳机座。
 
 ## 代码结构
@@ -65,6 +66,7 @@ m    静音/恢复
 t    DAC 测试音
 i    固件与硬件映射信息
 e    自检摘要
+d    三行显示帧
 1-9  直接播放对应曲目
 ?    查询状态
 h    输出命令帮助
@@ -76,6 +78,9 @@ h    输出命令帮助
 status=playing track=1 volume=18 rate=16000Hz channels=2
 info name=MSP430F5529-BT-WAV version=1.1.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
 selftest bt=ok sd=ok file=open dac=test-with-t
+display 1:playing T1 V18
+display 2:SD:OK WAV:OPEN
+display 3:16000Hz 2ch
 ```
 
 ## 编译
@@ -110,6 +115,12 @@ powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
 ## 实物验证
 
 上板前按 [硬件现场验证清单](docs/hardware_verification.md) 分阶段检查蓝牙、DAC 测试音、TF 卡 WAV 播放、EC11 和本地按键。墨水屏引脚冲突分析也在该文档中。
+
+课程报告和验收材料：
+
+- [课程设计报告提纲](docs/report_outline.md)
+- [功能验收矩阵](docs/acceptance_matrix.md)
+- [测试记录表](docs/test_record.csv)
 
 ## Android 控制端
 

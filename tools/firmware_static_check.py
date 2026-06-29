@@ -23,6 +23,7 @@ REQUIRED_FILES = [
     "drivers/encoder.c",
     "drivers/local_buttons.c",
     "drivers/i2s_dac.c",
+    "middleware/display_model.c",
     "middleware/wav_reader.c",
     "fatfs/HAL_SDCard.c",
     "Debug/mspbluetooth.out",
@@ -41,6 +42,7 @@ REQUIRED_COMMANDS = {
     "t": "tone test",
     "i": "info",
     "e": "selftest",
+    "d": "display frame",
     "?": "status",
 }
 
@@ -55,6 +57,7 @@ HEADER_FILES = [
     "drivers/local_buttons.h",
     "drivers/platform_config.h",
     "fatfs/HAL_SDCard.h",
+    "middleware/display_model.h",
     "middleware/wav_reader.h",
 ]
 

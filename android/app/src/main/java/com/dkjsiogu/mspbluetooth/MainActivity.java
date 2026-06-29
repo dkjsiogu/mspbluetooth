@@ -134,8 +134,12 @@ public class MainActivity extends Activity {
         LinearLayout diagRow = row();
         diagRow.addView(sendButton("Info", "i"), new LinearLayout.LayoutParams(0, dp(44), 1));
         diagRow.addView(sendButton("Selftest", "e"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        diagRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        diagRow.addView(sendButton("Display", "d"), new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(diagRow);
+
+        LinearLayout queryRow = row();
+        queryRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(queryRow);
 
         LinearLayout trackGrid = new LinearLayout(this);
         trackGrid.setOrientation(LinearLayout.VERTICAL);

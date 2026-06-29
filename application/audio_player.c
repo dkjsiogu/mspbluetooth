@@ -2,6 +2,7 @@
 
 #include "bluetooth_uart.h"
 #include "board.h"
+#include "display_model.h"
 #include "encoder.h"
 #include "ff.h"
 #include "i2s_dac.h"
@@ -40,6 +41,9 @@ static void player_write_prompt(void);
 
 /* player_report_status: sends a compact state snapshot over Bluetooth UART. */
 static void player_report_status(void);
+
+/* player_report_display_frame: sends the display model as three ASCII lines. */
+static void player_report_display_frame(void);
 
 /* player_open_track: opens TRACKxx.WAV and optionally starts playback. */
 static uint8_t player_open_track(uint8_t track_index, uint8_t start_playing);
@@ -99,6 +103,28 @@ static void player_report_status(void)
         bluetooth_uart_write_uint(g_player.wav.channels);
     }
     bluetooth_uart_write_str("\r\n");
+}
+
+static void player_report_display_frame(void)
+{
+    DisplayModelInput input;
+    DisplayFrame frame;
+
+    input.mode_text = mode_text(g_player.mode);
+    input.track_index = g_player.track_index;
+    input.volume = g_player.volume;
+    input.sd_ready = g_player.sd_ready;
+    input.file_open = g_player.file_open;
+    input.sample_rate = g_player.file_open != 0u ? g_player.wav.sample_rate : 0u;
+    input.channels = g_player.file_open != 0u ? (uint8_t)g_player.wav.channels : 0u;
+
+    display_model_build(&input, &frame);
+    bluetooth_uart_write_str("display 1:");
+    bluetooth_uart_write_line(frame.line1);
+    bluetooth_uart_write_str("display 2:");
+    bluetooth_uart_write_line(frame.line2);
+    bluetooth_uart_write_str("display 3:");
+    bluetooth_uart_write_line(frame.line3);
 }
 
 /* player_report_info: sends firmware version and hardware wiring profile. */
@@ -429,6 +455,9 @@ static void player_handle_command(uint8_t command)
     case 'e':
         player_report_selftest();
         break;
+    case 'd':
+        player_report_display_frame();
+        break;
     case '?':
         player_report_status();
         break;
@@ -442,7 +471,7 @@ static void player_handle_command(uint8_t command)
 
 static void player_write_prompt(void)
 {
-    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, t tone, i info, e selftest, 1-9 track, ? status");
+    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, t tone, i info, e selftest, d display, 1-9 track, ? status");
 }
 
 void audio_player_init(void)

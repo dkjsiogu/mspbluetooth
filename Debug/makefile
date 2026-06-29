@@ -36,6 +36,7 @@ OBJS := \
 	local_buttons.obj \
 	i2s_dac.obj \
 	audio_player.obj \
+	display_model.obj \
 	wav_reader.obj \
 	HAL_SDCard.obj \
 	ff.obj \
@@ -75,6 +76,10 @@ i2s_dac.obj: ../drivers/i2s_dac.c
 audio_player.obj: ../application/audio_player.c
 	@echo MSP430 Compiler - building file: "$<"
 	$(CC) $(CFLAGS) --preproc_dependency="audio_player.d_raw" "$<"
+
+display_model.obj: ../middleware/display_model.c
+	@echo MSP430 Compiler - building file: "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="display_model.d_raw" "$<"
 
 wav_reader.obj: ../middleware/wav_reader.c
 	@echo MSP430 Compiler - building file: "$<"
