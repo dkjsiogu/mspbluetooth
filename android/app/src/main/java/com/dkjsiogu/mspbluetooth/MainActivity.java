@@ -30,6 +30,8 @@ public class MainActivity extends Activity {
     private static final UUID SPP_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
+    private static final String[] ACCEPTANCE_COMMANDS =
+            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3"};
 
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
     private Spinner deviceSpinner;
@@ -156,6 +158,15 @@ public class MainActivity extends Activity {
         queryRow.addView(sendButton("Track List", "l"), new LinearLayout.LayoutParams(0, dp(44), 1));
         queryRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(queryRow);
+
+        LinearLayout acceptanceRow = row();
+        Button acceptanceButton = commandButton("Run Acceptance", 0xFF0F766E);
+        acceptanceButton.setOnClickListener(v -> runAcceptanceScript());
+        Button clearLogButton = commandButton("Clear Log", 0xFF475569);
+        clearLogButton.setOnClickListener(v -> logView.setText(""));
+        acceptanceRow.addView(acceptanceButton, new LinearLayout.LayoutParams(0, dp(44), 2));
+        acceptanceRow.addView(clearLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(acceptanceRow);
 
         LinearLayout trackGrid = new LinearLayout(this);
         trackGrid.setOrientation(LinearLayout.VERTICAL);
@@ -338,6 +349,14 @@ public class MainActivity extends Activity {
         sendCommand("d");
     }
 
+    private void runAcceptanceScript() {
+        appendLog("acceptance start");
+        for (String command : ACCEPTANCE_COMMANDS) {
+            sendCommand(command);
+        }
+        appendLog("acceptance commands sent");
+    }
+
     private void handleIncomingText(String text) {
         appendLog(text);
         rxLineBuffer.append(text);
@@ -432,7 +451,7 @@ public class MainActivity extends Activity {
         try {
             outputStream.write(command.getBytes(StandardCharsets.US_ASCII));
             outputStream.flush();
-            appendLog("> " + command);
+            appendLog("TX> " + command);
         } catch (IOException ex) {
             appendLog("tx error: " + ex.getMessage());
             closeConnection();

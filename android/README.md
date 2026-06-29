@@ -36,3 +36,15 @@ cd E:\code\ccs\mspbluetooth\android
 ```text
 android\app\build\outputs\apk\debug\app-debug.apk
 ```
+
+## Acceptance Button
+
+The APK includes `Run Acceptance`. After connecting to HC-05, this button sends
+`h i e l d ? t 1 p + n b o 3`, appends `TX>` markers to the phone log, and lets
+the status, display-frame, and track-list panels update from firmware responses.
+The saved phone log can be checked on the PC:
+
+```powershell
+python tools\serial_acceptance_check.py --input path\to\phone_log.txt
+python tools\android_acceptance_log_sim.py
+```

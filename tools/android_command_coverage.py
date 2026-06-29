@@ -74,6 +74,8 @@ REQUIRED_MANIFEST_MARKERS = [
     'android:label="MSP430 Player"',
 ]
 
+REQUIRED_ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3"]
+
 
 def extract_send_buttons(source: str) -> dict[str, list[str]]:
     """Returns command -> labels from sendButton("label", "command") calls."""
@@ -125,6 +127,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`display 1/2/3:...`", "`updateDisplayFrame` renders the three-line display model"]),
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),
             row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
+            row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),
             "",
             "## Bluetooth APK Requirements",
             "",
@@ -172,6 +175,13 @@ def verify_coverage() -> tuple[dict[str, list[str]], str, str]:
     for command in ("?", "l", "d"):
         if f'sendCommand("{command}")' not in source:
             raise AssertionError(f"Android source must send {command!r} during initial panel sync")
+    if 'commandButton("Run Acceptance"' not in source:
+        raise AssertionError("Android source must expose a Run Acceptance button")
+    if 'appendLog("TX> " + command)' not in source:
+        raise AssertionError("Android source must log transmitted commands with TX> markers")
+    for command in REQUIRED_ACCEPTANCE_COMMANDS:
+        if f'"{command}"' not in source:
+            raise AssertionError(f"Android acceptance script missing command {command!r}")
     return commands, source, manifest
 
 
