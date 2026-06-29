@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
     private static final String[] ACCEPTANCE_COMMANDS =
-            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3"};
+            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k"};
 
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
     private Spinner deviceSpinner;
@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
     private TextView dashboardView;
     private TextView displayView;
     private TextView trackListView;
+    private TextView linkView;
     private TextView acceptanceView;
     private TextView logView;
     private Button connectButton;
@@ -133,6 +134,9 @@ public class MainActivity extends Activity {
         trackListView = panelText("Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --");
         root.addView(trackListView, new LinearLayout.LayoutParams(-1, dp(82)));
 
+        linkView = panelText("Link\nRX: --  Status: --  Display: --\nBad: --  Last: --  Uptime: --");
+        root.addView(linkView, new LinearLayout.LayoutParams(-1, dp(70)));
+
         acceptanceView = panelText("Acceptance 0/8\nSD:-- Info:-- Selftest:-- Tracks:--\nDisplay:-- Status:-- Tone:-- Open:--");
         root.addView(acceptanceView, new LinearLayout.LayoutParams(-1, dp(70)));
 
@@ -173,6 +177,7 @@ public class MainActivity extends Activity {
         queryRow.addView(sendButton("Order", "o"), new LinearLayout.LayoutParams(0, dp(44), 1));
         queryRow.addView(sendButton("Track List", "l"), new LinearLayout.LayoutParams(0, dp(44), 1));
         queryRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        queryRow.addView(sendButton("Link", "k"), new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(queryRow);
 
         LinearLayout acceptanceRow = row();
@@ -211,9 +216,11 @@ public class MainActivity extends Activity {
         scrollView.setBackgroundColor(0xFFFFFFFF);
         scrollView.setPadding(dp(10), dp(10), dp(10), dp(10));
         scrollView.addView(logView);
-        root.addView(scrollView, new LinearLayout.LayoutParams(-1, 0, 1));
+        root.addView(scrollView, new LinearLayout.LayoutParams(-1, dp(220)));
 
-        setContentView(root);
+        ScrollView pageScroll = new ScrollView(this);
+        pageScroll.addView(root);
+        setContentView(pageScroll);
     }
 
     private LinearLayout row() {
@@ -422,6 +429,8 @@ public class MainActivity extends Activity {
             updateDisplayFrame();
         } else if (line.startsWith("tracks")) {
             updateTrackList(line);
+        } else if (line.startsWith("link ")) {
+            updateLinkPanel(line);
         }
     }
 
@@ -530,6 +539,18 @@ public class MainActivity extends Activity {
             builder.append("\n--");
         }
         trackListView.setText(builder.toString());
+    }
+
+    private void updateLinkPanel(String linkLine) {
+        String rx = fieldValue(linkLine, "rx=");
+        String status = fieldValue(linkLine, "status=");
+        String display = fieldValue(linkLine, "display=");
+        String bad = fieldValue(linkLine, "bad=");
+        String last = fieldValue(linkLine, "last=");
+        String uptime = fieldValue(linkLine, "uptime=");
+        linkView.setText("Link\nRX: " + rx + "  Status: " + status +
+                "  Display: " + display + "\nBad: " + bad +
+                "  Last: " + last + "  Uptime: " + uptime);
     }
 
     private String fieldValue(String line, String key) {

@@ -106,9 +106,9 @@ def android_source_evidence() -> tuple[list[str], list[str]]:
     source = (ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dkjsiogu" / "mspbluetooth" / "MainActivity.java").read_text(
         encoding="utf-8"
     )
-    commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?"]
+    commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k"]
     missing_commands = [command for command in commands if f'"{command}"' not in source]
-    parser_markers = ["status=", "progress=", "display 1:", "display 2:", "display 3:"]
+    parser_markers = ["status=", "progress=", "display 1:", "display 2:", "display 3:", "link "]
     missing_markers = [marker for marker in parser_markers if f'"{marker}"' not in source]
     if missing_commands:
         raise AssertionError(f"Android source missing command buttons: {missing_commands}")
@@ -219,6 +219,7 @@ def render_report(input_dir: Path) -> str:
             row(["Android parsed dashboard", android_state.dashboard_text.replace("\n", " / ")]),
             row(["Android parsed display", android_state.display_text.replace("\n", " / ")]),
             row(["Android parsed track list", android_state.track_list_text.replace("\n", " / ")]),
+            row(["Android parsed link", android_state.link_text.replace("\n", " / ")]),
             row(["Android acceptance summary", android_state.acceptance_text.replace("\n", " / ")]),
             row(["E-paper preview", "tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame"]),
             row(["E-paper gallery", "playing, paused, stopped, and error previews are generated in docs/epaper_gallery_report.md"]),

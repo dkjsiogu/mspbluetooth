@@ -35,6 +35,7 @@ ALLOWED_TRANSCRIPT_PREFIXES = (
     "tracks ",
     "display ",
     "status=",
+    "link ",
     "help",
     "end",
 )
@@ -106,7 +107,7 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
     cases = [
         DiagnosticCase(
             name="bring-up transcript",
-            chunks=["i", "e", "l", "d", "?"],
+            chunks=["i", "e", "l", "d", "?", "k"],
             expected_tail=[
                 f"info name={FIRMWARE_NAME} version={FIRMWARE_VERSION} profile={HARDWARE_PROFILE}",
                 "selftest bt=ok sd=ok file=open dac=test-with-t",
@@ -115,6 +116,7 @@ def run_diagnostic_cases() -> list[DiagnosticResult]:
                 "display 2:SD:OK WAV:OPEN",
                 "display 3:16000Hz 2ch P0%",
                 "status=paused track=1 volume=18 order=repeat_all rate=16000Hz channels=2 progress=0",
+                "link rx=6 status=1 display=1 bad=0 last=k uptime=1234ms",
             ],
         ),
         DiagnosticCase(
@@ -184,6 +186,7 @@ def render_report(results: list[DiagnosticResult]) -> str:
             row(["Track scan", "`l`", "`tracks 1=ok ...` with available WAV files marked `ok`"]),
             row(["Display model", "`d`", "`display 1:`/`display 2:`/`display 3:` lines"]),
             row(["Current status", "`?`", "`status=... track=... volume=... order=... progress=...`"]),
+            row(["Bluetooth link counters", "`k`", "`link rx=... status=... display=... bad=... last=... uptime=...ms`"]),
             "",
         ]
     )

@@ -66,6 +66,7 @@ REQUIRED_COMMANDS = {
     "l": "track list",
     "d": "display frame",
     "?": "status",
+    "k": "Bluetooth link counters",
 }
 
 

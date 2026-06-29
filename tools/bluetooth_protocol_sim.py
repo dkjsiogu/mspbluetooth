@@ -41,6 +41,11 @@ class SimulatedPlayer:
     saved_volume: int = 18
     order: str = "repeat_all"
     progress: int = 0
+    rx_count: int = 0
+    bad_count: int = 0
+    status_reports: int = 0
+    display_reports: int = 0
+    last_command: str = "-"
     transcript: list[str] = field(default_factory=list)
 
     def open_track(self, track: int) -> None:
@@ -63,6 +68,7 @@ class SimulatedPlayer:
         )
 
     def report_status(self) -> None:
+        self.status_reports += 1
         self.transcript.append(self.status_line())
 
     def display_lines(self) -> list[str]:
@@ -76,6 +82,7 @@ class SimulatedPlayer:
     def report_ui_snapshot(self) -> None:
         self.report_status()
         self.transcript.extend(self.display_lines())
+        self.display_reports += 1
 
     def finish_track(self) -> None:
         if self.order == "repeat_one":
@@ -98,6 +105,8 @@ class SimulatedPlayer:
 
     def send(self, command: str) -> None:
         command = command.lower()
+        self.rx_count += 1
+        self.last_command = command
         if command in "123456789":
             self.track = int(command)
             self.mode = "playing"
@@ -159,10 +168,18 @@ class SimulatedPlayer:
             self.transcript.append("tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--")
         elif command == "d":
             self.transcript.extend(self.display_lines())
+            self.display_reports += 1
         elif command == "?":
             self.report_status()
         elif command == "h":
             self.transcript.append("help")
+        elif command == "k":
+            self.transcript.append(
+                f"link rx={self.rx_count} status={self.status_reports} display={self.display_reports} "
+                f"bad={self.bad_count} last={self.last_command} uptime=1234ms"
+            )
+        else:
+            self.bad_count += 1
 
 
 def assert_equal(actual: object, expected: object, label: str) -> None:
@@ -173,7 +190,7 @@ def assert_equal(actual: object, expected: object, label: str) -> None:
 def run_required_flow() -> SimulatedPlayer:
     player = SimulatedPlayer()
 
-    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?"]:
+    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?", "k"]:
         player.send(command)
 
     assert_equal(player.mode, "playing", "mode after direct track command")
@@ -185,7 +202,9 @@ def run_required_flow() -> SimulatedPlayer:
     assert any(line.startswith("selftest bt=ok") for line in player.transcript)
     assert any(line.startswith("tracks 1=ok") for line in player.transcript)
     assert any(line.startswith("display 1:playing T3 V19 ONE") for line in player.transcript)
-    assert "status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0" in player.transcript[-1]
+    assert any(line.startswith("status=playing track=3 volume=19 order=repeat_one") for line in player.transcript)
+    assert player.transcript[-1].startswith("link rx=")
+    assert "last=k" in player.transcript[-1]
     return player
 
 

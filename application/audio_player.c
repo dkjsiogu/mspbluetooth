@@ -29,6 +29,11 @@ typedef struct {
     uint32_t data_remaining;
     uint32_t led_stamp_ms;
     uint32_t status_stamp_ms;
+    uint16_t bt_rx_count;
+    uint16_t bt_bad_count;
+    uint16_t bt_status_reports;
+    uint16_t bt_display_reports;
+    uint8_t bt_last_command;
     PlayerMode led_mode;
     uint8_t led_error_step;
     WavInfo wav;
@@ -60,6 +65,9 @@ static void player_report_ui_snapshot(void);
 
 /* player_report_order: sends the current automatic track-advance mode. */
 static void player_report_order(void);
+
+/* player_report_link: reports Bluetooth command counters for field acceptance. */
+static void player_report_link(void);
 
 /* player_update_status_led: maps playback state to visible P1.0 LED patterns. */
 static void player_update_status_led(void);
@@ -220,6 +228,7 @@ static uint8_t player_progress_percent(void)
 /* player_report_status: sends playback mode, track, volume, order, and WAV progress. */
 static void player_report_status(void)
 {
+    g_player.bt_status_reports++;
     bluetooth_uart_write_str("status=");
     bluetooth_uart_write_str(mode_text(g_player.mode));
     bluetooth_uart_write_str(" track=");
@@ -245,6 +254,7 @@ static void player_report_display_frame(void)
     DisplayModelInput input;
     DisplayFrame frame;
 
+    g_player.bt_display_reports++;
     input.mode_text = mode_text(g_player.mode);
     input.order_text = order_short_text(g_player.order);
     input.track_index = g_player.track_index;
@@ -281,6 +291,28 @@ static void player_report_order(void)
     bluetooth_uart_write_str("order=");
     bluetooth_uart_write_str(order_text(g_player.order));
     bluetooth_uart_write_str("\r\n");
+}
+
+/* player_report_link: sends software-visible Bluetooth round-trip evidence. */
+static void player_report_link(void)
+{
+    bluetooth_uart_write_str("link rx=");
+    bluetooth_uart_write_uint(g_player.bt_rx_count);
+    bluetooth_uart_write_str(" status=");
+    bluetooth_uart_write_uint(g_player.bt_status_reports);
+    bluetooth_uart_write_str(" display=");
+    bluetooth_uart_write_uint(g_player.bt_display_reports);
+    bluetooth_uart_write_str(" bad=");
+    bluetooth_uart_write_uint(g_player.bt_bad_count);
+    bluetooth_uart_write_str(" last=");
+    if (g_player.bt_last_command != 0u) {
+        bluetooth_uart_write_char(g_player.bt_last_command);
+    } else {
+        bluetooth_uart_write_char('-');
+    }
+    bluetooth_uart_write_str(" uptime=");
+    bluetooth_uart_write_uint(board_millis());
+    bluetooth_uart_write_str("ms\r\n");
 }
 
 /* player_report_info: sends firmware version and hardware wiring profile. */
@@ -644,10 +676,12 @@ static void player_handle_command(uint8_t command)
     uint8_t report_status;
 
     report_status = 0u;
+    g_player.bt_rx_count++;
 
     if ((command >= (uint8_t)'A') && (command <= (uint8_t)'Z')) {
         command = (uint8_t)(command + ((uint8_t)'a' - (uint8_t)'A'));
     }
+    g_player.bt_last_command = command;
 
     if ((command >= (uint8_t)'1') && (command <= (uint8_t)'9')) {
         if (player_open_track((uint8_t)(command - (uint8_t)'0'), 1u) == 0u) {
@@ -721,7 +755,11 @@ static void player_handle_command(uint8_t command)
     case 'h':
         player_write_prompt();
         break;
+    case 'k':
+        player_report_link();
+        break;
     default:
+        g_player.bt_bad_count++;
         break;
     }
 
@@ -733,7 +771,7 @@ static void player_handle_command(uint8_t command)
 /* player_write_prompt: prints all supported Bluetooth control commands. */
 static void player_write_prompt(void)
 {
-    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, 1-9 track, ? status");
+    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, k link, 1-9 track, ? status");
 }
 
 void audio_player_init(void)
@@ -751,6 +789,11 @@ void audio_player_init(void)
     g_player.data_remaining = 0u;
     g_player.led_stamp_ms = board_millis();
     g_player.status_stamp_ms = board_millis();
+    g_player.bt_rx_count = 0u;
+    g_player.bt_bad_count = 0u;
+    g_player.bt_status_reports = 0u;
+    g_player.bt_display_reports = 0u;
+    g_player.bt_last_command = 0u;
     g_player.led_mode = PLAYER_MODE_STOPPED;
     g_player.led_error_step = 0u;
     player_reset_status_led();

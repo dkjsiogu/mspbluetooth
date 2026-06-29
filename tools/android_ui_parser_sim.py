@@ -28,6 +28,7 @@ TONE_LINES = [
     "tone start",
     "tone done",
 ]
+LINK_LINE = "link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms"
 
 
 @dataclass
@@ -37,6 +38,7 @@ class AndroidUiState:
     dashboard_text: str = "Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --"
     display_lines: list[str] = field(default_factory=lambda: ["--", "--", "--"])
     track_list_text: str = "Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --"
+    link_text: str = "Link\nRX: --  Status: --  Display: --\nBad: --  Last: --  Uptime: --"
     acceptance_text: str = "Acceptance 0/8\nSD:-- Info:-- Selftest:-- Tracks:--\nDisplay:-- Status:-- Tone:-- Open:--"
     rx_line_buffer: str = ""
     parsed_lines: list[str] = field(default_factory=list)
@@ -99,6 +101,16 @@ def update_track_list(state: AndroidUiState, tracks_line: str) -> None:
     if shown == 0:
         lines.append("--")
     state.track_list_text = "\n".join(lines)
+
+
+def update_link_panel(state: AndroidUiState, link_line: str) -> None:
+    rx = field_value(link_line, "rx=")
+    status = field_value(link_line, "status=")
+    display = field_value(link_line, "display=")
+    bad = field_value(link_line, "bad=")
+    last = field_value(link_line, "last=")
+    uptime = field_value(link_line, "uptime=")
+    state.link_text = f"Link\nRX: {rx}  Status: {status}  Display: {display}\nBad: {bad}  Last: {last}  Uptime: {uptime}"
 
 
 def mark(passed: bool) -> str:
@@ -168,6 +180,8 @@ def parse_incoming_line(state: AndroidUiState, line: str) -> None:
         state.display_lines[2] = line[len("display 3:") :]
     elif line.startswith("tracks"):
         update_track_list(state, line)
+    elif line.startswith("link "):
+        update_link_panel(state, line)
 
 
 def handle_incoming_text(state: AndroidUiState, text: str) -> None:
@@ -182,7 +196,7 @@ def handle_incoming_text(state: AndroidUiState, text: str) -> None:
 
 def run_fragmented_flow() -> AndroidUiState:
     state = AndroidUiState()
-    stream = "\r\n".join([*BOOT_LINES, INFO_LINE, SELFTEST_LINE, TRACKS_LINE, *DISPLAY_LINES, STATUS_LINE, *TONE_LINES]) + "\r\n"
+    stream = "\r\n".join([*BOOT_LINES, INFO_LINE, SELFTEST_LINE, TRACKS_LINE, *DISPLAY_LINES, STATUS_LINE, *TONE_LINES, LINK_LINE]) + "\r\n"
     chunks = [stream[:7], stream[7:29], stream[29:61], stream[61:92], stream[92:130], stream[130:181], stream[181:]]
     for chunk in chunks:
         handle_incoming_text(state, chunk)
@@ -202,6 +216,9 @@ def run_fragmented_flow() -> AndroidUiState:
         raise AssertionError(f"track list mismatch: {state.track_list_text!r}")
     if not state.acceptance_text.startswith("Acceptance 8/8"):
         raise AssertionError(f"acceptance summary mismatch: {state.acceptance_text!r}")
+    expected_link = "Link\nRX: 15  Status: 10  Display: 9\nBad: 0  Last: k  Uptime: 1234ms"
+    if state.link_text != expected_link:
+        raise AssertionError(f"link panel mismatch: {state.link_text!r}")
     if state.rx_line_buffer != "":
         raise AssertionError(f"line buffer should be empty, got {state.rx_line_buffer!r}")
     return state
@@ -213,6 +230,7 @@ def main() -> int:
     print(state.dashboard_text.replace("\n", " | "))
     print(state.display_text.replace("\n", " | "))
     print(state.track_list_text.replace("\n", " | "))
+    print(state.link_text.replace("\n", " | "))
     print(state.acceptance_text.replace("\n", " | "))
     return 0
 

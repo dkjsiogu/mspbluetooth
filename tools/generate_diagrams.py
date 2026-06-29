@@ -76,7 +76,7 @@ def generate_software() -> str:
         (90, 300, "输入轮询", ["HC-05 命令", "EC11 / S1/S2/S4"]),
         (390, 300, "状态机处理", ["播放/暂停/停止", "音量/静音/播放顺序"]),
         (690, 300, "音频服务", ["FatFs 读取 WAV", "软件 I2S 输出 DAC"]),
-        (390, 470, "状态与诊断", ["status 自动上报", "display 三行帧 / 自检 / 测试音"]),
+        (390, 470, "状态与诊断", ["status 自动上报", "display 三行帧 / link / 自检 / 测试音"]),
     ]
     for x, y, title, lines in nodes:
         add_box(parts, x, y, 210, 90, title, lines, "core" if title == "状态机处理" else "box")

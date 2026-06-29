@@ -10,7 +10,7 @@
 
 ## 2. 设计目标
 
-本设计实现 TF 卡 WAV 音频读取、软件 I2S 数字音频输出、手机蓝牙遥控、本地旋钮/按键控制、状态显示和自动化验证。手机端可发送播放/暂停、停止、重播、上一曲、下一曲、音量加减、静音、播放顺序切换、曲目扫描、自检、显示帧查询等串口命令。
+本设计实现 TF 卡 WAV 音频读取、软件 I2S 数字音频输出、手机蓝牙遥控、本地旋钮/按键控制、状态显示和自动化验证。手机端可发送播放/暂停、停止、重播、上一曲、下一曲、音量加减、静音、播放顺序切换、曲目扫描、自检、显示帧查询和蓝牙链路计数等串口命令。
 
 ## 3. 系统总体方案
 
@@ -20,7 +20,7 @@
 - 驱动层：`drivers/` 负责 MSP430 时钟、UART、EC11、本地按键、软件 I2S 和板级 GPIO。
 - 中间层：`middleware/wav_reader.*` 解析 16-bit PCM WAV，`middleware/display_model.*` 生成三行状态显示帧。
 - 文件系统：`fatfs/` 提供 TF 卡 FAT 文件访问。
-- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、`display 1/2/3:` 和 `tracks` 回传。
+- 手机端：`android/` 通过 HC-05 SPP 发送命令并解析 `status=`、`display 1/2/3:`、`tracks` 和 `link` 回传。
 - 验证工具：`tools/` 提供固件构建、注释规范检查、协议仿真、Android 解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码仿真、整板场景仿真、按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览、软件效果验收报告和交付打包。
 - TF 卡测试音：`tools/prepare_sdcard_assets.py` 生成，`tools/wav_asset_check.py` 按 RIFF chunk 校验。
 
@@ -53,6 +53,7 @@
 - S1/S2/S4 支持短按和长按：短按播放/暂停、上一曲、下一曲；长按停止、静音、播放顺序。
 - 蓝牙 `t` 命令输出 DAC 测试音，便于现场确认 DAC/功放/喇叭链路。
 - 蓝牙 `d` 命令输出三行显示帧；Android 面板和 PGM 预览图可模拟墨水屏效果。
+- 蓝牙 `k` 命令输出 RX、状态上报、显示帧上报、异常命令、最后命令和运行时间计数，便于确认手机到 HC-05 到固件再回手机的闭环。
 - 蓝牙状态包含播放模式、曲目、音量、播放顺序、采样率、声道和进度百分比。
 
 软件主流程见下图：
@@ -79,6 +80,7 @@
 | `d` | 三行显示帧 |
 | `1` 到 `9` | 直接播放指定曲目 |
 | `?` | 查询状态 |
+| `k` | 查询蓝牙链路计数 |
 
 示例回传：
 
@@ -87,6 +89,7 @@ status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progre
 display 1:playing T3 V19 ONE
 display 2:SD:OK WAV:OPEN
 display 3:16000Hz 2ch P0%
+link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms
 ```
 
 ## 7. 验证证据
@@ -117,6 +120,7 @@ display 3:16000Hz 2ch P0%
 | 注释规范 | 自写头文件、声明、define、static 注释 | `tools/firmware_static_check.py` |
 | GitHub 仓库 | 已推送到 `dkjsiogu/mspbluetooth` | `git remote -v` / GitHub |
 | Android acceptance summary | APK visible `Acceptance X/8` panel marks SD, info, selftest, tracks, display, status, tone, and WAV open evidence | `tools/android_acceptance_log_sim.py`, `docs/android_acceptance_script_report.md` |
+| Bluetooth link counters | Firmware `k` command reports `link rx=... status=... display=... bad=... last=... uptime=...ms`, and APK renders it in the Link panel | `tools/bluetooth_protocol_sim.py`, `tools/android_ui_parser_sim.py`, `tools/end_to_end_demo_sim.py` |
 
 自动验证命令：
 
@@ -126,14 +130,14 @@ powershell -ExecutionPolicy Bypass -File tools\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧/Link 面板解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
 实物验收按 `docs/hardware_verification.md` 执行：
 
 - 先只烧录 MSP430F5529，确认 P1.0 状态 LED 模式和无复位循环。
-- 接 HC-05，使用 APK 连接并测试 `?`、`i`、`e`、`l`、`d`。
+- 接 HC-05，使用 APK 连接并测试 `?`、`i`、`e`、`l`、`d`、`k`。
 - 接 PCM5102A/PAM8403/喇叭，先用 `t` 测试音确认音频链路。
 - 插入 TF 卡并放置 `TRACK01.WAV` 等文件，测试播放、暂停、上下曲和进度上报。
 - 测试 EC11 旋转、短按、长按，以及本地按键短按和长按。

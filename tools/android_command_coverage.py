@@ -43,6 +43,7 @@ REQUIRED_COMMANDS = [
     RequiredCommand("l", "scan TRACK01.WAV..TRACK09.WAV", "Track List"),
     RequiredCommand("d", "three-line display frame", "Display"),
     RequiredCommand("?", "current status query", "Status"),
+    RequiredCommand("k", "Bluetooth link counters", "Link"),
     RequiredCommand("1", "direct track 1", "Track 1"),
     RequiredCommand("2", "direct track 2", "Track 2"),
     RequiredCommand("3", "direct track 3", "Track 3"),
@@ -60,9 +61,11 @@ REQUIRED_PARSER_MARKERS = [
     'line.startsWith("display 2:")',
     'line.startsWith("display 3:")',
     'line.startsWith("tracks")',
+    'line.startsWith("link ")',
     "updateDashboard",
     "updateDisplayFrame",
     "updateTrackList",
+    "updateLinkPanel",
 ]
 
 REQUIRED_ACCEPTANCE_MARKERS = [
@@ -89,7 +92,7 @@ REQUIRED_MANIFEST_MARKERS = [
     'android:label="MSP430 Player"',
 ]
 
-REQUIRED_ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3"]
+REQUIRED_ACCEPTANCE_COMMANDS = ["h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k"]
 
 
 def extract_send_buttons(source: str) -> dict[str, list[str]]:
@@ -141,6 +144,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`status=...`", "`updateDashboard` extracts mode, track, volume, order, progress"]),
             row(["`display 1/2/3:...`", "`updateDisplayFrame` renders the three-line display model"]),
             row(["`tracks ...`", "`updateTrackList` renders TRACK01..TRACK09 availability"]),
+            row(["`link ...`", "`updateLinkPanel` renders RX/status/display/error counters for Bluetooth round-trip evidence"]),
             row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
             row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),
             row(["Acceptance summary", "`acceptanceView` shows SD, info, selftest, tracks, display, status, tone, and file-open evidence as `Acceptance X/8`"]),
