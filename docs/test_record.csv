@@ -8,6 +8,7 @@ Android parser simulation,tools/android_ui_parser_sim.py,Fragmented status/displ
 Android command coverage,tools/android_command_coverage.py,All firmware commands have APK buttons and required Bluetooth/SPP markers,,,
 End-to-end demo simulation,tools/end_to_end_demo_sim.py,APK button commands receive immediate status responses and drive visible phone panel state changes,,,
 Bluetooth diagnostic simulation,tools/bluetooth_diagnostic_sim.py,Fragmented uppercase noisy and diagnostic command streams produce expected responses,,,
+Whole-board control scenario,tools/board_scenario_sim.py,Bluetooth/encoder/local button mixed sequence reaches expected state and emits immediate status reports,,,
 Audio stream simulation,tools/audio_stream_sim.py,TRACK01-03.WAV produce non-silent scaled stereo samples and 100% progress,,,
 I2S frame simulation,tools/i2s_frame_sim.py,One stereo frame has 64 BCK pulses LRCK slots MSB delay and padding,,,
 EC11 quadrature simulation,tools/encoder_quadrature_sim.py,CW/CCW detents and debounced switch produce expected events,,,

@@ -25,7 +25,7 @@ This report is generated from host-side simulations and source checks. It proves
 
 | Input sequence | Final state |
 | --- | --- |
-| enc:cw, enc:cw, s1, s1, s1:long, s1, s4, bt:n, s2, bt:-, s2:long, enc:cw, enc:cw, enc:cw, bt:t, bt:r, s4:long, enc:press, tick:500ms, tick:5s | BoardState(mode='paused', track=2, volume=3, order='repeat_one', led_toggles=1, status_reports=1, tone_tests=1) |
+| enc:cw, enc:cw, s1, s1, s1:long, s1, s4, bt:n, s2, bt:-, s2:long, enc:cw, enc:cw, enc:cw, bt:t, bt:r, s4:long, enc:press, tick:500ms, tick:5s | BoardState(mode='paused', track=2, volume=3, order='repeat_one', led_toggles=1, status_reports=19, tone_tests=1) |
 
 ## Local Button Timing
 

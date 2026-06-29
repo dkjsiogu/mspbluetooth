@@ -720,6 +720,9 @@ void audio_player_poll_controls(void)
     uint8_t command;
     uint8_t events;
     uint8_t button_events;
+    uint8_t local_status_report;
+
+    local_status_report = 0u;
 
     while (bluetooth_uart_read(&command) != 0u) {
         player_handle_command(command);
@@ -728,32 +731,46 @@ void audio_player_poll_controls(void)
     events = encoder_take_events();
     if ((events & ENCODER_EVENT_CW) != 0u) {
         player_volume_up();
+        local_status_report = 1u;
     }
     if ((events & ENCODER_EVENT_CCW) != 0u) {
         player_volume_down();
+        local_status_report = 1u;
     }
     if ((events & ENCODER_EVENT_BUTTON) != 0u) {
         player_toggle_play_pause();
+        local_status_report = 1u;
     }
 
     button_events = local_buttons_take_events();
     if ((button_events & LOCAL_BUTTON_EVENT_PLAY_PAUSE) != 0u) {
         player_toggle_play_pause();
+        local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_PREVIOUS) != 0u) {
         player_previous_track();
+        local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_NEXT) != 0u) {
         player_next_track();
+        local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_STOP) != 0u) {
         player_stop();
+        local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_MUTE) != 0u) {
         player_toggle_mute();
+        local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_ORDER) != 0u) {
         player_cycle_order();
+        local_status_report = 1u;
+    }
+
+    if (local_status_report != 0u) {
+        player_report_status();
+        g_player.status_stamp_ms = board_millis();
     }
 
     if (board_elapsed_ms(&g_player.led_stamp_ms, 500u) != 0u) {

@@ -23,6 +23,8 @@ class BoardState:
 
 
 def apply_event(state: BoardState, event: str) -> None:
+    reports_status = event.startswith(("bt:", "enc:")) or event in ("s1", "s2", "s4", "s1:long", "s2:long", "s4:long")
+
     if event in ("bt:p", "enc:press", "s1"):
         state.mode = "paused" if state.mode == "playing" else "playing"
     elif event == "s1:long":
@@ -65,6 +67,9 @@ def apply_event(state: BoardState, event: str) -> None:
     else:
         raise ValueError(f"unknown event: {event}")
 
+    if reports_status:
+        state.status_reports += 1
+
 
 def main() -> int:
     state = BoardState()
@@ -99,7 +104,7 @@ def main() -> int:
     assert state.volume == 3, state
     assert state.order == "repeat_one", state
     assert state.led_toggles == 1, state
-    assert state.status_reports == 1, state
+    assert state.status_reports == 19, state
     assert state.tone_tests == 1, state
 
     print("whole-board control scenario passed")

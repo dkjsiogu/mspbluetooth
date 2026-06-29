@@ -60,7 +60,7 @@ def run_board_scenario() -> tuple[list[str], BoardState]:
         volume=3,
         order="repeat_one",
         led_toggles=1,
-        status_reports=1,
+        status_reports=19,
         tone_tests=1,
     ):
         raise AssertionError(f"unexpected board scenario result: {state}")
