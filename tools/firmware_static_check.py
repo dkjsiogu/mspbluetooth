@@ -49,6 +49,7 @@ HEADER_FILES = [
     "drivers/i2s_dac.h",
     "drivers/local_buttons.h",
     "drivers/platform_config.h",
+    "fatfs/HAL_SDCard.h",
     "middleware/wav_reader.h",
 ]
 
