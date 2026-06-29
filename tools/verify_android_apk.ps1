@@ -51,5 +51,20 @@ foreach ($command in $requiredCommands) {
     }
 }
 
+$requiredUiMarkers = @(
+    "dashboardView",
+    "displayView",
+    "parseIncomingLine",
+    '"status="',
+    '"display 1:"',
+    '"display 2:"',
+    '"display 3:"'
+)
+foreach ($marker in $requiredUiMarkers) {
+    if ($source.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) {
+        throw "Android UI source missing status/display parser marker: $marker"
+    }
+}
+
 Write-Output "Android APK verification passed"
 Write-Output $apk

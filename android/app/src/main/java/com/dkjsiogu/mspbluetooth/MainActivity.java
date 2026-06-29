@@ -34,12 +34,16 @@ public class MainActivity extends Activity {
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
     private Spinner deviceSpinner;
     private TextView stateView;
+    private TextView dashboardView;
+    private TextView displayView;
     private TextView logView;
     private Button connectButton;
     private BluetoothSocket socket;
     private OutputStream outputStream;
     private Thread rxThread;
     private volatile boolean keepReading;
+    private final StringBuilder rxLineBuffer = new StringBuilder();
+    private final String[] displayLines = new String[]{"--", "--", "--"};
 
     private static final class DeviceEntry {
         final BluetoothDevice device;
@@ -103,6 +107,12 @@ public class MainActivity extends Activity {
 
         deviceSpinner = new Spinner(this);
         root.addView(deviceSpinner, new LinearLayout.LayoutParams(-1, dp(48)));
+
+        dashboardView = panelText("Mode: --\nTrack: --\nVolume: --\nOrder: --");
+        root.addView(dashboardView, new LinearLayout.LayoutParams(-1, dp(86)));
+
+        displayView = panelText("Display frame\n--\n--\n--");
+        root.addView(displayView, new LinearLayout.LayoutParams(-1, dp(96)));
 
         LinearLayout connectionRow = row();
         connectButton = commandButton("Connect", 0xFF0F766E);
@@ -187,6 +197,16 @@ public class MainActivity extends Activity {
         Button button = commandButton(text, 0xFF334155);
         button.setOnClickListener(v -> sendCommand(command));
         return button;
+    }
+
+    private TextView panelText(String text) {
+        TextView view = new TextView(this);
+        view.setText(text);
+        view.setTextSize(14);
+        view.setTextColor(0xFF111827);
+        view.setBackgroundColor(0xFFFFFFFF);
+        view.setPadding(dp(10), dp(8), dp(10), dp(8));
+        return view;
     }
 
     private int dp(int value) {
@@ -295,7 +315,7 @@ public class MainActivity extends Activity {
                     int count = inputStream.read(buffer);
                     if (count > 0) {
                         String text = new String(buffer, 0, count, StandardCharsets.US_ASCII);
-                        runOnUiThread(() -> appendLog(text));
+                        runOnUiThread(() -> handleIncomingText(text));
                     }
                 } catch (IOException ex) {
                     if (keepReading) {
@@ -306,6 +326,62 @@ public class MainActivity extends Activity {
             }
         });
         rxThread.start();
+    }
+
+    private void handleIncomingText(String text) {
+        appendLog(text);
+        rxLineBuffer.append(text);
+
+        int newline;
+        while ((newline = rxLineBuffer.indexOf("\n")) >= 0) {
+            String line = rxLineBuffer.substring(0, newline).trim();
+            rxLineBuffer.delete(0, newline + 1);
+            if (line.length() > 0) {
+                parseIncomingLine(line);
+            }
+        }
+    }
+
+    private void parseIncomingLine(String line) {
+        if (line.startsWith("status=")) {
+            updateDashboard(line);
+        } else if (line.startsWith("display 1:")) {
+            displayLines[0] = line.substring("display 1:".length());
+            updateDisplayFrame();
+        } else if (line.startsWith("display 2:")) {
+            displayLines[1] = line.substring("display 2:".length());
+            updateDisplayFrame();
+        } else if (line.startsWith("display 3:")) {
+            displayLines[2] = line.substring("display 3:".length());
+            updateDisplayFrame();
+        }
+    }
+
+    private void updateDashboard(String statusLine) {
+        String mode = fieldValue(statusLine, "status=");
+        String track = fieldValue(statusLine, "track=");
+        String volume = fieldValue(statusLine, "volume=");
+        String order = fieldValue(statusLine, "order=");
+        dashboardView.setText("Mode: " + mode + "\nTrack: " + track +
+                "\nVolume: " + volume + "\nOrder: " + order);
+    }
+
+    private void updateDisplayFrame() {
+        displayView.setText("Display frame\n" + displayLines[0] + "\n" +
+                displayLines[1] + "\n" + displayLines[2]);
+    }
+
+    private String fieldValue(String line, String key) {
+        int start = line.indexOf(key);
+        if (start < 0) {
+            return "--";
+        }
+        start += key.length();
+        int end = line.indexOf(' ', start);
+        if (end < 0) {
+            end = line.length();
+        }
+        return line.substring(start, end);
     }
 
     private void sendCommand(String command) {
