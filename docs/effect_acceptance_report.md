@@ -34,6 +34,16 @@ This report is generated from host-side simulations and source checks. It proves
 | Android parsed display | Display frame / playing T3 V19 ONE / SD:OK WAV:OPEN / 16000Hz 2ch P42% |
 | E-paper preview | tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame |
 
+## Audio Stream Simulation
+
+Firmware stream buffer: 192 bytes. Volume scale: 18/32.
+
+| File | Chunks | Output frames | Peak | Final progress |
+| --- | --- | --- | --- | --- |
+| TRACK01.WAV | 84 | 4000 | -6750..6750 | 100% |
+| TRACK02.WAV | 84 | 4000 | -6750..6750 | 100% |
+| TRACK03.WAV | 84 | 4000 | -6750..6750 | 100% |
+
 ## TF WAV Assets
 
 | File | Channels | Rate | Bits | Frames | Data bytes |

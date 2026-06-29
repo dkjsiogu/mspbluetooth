@@ -58,6 +58,7 @@ try {
         Invoke-Checked { python tools\generate_course_report.py }
         Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
         Invoke-Checked { python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md }
+        Invoke-Checked { python tools\audio_stream_sim.py }
         Invoke-Checked { python tools\generate_effect_report.py }
     }
 
@@ -75,6 +76,7 @@ try {
     Copy-RequiredFile "docs\report_outline.md" (Join-Path $packageRoot "docs\report_outline.md")
     Copy-RequiredFile "docs\course_report_draft.md" (Join-Path $packageRoot "docs\course_report_draft.md")
     Copy-RequiredFile "docs\effect_acceptance_report.md" (Join-Path $packageRoot "docs\effect_acceptance_report.md")
+    Copy-RequiredFile "docs\audio_stream_report.md" (Join-Path $packageRoot "docs\audio_stream_report.md")
     Copy-RequiredFile "docs\test_record.csv" (Join-Path $packageRoot "docs\test_record.csv")
     Copy-RequiredFile "docs\hardware_block_diagram.svg" (Join-Path $packageRoot "docs\hardware_block_diagram.svg")
     Copy-RequiredFile "docs\software_flowchart.svg" (Join-Path $packageRoot "docs\software_flowchart.svg")
@@ -85,6 +87,7 @@ try {
         Copy-RequiredFile $_.FullName (Join-Path $packageRoot ("sdcard\" + $_.Name))
     }
     Invoke-Checked { python tools\wav_asset_check.py --input (Join-Path $packageRoot "sdcard") --report (Join-Path $packageRoot "docs\wav_asset_report.md") }
+    Invoke-Checked { python tools\audio_stream_sim.py --input (Join-Path $packageRoot "sdcard") --report (Join-Path $packageRoot "docs\audio_stream_report.md") }
     Invoke-Checked { python tools\generate_effect_report.py --input (Join-Path $packageRoot "sdcard") --output (Join-Path $packageRoot "docs\effect_acceptance_report.md") }
 
     $manifestPath = Join-Path $packageRoot "MANIFEST.txt"
@@ -105,6 +108,7 @@ try {
         "docs\report_outline.md",
         "docs\course_report_draft.md",
         "docs\effect_acceptance_report.md",
+        "docs\audio_stream_report.md",
         "docs\test_record.csv",
         "docs\hardware_block_diagram.svg",
         "docs\software_flowchart.svg",

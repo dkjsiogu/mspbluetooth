@@ -26,6 +26,7 @@ try {
     Invoke-Checked { python tools\generate_course_report.py }
     Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
     Invoke-Checked { python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md }
+    Invoke-Checked { python tools\audio_stream_sim.py }
     Invoke-Checked { python tools\generate_effect_report.py }
 } finally {
     Pop-Location

@@ -12,6 +12,7 @@ import argparse
 from pathlib import Path
 
 from android_ui_parser_sim import run_fragmented_flow
+from audio_stream_sim import run_audio_stream_simulation
 from bluetooth_protocol_sim import run_order_flow, run_required_flow
 from board_scenario_sim import BoardState, apply_event
 from local_button_sim import LONG_PRESS_TICKS, run_samples
@@ -106,6 +107,7 @@ def render_report(input_dir: Path) -> str:
     scenario, board_state = run_board_scenario()
     button_cases = run_button_cases()
     android_state = run_fragmented_flow()
+    audio_config, audio_results = run_audio_stream_simulation(input_dir)
     commands, parser_markers = android_source_evidence()
     wav_assets = parse_assets(input_dir)
 
@@ -151,6 +153,30 @@ def render_report(input_dir: Path) -> str:
             row(["Android parsed dashboard", android_state.dashboard_text.replace("\n", " / ")]),
             row(["Android parsed display", android_state.display_text.replace("\n", " / ")]),
             row(["E-paper preview", "tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame"]),
+            "",
+            "## Audio Stream Simulation",
+            "",
+            f"Firmware stream buffer: {audio_config.buffer_bytes} bytes. Volume scale: {audio_config.default_volume}/{audio_config.volume_max}.",
+            "",
+            row(["File", "Chunks", "Output frames", "Peak", "Final progress"]),
+            row(["---", "---", "---", "---", "---"]),
+        ]
+    )
+    for result in audio_results:
+        lines.append(
+            row(
+                [
+                    result.file_name,
+                    result.chunks,
+                    result.output_frames,
+                    f"{result.min_sample}..{result.max_sample}",
+                    f"{result.final_progress}%",
+                ]
+            )
+        )
+
+    lines.extend(
+        [
             "",
             "## TF WAV Assets",
             "",
