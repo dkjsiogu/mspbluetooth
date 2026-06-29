@@ -78,6 +78,9 @@ void display_model_build(const DisplayModelInput *input, DisplayFrame *frame)
         append_text(frame->line3, "Hz ");
         append_uint(frame->line3, input->channels);
         append_text(frame->line3, "ch");
+        append_text(frame->line3, " P");
+        append_uint(frame->line3, input->progress_percent);
+        append_char(frame->line3, '%');
     } else {
         append_text(frame->line3, "Use TF TRACK01.WAV");
     }

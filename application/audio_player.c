@@ -49,6 +49,9 @@ static void player_report_display_frame(void);
 /* player_report_order: sends the current automatic track-advance mode. */
 static void player_report_order(void);
 
+/* player_progress_percent: returns current WAV data position as 0..100 percent. */
+static uint8_t player_progress_percent(void);
+
 /* player_open_track: opens TRACKxx.WAV and optionally starts playback. */
 static uint8_t player_open_track(uint8_t track_index, uint8_t start_playing);
 
@@ -131,6 +134,34 @@ static const char *order_short_text(PlayerOrder order)
     }
 }
 
+/* player_progress_percent: computes progress without 32-bit multiply overflow. */
+static uint8_t player_progress_percent(void)
+{
+    uint32_t played;
+    uint32_t one_percent_bytes;
+    uint32_t percent;
+
+    if ((g_player.file_open == 0u) || (g_player.wav.data_bytes == 0u)) {
+        return 0u;
+    }
+
+    if (g_player.data_remaining >= g_player.wav.data_bytes) {
+        return 0u;
+    }
+
+    played = g_player.wav.data_bytes - g_player.data_remaining;
+    one_percent_bytes = g_player.wav.data_bytes / 100u;
+    if (one_percent_bytes == 0u) {
+        return (g_player.data_remaining == 0u) ? 100u : 0u;
+    }
+
+    percent = played / one_percent_bytes;
+    if (percent > 100u) {
+        percent = 100u;
+    }
+    return (uint8_t)percent;
+}
+
 static void player_report_status(void)
 {
     bluetooth_uart_write_str("status=");
@@ -146,6 +177,8 @@ static void player_report_status(void)
         bluetooth_uart_write_uint(g_player.wav.sample_rate);
         bluetooth_uart_write_str("Hz channels=");
         bluetooth_uart_write_uint(g_player.wav.channels);
+        bluetooth_uart_write_str(" progress=");
+        bluetooth_uart_write_uint(player_progress_percent());
     }
     bluetooth_uart_write_str("\r\n");
 }
@@ -163,6 +196,7 @@ static void player_report_display_frame(void)
     input.file_open = g_player.file_open;
     input.sample_rate = g_player.file_open != 0u ? g_player.wav.sample_rate : 0u;
     input.channels = g_player.file_open != 0u ? (uint8_t)g_player.wav.channels : 0u;
+    input.progress_percent = player_progress_percent();
 
     display_model_build(&input, &frame);
     bluetooth_uart_write_str("display 1:");

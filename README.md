@@ -87,14 +87,14 @@ h    输出命令帮助
 自动状态上报格式示例：
 
 ```text
-status=playing track=1 volume=18 order=repeat_all rate=16000Hz channels=2
+status=playing track=1 volume=18 order=repeat_all rate=16000Hz channels=2 progress=0
 order=repeat_one
-info name=MSP430F5529-BT-WAV version=1.3.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
+info name=MSP430F5529-BT-WAV version=1.4.0 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
 selftest bt=ok sd=ok file=open dac=test-with-t
 tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--
 display 1:playing T1 V18 ALL
 display 2:SD:OK WAV:OPEN
-display 3:16000Hz 2ch
+display 3:16000Hz 2ch P0%
 ```
 
 ## 编译

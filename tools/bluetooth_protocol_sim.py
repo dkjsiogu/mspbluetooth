@@ -22,6 +22,7 @@ class SimulatedPlayer:
     volume: int = 18
     saved_volume: int = 18
     order: str = "repeat_all"
+    progress: int = 0
     transcript: list[str] = field(default_factory=list)
 
     def finish_track(self) -> None:
@@ -95,7 +96,7 @@ class SimulatedPlayer:
             self.transcript.append("tone start")
             self.transcript.append("tone done")
         elif command == "i":
-            self.transcript.append("info name=MSP430F5529-BT-WAV version=1.3.0")
+            self.transcript.append("info name=MSP430F5529-BT-WAV version=1.4.0")
         elif command == "e":
             self.transcript.append("selftest bt=ok sd=ok file=open dac=test-with-t")
         elif command == "l":
@@ -104,10 +105,11 @@ class SimulatedPlayer:
             order_short = {"sequence": "SEQ", "repeat_all": "ALL", "repeat_one": "ONE"}[self.order]
             self.transcript.append(f"display 1:{self.mode} T{self.track} V{self.volume} {order_short}")
             self.transcript.append("display 2:SD:OK WAV:OPEN")
-            self.transcript.append("display 3:16000Hz 2ch")
+            self.transcript.append(f"display 3:16000Hz 2ch P{self.progress}%")
         elif command == "?":
             self.transcript.append(
-                f"status={self.mode} track={self.track} volume={self.volume} order={self.order}"
+                f"status={self.mode} track={self.track} volume={self.volume} order={self.order} "
+                f"rate=16000Hz channels=2 progress={self.progress}"
             )
         elif command == "h":
             self.transcript.append("help")
@@ -133,7 +135,7 @@ def run_required_flow() -> SimulatedPlayer:
     assert any(line.startswith("selftest bt=ok") for line in player.transcript)
     assert any(line.startswith("tracks 1=ok") for line in player.transcript)
     assert any(line.startswith("display 1:playing T3 V19 ONE") for line in player.transcript)
-    assert "status=playing track=3 volume=19 order=repeat_one" in player.transcript[-1]
+    assert "status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=0" in player.transcript[-1]
     return player
 
 

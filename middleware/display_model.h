@@ -33,6 +33,8 @@ typedef struct {
     uint32_t sample_rate;
     /* channels: current WAV channel count, or 0 when no file is open. */
     uint8_t channels;
+    /* progress_percent: current track playback progress, clamped to 0..100. */
+    uint8_t progress_percent;
 } DisplayModelInput;
 
 /* DisplayFrame: three lines suitable for a small display or Bluetooth mirror. */
@@ -41,7 +43,7 @@ typedef struct {
     char line1[DISPLAY_MODEL_LINE_BYTES];
     /* line2: SD/file readiness summary. */
     char line2[DISPLAY_MODEL_LINE_BYTES];
-    /* line3: sample-rate/channel or operator hint. */
+    /* line3: sample-rate/channel/progress or operator hint. */
     char line3[DISPLAY_MODEL_LINE_BYTES];
 } DisplayFrame;
 

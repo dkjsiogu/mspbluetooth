@@ -108,8 +108,8 @@ public class MainActivity extends Activity {
         deviceSpinner = new Spinner(this);
         root.addView(deviceSpinner, new LinearLayout.LayoutParams(-1, dp(48)));
 
-        dashboardView = panelText("Mode: --\nTrack: --\nVolume: --\nOrder: --");
-        root.addView(dashboardView, new LinearLayout.LayoutParams(-1, dp(86)));
+        dashboardView = panelText("Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --");
+        root.addView(dashboardView, new LinearLayout.LayoutParams(-1, dp(104)));
 
         displayView = panelText("Display frame\n--\n--\n--");
         root.addView(displayView, new LinearLayout.LayoutParams(-1, dp(96)));
@@ -362,8 +362,10 @@ public class MainActivity extends Activity {
         String track = fieldValue(statusLine, "track=");
         String volume = fieldValue(statusLine, "volume=");
         String order = fieldValue(statusLine, "order=");
+        String progress = fieldValue(statusLine, "progress=");
         dashboardView.setText("Mode: " + mode + "\nTrack: " + track +
-                "\nVolume: " + volume + "\nOrder: " + order);
+                "\nVolume: " + volume + "\nOrder: " + order +
+                "\nProgress: " + progress + "%");
     }
 
     private void updateDisplayFrame() {
