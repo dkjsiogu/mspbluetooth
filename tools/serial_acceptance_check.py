@@ -48,6 +48,7 @@ REQUIRED_CRITERIA = [
     Criterion("Display line 3", "display 3:", "display model third row is reported"),
     Criterion("Status line", "status=", "structured status can feed APK/dashboard"),
     Criterion("Bluetooth link counters", "link rx=", "round-trip command counters are visible"),
+    Criterion("Local input counters", "input ecw=", "EC11 and S1/S2/S4 event counters are visible"),
     Criterion("DAC tone start", "tone start", "test-tone command enters DAC path"),
     Criterion("DAC tone done", "tone done", "test-tone command completes"),
     Criterion("Track open", "open TRACK0", "WAV open action is visible"),
@@ -70,7 +71,7 @@ def build_sample_transcript() -> str:
         "open TRACK01.WAV",
     ]
 
-    for command in ("h", "i", "e", "l", "d", "?", *STATE_CHANGING_COMMANDS, "k"):
+    for command in ("h", "i", "e", "l", "d", "?", *STATE_CHANGING_COMMANDS, "k", "u"):
         before = len(player.transcript)
         player.send(command)
         lines.append(f"TX> {command}")
@@ -201,7 +202,7 @@ def render_report(source_name: str, lines: list[str], results: list[CheckResult]
             "",
             "1. Pair the phone or PC with HC-05 and open a serial/Bluetooth terminal at the firmware UART rate.",
             "2. Enable local echo or manually keep `TX>` command markers in the saved log.",
-            "3. Send `h`, `i`, `e`, `l`, `d`, `?`, `t`, `1`, `p`, `+`, `n`, `b`, `o`, `3`, and `k`.",
+            "3. Send `h`, `i`, `e`, `l`, `d`, `?`, `t`, `1`, `p`, `+`, `n`, `b`, `o`, `3`, `k`, and `u`.",
             "4. Save the transcript as text and run `python tools\\serial_acceptance_check.py --input path\\to\\capture.txt`.",
             "",
             "## Transcript Preview",

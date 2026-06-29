@@ -43,7 +43,7 @@ foreach ($needle in $required) {
 }
 
 $source = Get-Content -Raw $mainActivity
-$requiredCommands = @('"p"', '"s"', '"r"', '"n"', '"b"', '"+"', '"-"', '"m"', '"o"', '"t"', '"i"', '"e"', '"l"', '"d"', '"?"', '"k"')
+$requiredCommands = @('"p"', '"s"', '"r"', '"n"', '"b"', '"+"', '"-"', '"m"', '"o"', '"t"', '"i"', '"e"', '"l"', '"d"', '"?"', '"k"', '"u"')
 foreach ($command in $requiredCommands) {
     if ($source.IndexOf("sendButton", [StringComparison]::Ordinal) -ge 0 -and
         $source.IndexOf($command, [StringComparison]::Ordinal) -lt 0) {
@@ -56,6 +56,7 @@ $requiredUiMarkers = @(
     "displayView",
     "trackListView",
     "linkView",
+    "inputView",
     "parseIncomingLine",
     "REQUEST_SAVE_LOG",
     "Intent.ACTION_CREATE_DOCUMENT",
@@ -68,6 +69,8 @@ $requiredUiMarkers = @(
     "updateTrackList",
     '"link "',
     "updateLinkPanel",
+    '"input "',
+    "updateInputPanel",
     "Progress:",
     "Tracks",
     '"display 1:"',

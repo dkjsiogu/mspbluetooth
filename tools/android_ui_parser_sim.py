@@ -29,6 +29,7 @@ TONE_LINES = [
     "tone done",
 ]
 LINK_LINE = "link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms"
+INPUT_LINE = "input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1"
 
 
 @dataclass
@@ -39,6 +40,7 @@ class AndroidUiState:
     display_lines: list[str] = field(default_factory=lambda: ["--", "--", "--"])
     track_list_text: str = "Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --"
     link_text: str = "Link\nRX: --  Status: --  Display: --\nBad: --  Last: --  Uptime: --"
+    input_text: str = "Input\nEC11 CW:-- CCW:-- SW:-- Long:--\nS1:--/-- S2:--/-- S4:--/--"
     acceptance_text: str = "Acceptance 0/8\nSD:-- Info:-- Selftest:-- Tracks:--\nDisplay:-- Status:-- Tone:-- Open:--"
     rx_line_buffer: str = ""
     parsed_lines: list[str] = field(default_factory=list)
@@ -113,6 +115,20 @@ def update_link_panel(state: AndroidUiState, link_line: str) -> None:
     state.link_text = f"Link\nRX: {rx}  Status: {status}  Display: {display}\nBad: {bad}  Last: {last}  Uptime: {uptime}"
 
 
+def update_input_panel(state: AndroidUiState, input_line: str) -> None:
+    ecw = field_value(input_line, "ecw=")
+    eccw = field_value(input_line, "eccw=")
+    eb = field_value(input_line, "eb=")
+    elong = field_value(input_line, "elong=")
+    s1 = field_value(input_line, "s1=")
+    s1l = field_value(input_line, "s1l=")
+    s2 = field_value(input_line, "s2=")
+    s2l = field_value(input_line, "s2l=")
+    s4 = field_value(input_line, "s4=")
+    s4l = field_value(input_line, "s4l=")
+    state.input_text = f"Input\nEC11 CW:{ecw} CCW:{eccw} SW:{eb} Long:{elong}\nS1:{s1}/{s1l} S2:{s2}/{s2l} S4:{s4}/{s4l}"
+
+
 def mark(passed: bool) -> str:
     return "OK" if passed else "--"
 
@@ -182,6 +198,8 @@ def parse_incoming_line(state: AndroidUiState, line: str) -> None:
         update_track_list(state, line)
     elif line.startswith("link "):
         update_link_panel(state, line)
+    elif line.startswith("input "):
+        update_input_panel(state, line)
 
 
 def handle_incoming_text(state: AndroidUiState, text: str) -> None:
@@ -196,7 +214,7 @@ def handle_incoming_text(state: AndroidUiState, text: str) -> None:
 
 def run_fragmented_flow() -> AndroidUiState:
     state = AndroidUiState()
-    stream = "\r\n".join([*BOOT_LINES, INFO_LINE, SELFTEST_LINE, TRACKS_LINE, *DISPLAY_LINES, STATUS_LINE, *TONE_LINES, LINK_LINE]) + "\r\n"
+    stream = "\r\n".join([*BOOT_LINES, INFO_LINE, SELFTEST_LINE, TRACKS_LINE, *DISPLAY_LINES, STATUS_LINE, *TONE_LINES, LINK_LINE, INPUT_LINE]) + "\r\n"
     chunks = [stream[:7], stream[7:29], stream[29:61], stream[61:92], stream[92:130], stream[130:181], stream[181:]]
     for chunk in chunks:
         handle_incoming_text(state, chunk)
@@ -219,6 +237,9 @@ def run_fragmented_flow() -> AndroidUiState:
     expected_link = "Link\nRX: 15  Status: 10  Display: 9\nBad: 0  Last: k  Uptime: 1234ms"
     if state.link_text != expected_link:
         raise AssertionError(f"link panel mismatch: {state.link_text!r}")
+    expected_input = "Input\nEC11 CW:3 CCW:1 SW:2 Long:1\nS1:2/1 S2:1/1 S4:1/1"
+    if state.input_text != expected_input:
+        raise AssertionError(f"input panel mismatch: {state.input_text!r}")
     if state.rx_line_buffer != "":
         raise AssertionError(f"line buffer should be empty, got {state.rx_line_buffer!r}")
     return state
@@ -231,6 +252,7 @@ def main() -> int:
     print(state.display_text.replace("\n", " | "))
     print(state.track_list_text.replace("\n", " | "))
     print(state.link_text.replace("\n", " | "))
+    print(state.input_text.replace("\n", " | "))
     print(state.acceptance_text.replace("\n", " | "))
     return 0
 

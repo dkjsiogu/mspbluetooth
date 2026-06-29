@@ -67,6 +67,7 @@ REQUIRED_COMMANDS = {
     "d": "display frame",
     "?": "status",
     "k": "Bluetooth link counters",
+    "u": "local input counters",
 }
 
 

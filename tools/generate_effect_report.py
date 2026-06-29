@@ -66,6 +66,16 @@ def run_board_scenario() -> tuple[list[str], BoardState]:
         status_reports=21,
         display_reports=20,
         tone_tests=1,
+        input_encoder_cw=5,
+        input_encoder_ccw=0,
+        input_encoder_button=1,
+        input_encoder_long=1,
+        input_s1_short=4,
+        input_s1_long=1,
+        input_s2_short=1,
+        input_s2_long=1,
+        input_s4_short=1,
+        input_s4_long=1,
     ):
         raise AssertionError(f"unexpected board scenario result: {state}")
     return scenario, state
@@ -106,9 +116,9 @@ def android_source_evidence() -> tuple[list[str], list[str]]:
     source = (ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dkjsiogu" / "mspbluetooth" / "MainActivity.java").read_text(
         encoding="utf-8"
     )
-    commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k"]
+    commands = ["p", "s", "r", "n", "b", "+", "-", "m", "o", "t", "i", "e", "l", "d", "?", "k", "u"]
     missing_commands = [command for command in commands if f'"{command}"' not in source]
-    parser_markers = ["status=", "progress=", "display 1:", "display 2:", "display 3:", "link "]
+    parser_markers = ["status=", "progress=", "display 1:", "display 2:", "display 3:", "link ", "input "]
     missing_markers = [marker for marker in parser_markers if f'"{marker}"' not in source]
     if missing_commands:
         raise AssertionError(f"Android source missing command buttons: {missing_commands}")
@@ -221,6 +231,7 @@ def render_report(input_dir: Path) -> str:
             row(["Android parsed display", android_state.display_text.replace("\n", " / ")]),
             row(["Android parsed track list", android_state.track_list_text.replace("\n", " / ")]),
             row(["Android parsed link", android_state.link_text.replace("\n", " / ")]),
+            row(["Android parsed input", android_state.input_text.replace("\n", " / ")]),
             row(["Android acceptance summary", android_state.acceptance_text.replace("\n", " / ")]),
             row(["E-paper preview", "tools/epaper_preview_sim.py renders and checks a nonblank 296x128 PGM frame"]),
             row(["E-paper gallery", "playing, paused, stopped, and error previews are generated in docs/epaper_gallery_report.md"]),

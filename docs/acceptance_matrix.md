@@ -28,4 +28,5 @@
 | GitHub 仓库 | 已推送到 `dkjsiogu/mspbluetooth` | `git remote -v` / GitHub |
 | Android acceptance summary | APK visible `Acceptance X/8` panel marks SD, info, selftest, tracks, display, status, tone, and WAV open evidence | `tools/android_acceptance_log_sim.py`, `docs/android_acceptance_script_report.md` |
 | Bluetooth link counters | Firmware `k` command reports `link rx=... status=... display=... bad=... last=... uptime=...ms`, and APK renders it in the Link panel | `tools/bluetooth_protocol_sim.py`, `tools/android_ui_parser_sim.py`, `tools/end_to_end_demo_sim.py` |
+| Local input counters | Firmware `u` command reports EC11 and S1/S2/S4 short/long event counters, and APK renders it in the Input panel | `tools/board_scenario_sim.py`, `tools/android_ui_parser_sim.py`, `tools/end_to_end_demo_sim.py` |
 | Android log save | APK `Save Log` writes the phone TX/RX transcript as a text file through Android document picker | `tools/android_command_coverage.py`, `tools/android_acceptance_log_sim.py` |

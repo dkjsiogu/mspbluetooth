@@ -34,6 +34,16 @@ typedef struct {
     uint16_t bt_status_reports;
     uint16_t bt_display_reports;
     uint8_t bt_last_command;
+    uint16_t input_encoder_cw;
+    uint16_t input_encoder_ccw;
+    uint16_t input_encoder_button;
+    uint16_t input_encoder_long;
+    uint16_t input_s1_short;
+    uint16_t input_s1_long;
+    uint16_t input_s2_short;
+    uint16_t input_s2_long;
+    uint16_t input_s4_short;
+    uint16_t input_s4_long;
     PlayerMode led_mode;
     uint8_t led_error_step;
     WavInfo wav;
@@ -68,6 +78,9 @@ static void player_report_order(void);
 
 /* player_report_link: reports Bluetooth command counters for field acceptance. */
 static void player_report_link(void);
+
+/* player_report_input: reports EC11 and local button event counters. */
+static void player_report_input(void);
 
 /* player_update_status_led: maps playback state to visible P1.0 LED patterns. */
 static void player_update_status_led(void);
@@ -313,6 +326,32 @@ static void player_report_link(void)
     bluetooth_uart_write_str(" uptime=");
     bluetooth_uart_write_uint(board_millis());
     bluetooth_uart_write_str("ms\r\n");
+}
+
+/* player_report_input: sends local input counters for physical-button acceptance. */
+static void player_report_input(void)
+{
+    bluetooth_uart_write_str("input ecw=");
+    bluetooth_uart_write_uint(g_player.input_encoder_cw);
+    bluetooth_uart_write_str(" eccw=");
+    bluetooth_uart_write_uint(g_player.input_encoder_ccw);
+    bluetooth_uart_write_str(" eb=");
+    bluetooth_uart_write_uint(g_player.input_encoder_button);
+    bluetooth_uart_write_str(" elong=");
+    bluetooth_uart_write_uint(g_player.input_encoder_long);
+    bluetooth_uart_write_str(" s1=");
+    bluetooth_uart_write_uint(g_player.input_s1_short);
+    bluetooth_uart_write_str(" s1l=");
+    bluetooth_uart_write_uint(g_player.input_s1_long);
+    bluetooth_uart_write_str(" s2=");
+    bluetooth_uart_write_uint(g_player.input_s2_short);
+    bluetooth_uart_write_str(" s2l=");
+    bluetooth_uart_write_uint(g_player.input_s2_long);
+    bluetooth_uart_write_str(" s4=");
+    bluetooth_uart_write_uint(g_player.input_s4_short);
+    bluetooth_uart_write_str(" s4l=");
+    bluetooth_uart_write_uint(g_player.input_s4_long);
+    bluetooth_uart_write_str("\r\n");
 }
 
 /* player_report_info: sends firmware version and hardware wiring profile. */
@@ -758,6 +797,9 @@ static void player_handle_command(uint8_t command)
     case 'k':
         player_report_link();
         break;
+    case 'u':
+        player_report_input();
+        break;
     default:
         g_player.bt_bad_count++;
         break;
@@ -771,7 +813,7 @@ static void player_handle_command(uint8_t command)
 /* player_write_prompt: prints all supported Bluetooth control commands. */
 static void player_write_prompt(void)
 {
-    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, k link, 1-9 track, ? status");
+    bluetooth_uart_write_line("cmd: p play/pause, s stop, r replay, n next, b prev, +/- volume, m mute, o order, t tone, i info, e selftest, l list, d display, k link, u input, 1-9 track, ? status");
 }
 
 void audio_player_init(void)
@@ -794,6 +836,16 @@ void audio_player_init(void)
     g_player.bt_status_reports = 0u;
     g_player.bt_display_reports = 0u;
     g_player.bt_last_command = 0u;
+    g_player.input_encoder_cw = 0u;
+    g_player.input_encoder_ccw = 0u;
+    g_player.input_encoder_button = 0u;
+    g_player.input_encoder_long = 0u;
+    g_player.input_s1_short = 0u;
+    g_player.input_s1_long = 0u;
+    g_player.input_s2_short = 0u;
+    g_player.input_s2_long = 0u;
+    g_player.input_s4_short = 0u;
+    g_player.input_s4_long = 0u;
     g_player.led_mode = PLAYER_MODE_STOPPED;
     g_player.led_error_step = 0u;
     player_reset_status_led();
@@ -836,44 +888,54 @@ void audio_player_poll_controls(void)
 
     events = encoder_take_events();
     if ((events & ENCODER_EVENT_CW) != 0u) {
+        g_player.input_encoder_cw++;
         player_volume_up();
         local_status_report = 1u;
     }
     if ((events & ENCODER_EVENT_CCW) != 0u) {
+        g_player.input_encoder_ccw++;
         player_volume_down();
         local_status_report = 1u;
     }
     if ((events & ENCODER_EVENT_BUTTON) != 0u) {
+        g_player.input_encoder_button++;
         player_toggle_play_pause();
         local_status_report = 1u;
     }
     if ((events & ENCODER_EVENT_BUTTON_LONG) != 0u) {
+        g_player.input_encoder_long++;
         player_stop();
         local_status_report = 1u;
     }
 
     button_events = local_buttons_take_events();
     if ((button_events & LOCAL_BUTTON_EVENT_PLAY_PAUSE) != 0u) {
+        g_player.input_s1_short++;
         player_toggle_play_pause();
         local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_PREVIOUS) != 0u) {
+        g_player.input_s2_short++;
         player_previous_track();
         local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_NEXT) != 0u) {
+        g_player.input_s4_short++;
         player_next_track();
         local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_STOP) != 0u) {
+        g_player.input_s1_long++;
         player_stop();
         local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_MUTE) != 0u) {
+        g_player.input_s2_long++;
         player_toggle_mute();
         local_status_report = 1u;
     }
     if ((button_events & LOCAL_BUTTON_EVENT_ORDER) != 0u) {
+        g_player.input_s4_long++;
         player_cycle_order();
         local_status_report = 1u;
     }

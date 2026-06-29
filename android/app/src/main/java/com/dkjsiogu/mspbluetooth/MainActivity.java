@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
     private static final int REQUEST_SAVE_LOG = 431;
     private static final String[] ACCEPTANCE_COMMANDS =
-            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k"};
+            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u"};
 
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
     private Spinner deviceSpinner;
@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
     private TextView displayView;
     private TextView trackListView;
     private TextView linkView;
+    private TextView inputView;
     private TextView acceptanceView;
     private TextView logView;
     private Button connectButton;
@@ -139,6 +140,9 @@ public class MainActivity extends Activity {
         linkView = panelText("Link\nRX: --  Status: --  Display: --\nBad: --  Last: --  Uptime: --");
         root.addView(linkView, new LinearLayout.LayoutParams(-1, dp(70)));
 
+        inputView = panelText("Input\nEC11 CW:-- CCW:-- SW:-- Long:--\nS1:--/-- S2:--/-- S4:--/--");
+        root.addView(inputView, new LinearLayout.LayoutParams(-1, dp(70)));
+
         acceptanceView = panelText("Acceptance 0/8\nSD:-- Info:-- Selftest:-- Tracks:--\nDisplay:-- Status:-- Tone:-- Open:--");
         root.addView(acceptanceView, new LinearLayout.LayoutParams(-1, dp(70)));
 
@@ -173,6 +177,7 @@ public class MainActivity extends Activity {
         diagRow.addView(sendButton("Info", "i"), new LinearLayout.LayoutParams(0, dp(44), 1));
         diagRow.addView(sendButton("Selftest", "e"), new LinearLayout.LayoutParams(0, dp(44), 1));
         diagRow.addView(sendButton("Display", "d"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        diagRow.addView(sendButton("Input", "u"), new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(diagRow);
 
         LinearLayout queryRow = row();
@@ -478,6 +483,8 @@ public class MainActivity extends Activity {
             updateTrackList(line);
         } else if (line.startsWith("link ")) {
             updateLinkPanel(line);
+        } else if (line.startsWith("input ")) {
+            updateInputPanel(line);
         }
     }
 
@@ -598,6 +605,22 @@ public class MainActivity extends Activity {
         linkView.setText("Link\nRX: " + rx + "  Status: " + status +
                 "  Display: " + display + "\nBad: " + bad +
                 "  Last: " + last + "  Uptime: " + uptime);
+    }
+
+    private void updateInputPanel(String inputLine) {
+        String ecw = fieldValue(inputLine, "ecw=");
+        String eccw = fieldValue(inputLine, "eccw=");
+        String eb = fieldValue(inputLine, "eb=");
+        String elong = fieldValue(inputLine, "elong=");
+        String s1 = fieldValue(inputLine, "s1=");
+        String s1l = fieldValue(inputLine, "s1l=");
+        String s2 = fieldValue(inputLine, "s2=");
+        String s2l = fieldValue(inputLine, "s2l=");
+        String s4 = fieldValue(inputLine, "s4=");
+        String s4l = fieldValue(inputLine, "s4l=");
+        inputView.setText("Input\nEC11 CW:" + ecw + " CCW:" + eccw +
+                " SW:" + eb + " Long:" + elong + "\nS1:" + s1 + "/" + s1l +
+                " S2:" + s2 + "/" + s2l + " S4:" + s4 + "/" + s4l);
     }
 
     private String fieldValue(String line, String key) {

@@ -46,6 +46,16 @@ class SimulatedPlayer:
     status_reports: int = 0
     display_reports: int = 0
     last_command: str = "-"
+    input_encoder_cw: int = 0
+    input_encoder_ccw: int = 0
+    input_encoder_button: int = 0
+    input_encoder_long: int = 0
+    input_s1_short: int = 0
+    input_s1_long: int = 0
+    input_s2_short: int = 0
+    input_s2_long: int = 0
+    input_s4_short: int = 0
+    input_s4_long: int = 0
     transcript: list[str] = field(default_factory=list)
 
     def open_track(self, track: int) -> None:
@@ -178,6 +188,14 @@ class SimulatedPlayer:
                 f"link rx={self.rx_count} status={self.status_reports} display={self.display_reports} "
                 f"bad={self.bad_count} last={self.last_command} uptime=1234ms"
             )
+        elif command == "u":
+            self.transcript.append(
+                f"input ecw={self.input_encoder_cw} eccw={self.input_encoder_ccw} "
+                f"eb={self.input_encoder_button} elong={self.input_encoder_long} "
+                f"s1={self.input_s1_short} s1l={self.input_s1_long} "
+                f"s2={self.input_s2_short} s2l={self.input_s2_long} "
+                f"s4={self.input_s4_short} s4l={self.input_s4_long}"
+            )
         else:
             self.bad_count += 1
 
@@ -190,7 +208,7 @@ def assert_equal(actual: object, expected: object, label: str) -> None:
 def run_required_flow() -> SimulatedPlayer:
     player = SimulatedPlayer()
 
-    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?", "k"]:
+    for command in ["p", "+", "+", "n", "b", "-", "m", "m", "o", "s", "3", "r", "t", "i", "e", "l", "d", "?", "k", "u"]:
         player.send(command)
 
     assert_equal(player.mode, "playing", "mode after direct track command")
@@ -203,8 +221,10 @@ def run_required_flow() -> SimulatedPlayer:
     assert any(line.startswith("tracks 1=ok") for line in player.transcript)
     assert any(line.startswith("display 1:playing T3 V19 ONE") for line in player.transcript)
     assert any(line.startswith("status=playing track=3 volume=19 order=repeat_one") for line in player.transcript)
-    assert player.transcript[-1].startswith("link rx=")
-    assert "last=k" in player.transcript[-1]
+    link_lines = [line for line in player.transcript if line.startswith("link rx=")]
+    assert link_lines
+    assert "last=k" in link_lines[-1]
+    assert any(line.startswith("input ecw=") for line in player.transcript)
     return player
 
 

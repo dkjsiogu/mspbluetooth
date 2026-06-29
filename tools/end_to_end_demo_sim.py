@@ -37,6 +37,7 @@ class DemoSnapshot:
     display: str
     tracks: str
     link: str
+    input: str
 
 
 DEMO_STEPS = [
@@ -51,6 +52,7 @@ DEMO_STEPS = [
     DemoStep("Tone", "t", "firmware emits a DAC test tone transcript and reports status"),
     DemoStep("Track 3", "3", "direct track button opens TRACK03.WAV and immediately reports status"),
     DemoStep("Link", "k", "firmware reports Bluetooth RX, status, display, bad-command, and last-command counters"),
+    DemoStep("Input", "u", "firmware reports EC11 and S1/S2/S4 local input counters"),
 ]
 
 
@@ -89,6 +91,7 @@ def run_demo() -> list[DemoSnapshot]:
                 display=android.display_text,
                 tracks=android.track_list_text,
                 link=android.link_text,
+                input=android.input_text,
             )
         )
 
@@ -104,6 +107,8 @@ def run_demo() -> list[DemoSnapshot]:
         raise AssertionError(f"final track list mismatch: {android.track_list_text!r}")
     if "RX: 11" not in android.link_text or "Last: k" not in android.link_text:
         raise AssertionError(f"final link panel mismatch: {android.link_text!r}")
+    if "EC11 CW:0" not in android.input_text or "S4:0/0" not in android.input_text:
+        raise AssertionError(f"final input panel mismatch: {android.input_text!r}")
     if android.rx_line_buffer:
         raise AssertionError(f"Android line buffer should be empty, got {android.rx_line_buffer!r}")
     if not any("tone done" in snapshot.responses for snapshot in snapshots):
@@ -134,6 +139,8 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
             + snapshot.tracks.replace("\n", " / ")
             + " | "
             + snapshot.link.replace("\n", " / ")
+            + " | "
+            + snapshot.input.replace("\n", " / ")
         )
         lines.append(row([snapshot.label, f"`{snapshot.command}`", snapshot.note, " -> ".join(snapshot.responses), visible]))
 
@@ -148,6 +155,7 @@ def render_report(snapshots: list[DemoSnapshot]) -> str:
             row(["Display frame", snapshots[-1].display]),
             row(["Track list", snapshots[-1].tracks]),
             row(["Link", snapshots[-1].link]),
+            row(["Input", snapshots[-1].input]),
             "",
         ]
     )
@@ -167,6 +175,7 @@ def main() -> int:
     print(snapshots[-1].dashboard.replace("\n", " | "))
     print(snapshots[-1].display.replace("\n", " | "))
     print(snapshots[-1].link.replace("\n", " | "))
+    print(snapshots[-1].input.replace("\n", " | "))
     print(f"demo report generated: {args.report}")
     return 0
 
