@@ -154,6 +154,7 @@ def render_report(input_dir: Path) -> str:
         row(["---", "---"]),
         row(["Android command buttons", ", ".join(commands)]),
         row(["APK source command coverage", f"{sum(len(labels) for labels in android_buttons.values())} buttons verified in docs/android_command_coverage_report.md"]),
+        row(["APK log evidence export", "`Share Log` shares text; `Save Log` writes text through Android document picker"]),
         row(["Firmware command transcript", " -> ".join(player.transcript)]),
         row(["Final status line", status_line]),
         row(["End-to-end demo", f"{len(demo_snapshots)} APK button steps verified in docs/end_to_end_demo_report.md"]),

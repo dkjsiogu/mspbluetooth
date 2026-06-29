@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -31,6 +32,7 @@ public class MainActivity extends Activity {
     private static final UUID SPP_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
+    private static final int REQUEST_SAVE_LOG = 431;
     private static final String[] ACCEPTANCE_COMMANDS =
             new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k"};
 
@@ -183,6 +185,8 @@ public class MainActivity extends Activity {
         LinearLayout acceptanceRow = row();
         Button acceptanceButton = commandButton("Run Acceptance", 0xFF0F766E);
         acceptanceButton.setOnClickListener(v -> runAcceptanceScript());
+        Button saveLogButton = commandButton("Save Log", 0xFF334155);
+        saveLogButton.setOnClickListener(v -> saveLogToFile());
         Button shareLogButton = commandButton("Share Log", 0xFF334155);
         shareLogButton.setOnClickListener(v -> shareLog());
         Button clearLogButton = commandButton("Clear Log", 0xFF475569);
@@ -190,10 +194,14 @@ public class MainActivity extends Activity {
             logView.setText("");
             resetAcceptanceSummary();
         });
-        acceptanceRow.addView(acceptanceButton, new LinearLayout.LayoutParams(0, dp(44), 2));
-        acceptanceRow.addView(shareLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
-        acceptanceRow.addView(clearLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        acceptanceRow.addView(acceptanceButton, new LinearLayout.LayoutParams(-1, dp(44)));
         root.addView(acceptanceRow);
+
+        LinearLayout logActionRow = row();
+        logActionRow.addView(saveLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        logActionRow.addView(shareLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        logActionRow.addView(clearLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(logActionRow);
 
         LinearLayout trackGrid = new LinearLayout(this);
         trackGrid.setOrientation(LinearLayout.VERTICAL);
@@ -398,6 +406,45 @@ public class MainActivity extends Activity {
         intent.putExtra(Intent.EXTRA_SUBJECT, "MSP430 Bluetooth acceptance log");
         intent.putExtra(Intent.EXTRA_TEXT, text);
         startActivity(Intent.createChooser(intent, "Share acceptance log"));
+    }
+
+    private void saveLogToFile() {
+        String text = logView.getText().toString();
+        if (text.trim().length() == 0) {
+            toast("Log is empty");
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TITLE, "msp430_acceptance_log.txt");
+        startActivityForResult(intent, REQUEST_SAVE_LOG);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_SAVE_LOG && resultCode == RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri != null) {
+                writeLogToUri(uri);
+            }
+        }
+    }
+
+    private void writeLogToUri(Uri uri) {
+        try (OutputStream stream = getContentResolver().openOutputStream(uri)) {
+            if (stream == null) {
+                appendLog("save error: output stream unavailable");
+                return;
+            }
+            stream.write(logView.getText().toString().getBytes(StandardCharsets.UTF_8));
+            stream.flush();
+            appendLog("log saved");
+        } catch (IOException ex) {
+            appendLog("save error: " + ex.getMessage());
+        }
     }
 
     private void handleIncomingText(String text) {

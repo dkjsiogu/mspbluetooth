@@ -149,6 +149,7 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),
             row(["Acceptance summary", "`acceptanceView` shows SD, info, selftest, tracks, display, status, tone, and file-open evidence as `Acceptance X/8`"]),
             row(["Acceptance log export", "`Share Log` uses Android `ACTION_SEND` with `EXTRA_TEXT` so logs can be saved and checked on PC"]),
+            row(["Acceptance log file save", "`Save Log` uses Android `ACTION_CREATE_DOCUMENT` and `openOutputStream` to write the phone log as text"]),
             "",
             "## Bluetooth APK Requirements",
             "",
@@ -203,6 +204,18 @@ def verify_coverage() -> tuple[dict[str, list[str]], str, str]:
         raise AssertionError("Android source must expose a Share Log button")
     if "Intent.ACTION_SEND" not in source or "Intent.EXTRA_TEXT" not in source:
         raise AssertionError("Android source must share the acceptance log with ACTION_SEND and EXTRA_TEXT")
+    if 'commandButton("Save Log"' not in source:
+        raise AssertionError("Android source must expose a Save Log button")
+    save_markers = [
+        "REQUEST_SAVE_LOG",
+        "Intent.ACTION_CREATE_DOCUMENT",
+        "Intent.CATEGORY_OPENABLE",
+        "Intent.EXTRA_TITLE",
+        "startActivityForResult",
+        "onActivityResult",
+        "getContentResolver().openOutputStream",
+    ]
+    assert_contains(source, save_markers, "Android save-log path")
     if 'appendLog("TX> " + command)' not in source:
         raise AssertionError("Android source must log transmitted commands with TX> markers")
     for command in REQUIRED_ACCEPTANCE_COMMANDS:

@@ -180,7 +180,7 @@ dist\mspbluetooth_delivery\
 
 ## Android 控制端
 
-仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`display 1/2/3:...`、`tracks ...` 和 `link ...`，在手机上显示当前播放状态、三行显示帧、曲目可用状态和蓝牙链路计数，便于未接墨水屏时确认显示效果。`Run Acceptance` 会在手机上显示 `Acceptance X/8` 摘要面板，集中标出 SD、固件信息、自检、曲目扫描、显示帧、状态、测试音和 WAV 打开证据。构建 APK：
+仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`display 1/2/3:...`、`tracks ...` 和 `link ...`，在手机上显示当前播放状态、三行显示帧、曲目可用状态和蓝牙链路计数，便于未接墨水屏时确认显示效果。`Run Acceptance` 会在手机上显示 `Acceptance X/8` 摘要面板，集中标出 SD、固件信息、自检、曲目扫描、显示帧、状态、测试音和 WAV 打开证据；日志可用 `Share Log` 分享，也可用 `Save Log` 直接保存为文本文件。构建 APK：
 
 ```powershell
 cd E:\code\ccs\mspbluetooth
@@ -224,8 +224,8 @@ commands immediately return `status=...` plus the three display lines.
 The Android APK also has a `Run Acceptance` button. It sends `h i e l d ? t 1
 p + n b o 3 k`, writes `TX>` markers into the phone log, and lets the dashboard,
 display frame, track-list, Link, and `Acceptance X/8` summary panels update
-from firmware responses. The phone log can be exported with `Share Log` and checked
-with the same
+from firmware responses. The phone log can be exported with `Share Log` or
+saved as a text file with `Save Log`, then checked with the same
 `serial_acceptance_check.py` command.
 The no-hardware model for this path is:
 

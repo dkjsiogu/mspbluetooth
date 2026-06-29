@@ -94,6 +94,7 @@ def build_report() -> str:
 - 蓝牙 `t` 命令输出 DAC 测试音，便于现场确认 DAC/功放/喇叭链路。
 - 蓝牙 `d` 命令输出三行显示帧；Android 面板和 PGM 预览图可模拟墨水屏效果。
 - 蓝牙 `k` 命令输出 RX、状态上报、显示帧上报、异常命令、最后命令和运行时间计数，便于确认手机到 HC-05 到固件再回手机的闭环。
+- Android `Save Log` 可把手机 TX/RX 验收日志直接保存为文本文件，便于课后用脚本复查。
 - 蓝牙状态包含播放模式、曲目、音量、播放顺序、采样率、声道和进度百分比。
 
 软件主流程见下图：
@@ -144,7 +145,7 @@ powershell -ExecutionPolicy Bypass -File tools\\verify_android_apk.ps1
 powershell -ExecutionPolicy Bypass -File tools\\package_release.ps1
 ```
 
-验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧/Link 面板解析仿真、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
+验证覆盖固件 clean build、RAM 余量、头文件/源码注释规范、关键命令、引脚冲突说明、蓝牙协议仿真、Android 状态/显示帧/Link 面板解析和日志保存路径、音频流仿真、I2S 帧仿真、EC11 正交解码/短按/长按仿真、整板场景仿真、本地按键长按仿真、状态 LED 节奏仿真、墨水屏多状态预览图生成、软件效果验收报告生成、TF WAV 资产格式校验、Android APK 构建和权限检查。
 
 ## 8. 实物验收计划
 
@@ -179,7 +180,7 @@ def validate_report(text: str) -> None:
         "progress=0",
         "link rx=",
         "tools/wav_asset_check.py",
-        "Android 状态/显示帧/Link 面板解析仿真",
+        "Android 状态/显示帧/Link 面板解析和日志保存路径",
         "音频流仿真",
         "I2S 帧仿真",
         "EC11 正交解码仿真",

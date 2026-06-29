@@ -60,6 +60,11 @@ def run_acceptance_flow() -> AcceptanceResult:
         raise AssertionError("APK source must expose Share Log for exporting acceptance evidence")
     if "Intent.ACTION_SEND" not in source or "Intent.EXTRA_TEXT" not in source:
         raise AssertionError("APK source must export logs through ACTION_SEND and EXTRA_TEXT")
+    if 'commandButton("Save Log"' not in source:
+        raise AssertionError("APK source must expose Save Log for local acceptance evidence")
+    for marker in ("Intent.ACTION_CREATE_DOCUMENT", "Intent.CATEGORY_OPENABLE", "Intent.EXTRA_TITLE", "getContentResolver().openOutputStream"):
+        if marker not in source:
+            raise AssertionError(f"APK source must save logs through Android document picker: missing {marker}")
 
     player = SimulatedPlayer()
     android = AndroidUiState()
@@ -123,6 +128,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["Command sequence", "`" + " ".join(ACCEPTANCE_COMMANDS) + "`"]),
         row(["Saved log", f"`{log_path}`"]),
         row(["Phone export", "`Share Log` uses Android share sheet with `EXTRA_TEXT`"]),
+        row(["Phone file save", "`Save Log` uses Android document picker with `ACTION_CREATE_DOCUMENT`"]),
         row(["Serial transcript checks", f"{result.passed_checks}/{result.total_checks} passed"]),
         row(["Final dashboard", result.dashboard]),
         row(["Final display", result.display]),

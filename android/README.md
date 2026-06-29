@@ -44,7 +44,7 @@ android\app\build\outputs\apk\debug\app-debug.apk
 The APK includes `Run Acceptance`. After connecting to HC-05, this button sends
 `h i e l d ? t 1 p + n b o 3 k`, appends `TX>` markers to the phone log, and lets
 the status, display-frame, track-list, Link, and acceptance summary panels update from firmware responses.
-Use `Share Log` to export the phone log as text, then check it on the PC:
+Use `Save Log` to write the phone log as a text file, or `Share Log` to send it through the Android share sheet, then check it on the PC:
 
 ```powershell
 python tools\serial_acceptance_check.py --input path\to\phone_log.txt
