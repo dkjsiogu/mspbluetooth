@@ -28,98 +28,56 @@ if ($LASTEXITCODE -ne 0) {
     throw "aapt dump badging failed with exit code $LASTEXITCODE"
 }
 
-$required = @(
+$badgingText = $badging -join "`n"
+$requiredBadging = @(
     "package: name='com.dkjsiogu.mspbluetooth'",
     "sdkVersion:'23'",
     "targetSdkVersion:'35'",
     "uses-permission: name='android.permission.BLUETOOTH_CONNECT'",
-    "application-label:'MSP430 Player'"
+    "application-label:'MSP430 Env'"
 )
 
-foreach ($needle in $required) {
-    if (($badging -join "`n").IndexOf($needle, [StringComparison]::Ordinal) -lt 0) {
+foreach ($needle in $requiredBadging) {
+    if ($badgingText.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) {
         throw "APK badging missing: $needle"
     }
 }
 
 $source = Get-Content -Raw $mainActivity
-$requiredCommands = @('"p"', '"s"', '"r"', '"n"', '"b"', '"+"', '"-"', '"m"', '"o"', '"t"', '"i"', '"e"', '"l"', '"d"', '"?"', '"k"', '"u"', '"x"', '"w"')
-foreach ($command in $requiredCommands) {
-    if ($source.IndexOf("sendButton", [StringComparison]::Ordinal) -ge 0 -and
-        $source.IndexOf($command, [StringComparison]::Ordinal) -lt 0) {
-        throw "Android UI source missing command button for $command"
-    }
-}
-
-$requiredUiMarkers = @(
-    "dashboardView",
-    "volumeBar",
-    "progressBar",
-    "boundedInt",
-    "volumeBar.setMax(32)",
-    "progressBar.setMax(100)",
-    "DEMO_RX_LINES",
-    "runOfflineDemo",
+$requiredMarkers = @(
+    '"MSP430 Env Monitor"',
+    '"Data"',
+    '"T+"',
+    '"T-"',
+    '"SETT="',
+    '"HIST?"',
+    '"HIST 1"',
+    '"DUMP"',
+    '"CLRLOG"',
     '"Demo RX"',
-    '"demo rx start"',
-    '"demo rx done"',
-    "healthView",
-    "displayView",
-    "trackListView",
-    "linkView",
-    "inputView",
-    "traceView",
-    "wiringView",
-    "hardwareView",
-    "HARDWARE_CHECK_COMMANDS",
-    "runHardwareCheck",
-    "resetHardwareSummary",
-    "updateHardwareSummary",
-    "renderHardwareSummary",
-    '"Run Hardware Check"',
-    '"Hardware 0/9',
-    "parseIncomingLine",
+    '"Save Log"',
+    '"DATA "',
+    '"TH="',
+    '"HIST COUNT="',
+    '"REC "',
+    '"pin "',
+    '"trace "',
+    '"info "',
+    '"cmd "',
     "REQUEST_SAVE_LOG",
     "Intent.ACTION_CREATE_DOCUMENT",
-    "Intent.CATEGORY_OPENABLE",
-    "Intent.EXTRA_TITLE",
     "getContentResolver().openOutputStream",
-    '"status="',
-    '"progress="',
-    '"sd mounted"',
-    '"info name="',
-    '"selftest "',
-    '"tone start"',
-    '"tone done"',
-    '"open TRACK0"',
-    '"error: "',
-    "updateHealthPanel",
-    '"tracks"',
-    "updateTrackList",
-    '"link "',
-    "updateLinkPanel",
-    '"input "',
-    "updateInputPanel",
-    '"trace "',
-    "updateTracePanel",
-    '"pin "',
-    "updateWiringPanel",
-    "Progress:",
-    "Tracks",
-    '"display 1:"',
-    '"display 2:"',
-    '"display 3:"'
+    "DEMO_RX_LINES",
+    "parseIncomingLine",
+    "updateDataPanel",
+    "appendPanelLine"
 )
-foreach ($marker in $requiredUiMarkers) {
+
+foreach ($marker in $requiredMarkers) {
     if ($source.IndexOf($marker, [StringComparison]::Ordinal) -lt 0) {
-        throw "Android UI source missing status/display parser marker: $marker"
+        throw "Android source missing environment monitor marker: $marker"
     }
 }
-
-Invoke-Checked { python (Join-Path $root "tools\android_ui_parser_sim.py") }
-Invoke-Checked { python (Join-Path $root "tools\android_command_coverage.py") }
-Invoke-Checked { python (Join-Path $root "tools\android_offline_demo_sim.py") }
-Invoke-Checked { python (Join-Path $root "tools\android_hardware_check_sim.py") }
 
 Write-Output "Android APK verification passed"
 Write-Output $apk

@@ -1,308 +1,75 @@
-# MSP430F5529 蓝牙遥控音频播放器
+# MSP430F5529 多点温度/环境监测系统
 
-本工程对应课程设计选题（三）：蓝牙遥控音频播放器。代码按参考工程的思路拆成三层，但去掉了和本项目无关的显示、温度采集和 RTOS 代码，方便阅读、调试和写报告。
+本工程面向“单片机技术课程设计”，主控为 TI MSP430F5529 LaunchPad。
+系统采集 DHT11 温湿度、MQ-2 可燃气体 ADC 值和 HC-SR04 超声波距离，
+通过 OLED 显示、HC-05 蓝牙上传、内部 Flash 保存历史记录，并用蜂鸣器
+进行分级报警。温度报警阈值可由 EC11 编码器或蓝牙命令调整。
 
 ## 功能
 
-- TF 卡读取 `TRACK01.WAV` 到 `TRACK09.WAV`。
-- 解析 16-bit PCM WAV 文件，并用软件 I2S 输出到 PCM5102A。
-- EC11 旋转编码器调节音量，短按播放/暂停，长按约 0.8 秒停止。
-- S1/S2/S4 本地按键：短按播放/暂停、上一曲、下一曲；长按停止、静音、播放顺序切换。
-- HC-05 蓝牙串口接收遥控命令。
-- 蓝牙命令、EC11 和本地按键改变状态后立即回传 `status=...` 和 `display 1/2/3:...`，并每 5 秒自动推送一次当前状态，方便手机端和串口助手确认链路。
-- P1.0 状态 LED 表示播放器模式：播放快闪、暂停慢闪、停止常亮、错误双闪，方便无蓝牙时先看板端状态。
-- 蓝牙 `t` 命令可直接让 PCM5102A 输出测试音，不依赖 TF 卡音频文件，便于现场确认 DAC/功放/喇叭链路。
-- 蓝牙 `i`/`e` 命令可输出固件版本、硬件映射和软件可见自检摘要。
-- 蓝牙 `l` 命令扫描 `TRACK01.WAV` 到 `TRACK09.WAV`，显示哪些曲目可播放。
-- 蓝牙 `d` 命令输出三行显示帧，当前由 APK/串口显示，后续可接到墨水屏渲染层。
-- 蓝牙 `k` 命令输出链路计数，显示已接收命令数、状态/显示帧上报数、异常命令数、最后命令和运行时间，便于现场确认手机到 HC-05 到固件再回手机的闭环。
-- 蓝牙 `u` 命令输出 EC11 与 S1/S2/S4 短按、长按事件计数，便于实物验收时确认本地输入链路。
-- 蓝牙 `x` 命令输出最近控制事件轨迹，便于确认手机命令、EC11 和本地按键确实进入播放器状态机。
-- 蓝牙 `w` 命令输出实际接线清单，便于现场核对 TF/I2S/EC11/HC-05 和可选墨水屏引脚。
-- `tools\epaper_preview_sim.py` 可把三行显示帧渲染成 296x128 黑白 PGM 预览图，用于未接墨水屏时确认显示效果。
-- DAC 模拟输出可同时接 PAM8403 功放输入和 3.5mm 耳机座。
+- DHT11：P1.0 单总线读取温湿度。
+- MQ-2：P6.0/ADC12_A0 多次采样求平均，换算 0~5 气体等级。
+- HC-SR04：Trig=P1.2，Echo=P1.3，软件微秒计时测距。
+- OLED SSD1306：P3.0/P3.1 软件 I2C，显示温湿度、气体、距离、阈值和报警等级。
+- HC-05：UCA1 P4.4/P4.5，手机串口收发实时数据和控制命令。
+- 内部 Flash：Info B/C/D 固定结构保存历史记录，支持按序号读取和清空。
+- 蜂鸣器：P2.0，报警等级越高节奏越急促。
+- EC11：P2.1/P2.2/P2.3，旋转调整温度阈值，按键触发刷新。
 
-## 代码结构
+## 目录
 
 ```text
-main.c                    启动入口，只保留初始化顺序和主循环
-application/audio_player.* 播放器状态机、蓝牙命令、曲目切换、音量控制
-drivers/                  MSP430 寄存器驱动：时钟、UART、EC11、软件 I2S、板级引脚
-middleware/wav_reader.*    WAV 文件头解析
-fatfs/                    FatFs 和 TF 卡底层 SPI 适配
-Debug/makefile             命令行编译入口
+application/env_monitor.*    应用调度、蓝牙协议、OLED 页面、报警和历史记录
+drivers/env_sensors.*        DHT11、MQ-2、HC-SR04 采样驱动
+drivers/oled_ssd1306.*       SSD1306 软件 I2C 显示驱动
+drivers/flash_log.*          MSP430 内部 Information Flash 历史记录
+drivers/alarm_buzzer.*       蜂鸣器分级报警节奏
+drivers/bluetooth_uart.*     HC-05 UART 通信
+drivers/encoder.*            EC11 正交解码和按键事件
+tools/                       编译验证、协议仿真、报告和图生成
+android/                     HC-05 手机端监测 APK
+docs/                        课程报告、框图、流程图和验证报告
 ```
-
-## 硬件接线
-
-- TF 卡：`CS=P4.0`，`SCK=P3.1`，`MOSI=P3.2`，`MISO=P3.3`
-- PCM5102A：`BCK=P4.1`，`LRCK=P4.2`，`DIN=P4.3`
-- EC11：`A=P2.1`，`B=P2.2`，`SW=P2.3`；旋转调节音量，短按播放/暂停，长按停止
-- 本地按键：`S1=P1.2` 短按播放/暂停、长按停止；`S2=P1.3` 短按上一曲、长按静音；`S4=P2.6` 短按下一曲、长按切换播放顺序
-- 状态 LED：`P1.0`，播放快闪、暂停慢闪、停止常亮、错误双闪
-- 默认蓝牙：`HC-05 RXD<-P4.4`，`HC-05 TXD->P4.5`
-
-注意：课程资料中写了 HC-05 复用 `P3.3/P3.4`，但 `P3.3` 同时也是 TF 卡 `MISO`。两者同时接会产生总线冲突。当前代码默认把蓝牙放到 `UCA1 P4.4/P4.5`，这样 TF 卡和蓝牙可以同时工作。如必须使用 `P3.3/P3.4`，需要先改硬件分配或只保留 HC-05 单向接收。
-
-S3/P2.3 已分配给 EC11 按键，因此没有再作为独立本地按键使用。
-
-## TF 卡文件
-
-把 WAV 文件放在 TF 卡根目录，命名为：
-
-```text
-TRACK01.WAV
-TRACK02.WAV
-...
-TRACK09.WAV
-```
-
-当前播放器支持 PCM、16-bit、单声道或双声道 WAV。软件 I2S 由 CPU 翻转 GPIO 产生，建议测试文件先使用 8 kHz 或 16 kHz 采样率，便于课堂演示和逻辑分析仪观察。
-
-可直接生成测试音频：
-
-```powershell
-python tools\prepare_sdcard_assets.py
-python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md
-```
-
-然后把 `sdcard\TRACK01.WAV`、`sdcard\TRACK02.WAV`、`sdcard\TRACK03.WAV` 复制到 TF 卡根目录。
 
 ## 蓝牙命令
 
-```text
-p    播放/暂停
-s    停止并回到当前曲目开头
-r    重播当前曲目
-n/>  下一曲
-b/<  上一曲
-+    音量加
--    音量减
-m    静音/恢复
-o    切换播放顺序：顺序停止/全部循环/单曲循环
-t    DAC 测试音
-i    固件与硬件映射信息
-e    自检摘要
-l    扫描曲目文件
-d    三行显示帧
-1-9  直接播放对应曲目
-?    查询状态
-k    查询蓝牙链路计数
-u    查询EC11/本地按键计数
-x    查询最近控制事件轨迹
-w    查询实际接线
-h    输出命令帮助
-```
+| 命令 | 功能 |
+| --- | --- |
+| `?` | 立即上传实时数据 |
+| `i` | 固件信息 |
+| `w` | 接线清单 |
+| `h` | 帮助 |
+| `x` | 最近控制轨迹 |
+| `T+` / `T-` | 温度阈值增减 0.5°C |
+| `SETT=32.0` | 直接设置温度阈值 |
+| `HIST?` | 历史记录数量 |
+| `HIST 1` | 读取第 1 条历史记录 |
+| `DUMP` | 输出全部历史记录 |
+| `CLRLOG` | 清空历史记录 |
 
-状态回传格式示例。播放、停止、上下曲、音量、静音、播放顺序、测试音和直接选曲命令执行后会立即追加 `status=...` 和三行 `display`：
+示例：
 
 ```text
-status=playing track=1 volume=18 order=repeat_all rate=16000Hz channels=2 progress=0
-order=repeat_one
-info name=MSP430F5529-BT-WAV version=1.4.1 profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1
-selftest bt=ok sd=ok file=open dac=test-with-t
-tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--
-display 1:playing T1 V18 ALL
-display 2:SD:OK WAV:OPEN
-display 3:16000Hz 2ch P0%
-link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms
-input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1
-trace count=6 1=bt:vol+ 2=bt:next 3=bt:prev 4=bt:order 5=bt:track 6=bt:trace
-pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict
+DATA T=26.3 H=58 GAS=1250 L=0 D=342 TH=30.0 ALM=0
+REC 1 U=10 T=25.0 H=55 GAS=1200 D=410 TH=30.0 ALM=0
 ```
 
-## 编译
+## 编译与验证
 
 ```powershell
-cd E:\code\ccs\mspbluetooth\Debug
-D:\ccs\ccs\utils\bin\gmake.exe all
-```
-
-生成文件：
-
-```text
-Debug\mspbluetooth.out
-```
-
-本阶段只编译，不自动烧录。
-
-## 自动验证
-
-```powershell
-cd E:\code\ccs\mspbluetooth
 powershell -ExecutionPolicy Bypass -File tools\run_verification.ps1
-```
-
-验证内容：
-
-- clean build 固件并生成 `Debug\mspbluetooth.out`
-- 静态检查头文件/源码文件头、声明参数说明、宏说明、static 项说明、关键命令、引脚冲突说明、RAM 余量
-- 模拟 HC-05 单字符蓝牙命令链路
-- 模拟 HC-05 字节流诊断链路，覆盖分片输入、大小写命令、换行噪声和现场自检转录
-- 模拟 Android 端对碎片化蓝牙回传的状态面板、音量/进度条、显示帧、曲目列表和链路计数解析
-- 模拟 APK `Demo RX` 离线注入固件格式回传，无需 HC-05/板卡即可检查手机端可见面板效果
-- 检查 Android APK 命令按钮覆盖、HC-05 SPP 权限、连接后自动同步状态/曲目/显示帧和结构化回传解析覆盖
-- 模拟端到端演示流程：APK 按钮、HC-05 命令、固件回包、手机状态面板、显示帧和链路面板变化
-- 模拟蓝牙、EC11、本地按键混合控制场景
-- 模拟 EC11 A/B 正交相位解码、反向抖动抵消、短按去抖和长按停止
-- 模拟 S1/S2/S4 去抖、短按、长按事件，确认长按不会误触发短按
-- 模拟 P1.0 状态 LED 播放/暂停/停止/错误四种模式节奏
-- 生成并检查墨水屏风格黑白预览图和多状态预览画廊，确认显示帧不是空白
-- 校验 TF 卡测试 WAV 是否为固件支持的 RIFF/WAVE PCM、16-bit、单/双声道格式
-- 模拟 TF WAV 到软件 I2S 样本流，确认读块、音量缩放、非静音输出和播放进度
-- 模拟 PCM5102A 软件 I2S 帧结构，确认 64 个 BCK、LRCK 左右槽、MSB 延迟和 padding
-- 生成软件效果验收报告，汇总蓝牙命令、整板场景、按键、显示帧、APK 解析、APK 离线演示和 WAV 资产证据
-
-## 交付打包
-
-```powershell
-cd E:\code\ccs\mspbluetooth
-powershell -ExecutionPolicy Bypass -File tools\package_release.ps1
-```
-
-脚本默认先执行固件验证和 APK 验证，然后生成：
-
-```text
-dist\mspbluetooth_delivery\
-```
-
-目录内包含 `Debug\mspbluetooth.out`、Android 控制端 APK、TF 卡测试 WAV、验收文档、软件效果验收报告、蓝牙诊断报告、Android 命令覆盖报告、Android 离线演示报告、端到端演示报告、音频流仿真报告、I2S 帧仿真报告、报告提纲、测试记录表、墨水屏预览图和多状态预览画廊、`MANIFEST.txt` 和 `SHA256SUMS.txt`。该包用于课程提交前的软件交付整理；实物烧录、HC-05 连接、DAC 出声和 EC11 操作仍需按现场清单逐项确认。
-
-## 实物验证
-
-上板前按 [硬件现场验证清单](docs/hardware_verification.md) 分阶段检查蓝牙、DAC 测试音、TF 卡 WAV 播放、EC11 和本地按键。墨水屏引脚冲突分析也在该文档中。
-
-课程报告和验收材料：
-
-- [课程设计报告提纲](docs/report_outline.md)
-- [课程设计报告初稿](docs/course_report_draft.md)
-- [软件效果验收报告](docs/effect_acceptance_report.md)
-- [蓝牙诊断报告](docs/bluetooth_diagnostic_report.md)
-- [Android 命令覆盖报告](docs/android_command_coverage_report.md)
-- [Android 离线演示报告](docs/android_offline_demo_report.md)
-- [端到端演示仿真报告](docs/end_to_end_demo_report.md)
-- [音频流仿真报告](docs/audio_stream_report.md)
-- [I2S 帧仿真报告](docs/i2s_frame_report.md)
-- [墨水屏多状态预览报告](docs/epaper_gallery_report.md)
-- [硬件框图](docs/hardware_block_diagram.svg)
-- [软件流程图](docs/software_flowchart.svg)
-- [功能验收矩阵](docs/acceptance_matrix.md)
-- [测试记录表](docs/test_record.csv)
-
-## Android 控制端
-
-仓库包含 `android/` 原生 Java 控制端，用于手机通过 HC-05 控制播放器。APK 不只发送命令，也会解析固件回传的 `status=...`、`sd mounted`、`info name=...`、`selftest ...`、`tone ...`、`open TRACK...`、`error: ...`、`display 1/2/3:...`、`tracks ...`、`link ...`、`input ...`、`trace ...` 和 `pin ...`，在手机上显示当前播放状态、音量/进度条、Health/Storage 证据、三行显示帧、曲目可用状态、蓝牙链路计数、本地输入计数、最近控制事件轨迹和接线诊断，便于未接墨水屏时确认显示效果并核对现场接线。`Demo RX` 可在无 HC-05/无板卡时注入同格式回传，直接演示全部面板；`Run Acceptance` 会在手机上显示 `Acceptance X/9` 摘要面板，集中标出 SD、固件信息、自检、曲目扫描、接线、显示帧、状态、测试音和 WAV 打开证据；日志可用 `Share Log` 分享，也可用 `Save Log` 直接保存为文本文件。构建 APK：
-
-```powershell
-cd E:\code\ccs\mspbluetooth
-powershell -ExecutionPolicy Bypass -File tools\build_android_apk.ps1
-```
-
-生成文件：
-
-```text
-android\app\build\outputs\apk\debug\app-debug.apk
-```
-
-验证 APK 包名、SDK 和蓝牙权限：
-
-```powershell
 powershell -ExecutionPolicy Bypass -File tools\verify_android_apk.ps1
 ```
 
-## Serial Acceptance Transcript
+`run_verification.ps1` 会执行 CCS clean build、固件静态检查、可读性审计、
+蓝牙协议仿真、整板场景仿真、Flash 日志仿真、阈值调整仿真，并生成课程
+报告、硬件框图、软件流程图和软件效果验收报告。
 
-Before real flashing, the software verifier generates a no-hardware HC-05
-acceptance transcript and checks that the expected evidence is present:
+## 重要硬件注意
 
-```powershell
-python tools\serial_acceptance_check.py
-```
-
-After real board testing, save the Bluetooth/serial-assistant log as text and
-run:
-
-```powershell
-python tools\serial_acceptance_check.py --input path\to\capture.txt
-```
-
-The checker looks for `sd mounted`, `info name=MSP430F5529-BT-WAV`,
-`selftest bt=ok`, `tracks 1=ok`, `display 1/2/3:`, `status=...`,
-`link rx=...`, `input ecw=...`, `trace count=...`, `pin bt tx=P4.4 rx=P4.5`, `tone start`,
-`tone done`, and `open TRACK01.WAV`/`open TRACK03.WAV`. If the
-log includes `TX>` command markers, it also verifies that state-changing
-commands immediately return `status=...` plus the three display lines.
-
-The Android APK also has a `Run Acceptance` button. It sends `h i e l d ? t 1
-p + n b o 3 k u x w`, writes `TX>` markers into the phone log, and lets the dashboard,
-visual volume/progress bars, Health, display frame, track-list, Link, Input, Trace, Wiring, and `Acceptance X/9` summary panels update
-from firmware responses. The phone log can be exported with `Share Log` or
-saved as a text file with `Save Log`, then checked with the same
-`serial_acceptance_check.py` command.
-`Demo RX` uses the same parser with a built-in firmware-style transcript, so
-the APK visual effect can be checked on a phone before HC-05 pairing.
-The no-hardware model for this path is:
-
-```powershell
-python tools\android_acceptance_log_sim.py
-python tools\android_offline_demo_sim.py
-```
-
-## Optional E-Paper Panel
-
-The default firmware keeps the real e-paper panel disabled with
-`PLAYER_ENABLE_EPAPER_PANEL=0u`, because the Bluetooth WAV player should remain
-the main project and the panel needs extra P6.x wiring. The optional driver is
-still compiled and checked:
-
-```powershell
-python tools\epaper_driver_trace_sim.py
-```
-
-When enabled, `drivers\epaper_panel.c` mirrors the same three-line
-`DisplayFrame` used by Bluetooth, APK, and PGM previews to a 296x128 SPI
-black/white e-paper panel. Suggested optional wiring is
-`P6.0=SCK`, `P6.1=MOSI`, `P6.2=CS`, `P6.3=DC`, `P6.4=RST`, `P6.5=BUSY`.
-
-## I2S Logic Capture Check
-
-Before blaming the PCM5102A, amplifier, or speaker, the digital audio bus can
-be checked with a logic analyzer. Connect `P4.1=BCK`, `P4.2=LRCK`, and
-`P4.3=DIN`, send Bluetooth command `t`, export CSV columns named
-`time,bck,lrck,din`, then run:
-
-```powershell
-python tools\i2s_capture_check.py --input path\to\capture.csv --left none --right none
-```
-
-Without hardware, the same tool generates and validates a deterministic sample
-capture:
-
-```powershell
-python tools\i2s_capture_check.py
-```
-
-## Hardware Evidence Summary
-
-After real flashing, collect the exported APK/HC-05 log and the I2S logic
-capture, then generate one combined evidence report:
-
-```powershell
-python tools\hardware_evidence_check.py --serial-log path\to\phone_log.txt --i2s-csv path\to\i2s_capture.csv
-```
-
-Without inputs it runs against generated samples and clearly marks the report as
-software/sample evidence only. Real hardware completion still requires real
-input files plus observed speaker/headphone and button behavior.
-
-## Readability Audit
-
-The course-project code style is checked by an automated audit:
-
-```powershell
-python tools\readability_audit.py
-```
-
-It verifies project-owned headers, declaration parameter comments, documented
-`#define` values, and comments on `static` source items. The generated report is
-written to `docs\readability_report.md` and is included in the delivery package.
+- HC-SR04 Echo 常为 5V，接 P1.3 前必须分压或电平转换到 3.3V。
+- MQ-2 模块 AO 不能超过 MSP430 ADC 输入范围。
+- DHT11 占用 P1.0，状态 LED 已改到 P4.7。
+- HC-05 默认使用 P4.4/P4.5，避免 P3.3 与其他外设冲突。
+- 本仓库已完成软件编译和主机侧仿真；真实传感器精度、蓝牙配对、OLED
+  显示、蜂鸣器效果和 Flash 实写仍需上板验证。

@@ -13,8 +13,8 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -34,86 +34,44 @@ public class MainActivity extends Activity {
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final int REQUEST_BLUETOOTH_PERMISSION = 430;
     private static final int REQUEST_SAVE_LOG = 431;
-    private static final String[] ACCEPTANCE_COMMANDS =
-            new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "x", "w"};
-    private static final String[] HARDWARE_CHECK_COMMANDS =
-            new String[]{"?", "i", "l", "d", "t", "k", "u", "x", "w"};
     private static final String[] DEMO_RX_LINES = new String[]{
-            "sd mounted",
-            "info name=MSP430F5529-BT-WAV version=1.4.1 profile=bt_wav_player",
-            "selftest bt=ok sd=ok wav=ok i2s=ok buttons=ok",
-            "tracks 1=ok 2=-- 3=ok 4=-- 5=-- 6=-- 7=-- 8=-- 9=--",
-            "display 1:playing T3 V19 ONE",
-            "display 2:SD:OK WAV:OPEN",
-            "display 3:16000Hz 2ch P42%",
-            "status=playing track=3 volume=19 order=repeat_one rate=16000Hz channels=2 progress=42",
-            "tone start",
-            "tone done",
-            "open TRACK03.WAV",
-            "link rx=15 status=10 display=9 bad=0 last=k uptime=1234ms",
-            "input ecw=3 eccw=1 eb=2 elong=1 s1=2 s1l=1 s2=1 s2l=1 s4=1 s4l=1",
-            "trace count=6 1=bt:vol+ 2=bt:next 3=bt:prev 4=bt:order 5=bt:track 6=bt:trace",
-            "pin profile=TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1",
-            "pin tf cs=P4.0 sck=P3.1 mosi=P3.2 miso=P3.3",
-            "pin i2s bck=P4.1 lrck=P4.2 din=P4.3",
+            "MSP430F5529 ENV monitor",
+            "cmd ? i w x T+ T- SETT=32.0 HIST? HIST n DUMP CLRLOG",
+            "info name=MSP430F5529-ENV-MON version=2.0.0 profile=DHT:P1.0 MQ2:P6.0 US:P1.2/1.3 OLED:P3.0/3.1 BT:UCA1",
+            "DATA T=26.3 H=58 GAS=1250 L=0 D=342 TH=30.0 ALM=0",
+            "TH=30.5",
+            "TH=32.0 SAVED",
+            "HIST COUNT=2",
+            "REC 1 U=10 T=25.0 H=55 GAS=1200 D=410 TH=30.0 ALM=0",
+            "REC 2 U=20 T=32.1 H=61 GAS=2300 D=280 TH=30.0 ALM=2",
+            "pin dht11 data=P1.0",
+            "pin mq2 ao=P6.0 adc=A0",
+            "pin hcsr04 trig=P1.2 echo=P1.3 note=echo-divide-to-3v3",
+            "pin oled scl=P3.1 sda=P3.0 mode=soft-i2c",
+            "pin bt tx=P4.4 rx=P4.5 mode=UCA1",
+            "pin buzzer pwm=P2.0",
             "pin ec11 a=P2.1 b=P2.2 sw=P2.3",
-            "pin local s1=P1.2 s2=P1.3 s4=P2.6 led=P1.0",
-            "pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict",
-            "pin epaper optional=P6.0-P6.5 default=disabled"
+            "trace count=4 1=bt:SET 2=bt:T+ 3=bt:H? 4=bt:wire",
+            "LOG CLEARED"
     };
 
     private final ArrayList<DeviceEntry> devices = new ArrayList<>();
+    private final StringBuilder rxLineBuffer = new StringBuilder();
+    private final StringBuilder logBuffer = new StringBuilder();
     private Spinner deviceSpinner;
     private TextView stateView;
-    private TextView dashboardView;
-    private ProgressBar volumeBar;
-    private ProgressBar progressBar;
-    private TextView healthView;
-    private TextView displayView;
-    private TextView trackListView;
-    private TextView linkView;
-    private TextView inputView;
-    private TextView traceView;
+    private TextView dataView;
+    private TextView thresholdView;
+    private TextView historyView;
     private TextView wiringView;
-    private TextView acceptanceView;
-    private TextView hardwareView;
+    private TextView traceView;
     private TextView logView;
+    private EditText thresholdEdit;
     private Button connectButton;
     private BluetoothSocket socket;
     private OutputStream outputStream;
     private Thread rxThread;
     private volatile boolean keepReading;
-    private final StringBuilder rxLineBuffer = new StringBuilder();
-    private final String[] displayLines = new String[]{"--", "--", "--"};
-    private String healthSd = "--";
-    private String healthInfo = "--";
-    private String healthSelftest = "--";
-    private String healthTone = "--";
-    private String healthFile = "--";
-    private String healthError = "--";
-    private final String[] wiringLines = new String[]{
-            "Profile: --", "TF: --", "I2S: --", "EC11: --", "Local: --", "BT: --", "E-paper: --"};
-    private boolean acceptanceSdMounted;
-    private boolean acceptanceInfo;
-    private boolean acceptanceSelftest;
-    private boolean acceptanceTracks;
-    private boolean acceptanceDisplay1;
-    private boolean acceptanceDisplay2;
-    private boolean acceptanceDisplay3;
-    private boolean acceptanceStatus;
-    private boolean acceptanceToneStart;
-    private boolean acceptanceToneDone;
-    private boolean acceptanceTrackOpen;
-    private boolean acceptanceWiring;
-    private boolean hardwareConnected;
-    private boolean hardwareTx;
-    private boolean hardwareRx;
-    private boolean hardwareSd;
-    private boolean hardwareAudio;
-    private boolean hardwareStatus;
-    private boolean hardwareWiring;
-    private boolean hardwareInput;
-    private boolean hardwareTrace;
 
     private static final class DeviceEntry {
         final BluetoothDevice device;
@@ -156,6 +114,14 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_SAVE_LOG && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            saveLogToUri(data.getData());
+        }
+    }
+
     private void buildUi() {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -163,189 +129,128 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(0xFFF7F8FA);
 
         TextView title = new TextView(this);
-        title.setText("MSP430 Player");
+        title.setText("MSP430 Env Monitor");
         title.setTextSize(22);
         title.setTextColor(0xFF111827);
         title.setGravity(Gravity.CENTER_VERTICAL);
         root.addView(title, new LinearLayout.LayoutParams(-1, dp(40)));
 
-        stateView = new TextView(this);
-        stateView.setText("Disconnected");
-        stateView.setTextSize(14);
-        stateView.setTextColor(0xFF374151);
+        stateView = label("Disconnected");
         root.addView(stateView, new LinearLayout.LayoutParams(-1, dp(28)));
 
         deviceSpinner = new Spinner(this);
         root.addView(deviceSpinner, new LinearLayout.LayoutParams(-1, dp(48)));
 
-        dashboardView = panelText("Mode: --\nTrack: --\nVolume: --\nOrder: --\nProgress: --");
-        root.addView(dashboardView, new LinearLayout.LayoutParams(-1, dp(104)));
+        dataView = panel("DATA\nT: --  H: --\nGas: --  L: --\nDistance: --  Alarm: --");
+        root.addView(dataView, new LinearLayout.LayoutParams(-1, dp(104)));
 
-        volumeBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        volumeBar.setMax(32);
-        root.addView(volumeBar, new LinearLayout.LayoutParams(-1, dp(16)));
+        thresholdView = panel("Threshold\nTemp: --");
+        root.addView(thresholdView, new LinearLayout.LayoutParams(-1, dp(62)));
 
-        progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        progressBar.setMax(100);
-        root.addView(progressBar, new LinearLayout.LayoutParams(-1, dp(16)));
+        historyView = panel("History\n--");
+        root.addView(historyView, new LinearLayout.LayoutParams(-1, dp(106)));
 
-        healthView = panelText("Health\nSD:-- Info:-- Selftest:-- Tone:--\nFile:--\nError:--");
-        root.addView(healthView, new LinearLayout.LayoutParams(-1, dp(88)));
+        wiringView = panel("Wiring\n--");
+        root.addView(wiringView, new LinearLayout.LayoutParams(-1, dp(126)));
 
-        displayView = panelText("Display frame\n--\n--\n--");
-        root.addView(displayView, new LinearLayout.LayoutParams(-1, dp(96)));
-
-        trackListView = panelText("Tracks\n1: --  2: --  3: --\n4: --  5: --  6: --\n7: --  8: --  9: --");
-        root.addView(trackListView, new LinearLayout.LayoutParams(-1, dp(82)));
-
-        linkView = panelText("Link\nRX: --  Status: --  Display: --\nBad: --  Last: --  Uptime: --");
-        root.addView(linkView, new LinearLayout.LayoutParams(-1, dp(70)));
-
-        inputView = panelText("Input\nEC11 CW:-- CCW:-- SW:-- Long:--\nS1:--/-- S2:--/-- S4:--/--");
-        root.addView(inputView, new LinearLayout.LayoutParams(-1, dp(70)));
-
-        traceView = panelText("Trace\n--");
-        root.addView(traceView, new LinearLayout.LayoutParams(-1, dp(58)));
-
-        wiringView = panelText("Wiring\nProfile: --\nTF: --\nI2S: --\nEC11: --\nLocal: --\nBT: --\nE-paper: --");
-        root.addView(wiringView, new LinearLayout.LayoutParams(-1, dp(146)));
-
-        acceptanceView = panelText("Acceptance 0/9\nSD:-- Info:-- Selftest:-- Tracks:-- Wiring:--\nDisplay:-- Status:-- Tone:-- Open:--");
-        root.addView(acceptanceView, new LinearLayout.LayoutParams(-1, dp(70)));
-
-        hardwareView = panelText("Hardware 0/9\nBT:-- TX:-- RX:-- SD:-- Audio:--\nStatus:-- Wiring:-- Input:-- Trace:--");
-        root.addView(hardwareView, new LinearLayout.LayoutParams(-1, dp(70)));
+        traceView = panel("Trace\n--");
+        root.addView(traceView, new LinearLayout.LayoutParams(-1, dp(70)));
 
         LinearLayout connectionRow = row();
-        connectButton = commandButton("Connect", 0xFF0F766E);
+        connectButton = button("Connect", 0xFF0F766E);
         connectButton.setOnClickListener(v -> toggleConnection());
-        Button refreshButton = commandButton("Refresh", 0xFF475569);
+        Button refreshButton = button("Refresh", 0xFF475569);
         refreshButton.setOnClickListener(v -> refreshBondedDevices());
         connectionRow.addView(connectButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         connectionRow.addView(refreshButton, new LinearLayout.LayoutParams(0, dp(44), 1));
         root.addView(connectionRow);
 
-        LinearLayout transportRow = row();
-        transportRow.addView(sendButton("Prev", "b"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        transportRow.addView(sendButton("Play/Pause", "p"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        transportRow.addView(sendButton("Next", "n"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        root.addView(transportRow);
+        LinearLayout commandRow = row();
+        commandRow.addView(sendButton("Data", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        commandRow.addView(sendButton("Info", "i"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        commandRow.addView(sendButton("Wiring", "w"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        commandRow.addView(sendButton("Trace", "x"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(commandRow);
 
-        LinearLayout volumeRow = row();
-        volumeRow.addView(sendButton("Vol -", "-"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        volumeRow.addView(sendButton("Stop", "s"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        volumeRow.addView(sendButton("Vol +", "+"), new LinearLayout.LayoutParams(0, dp(48), 1));
-        root.addView(volumeRow);
+        LinearLayout thresholdRow = row();
+        thresholdRow.addView(sendButton("T-", "T-"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        thresholdRow.addView(sendButton("T+", "T+"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        thresholdEdit = new EditText(this);
+        thresholdEdit.setSingleLine(true);
+        thresholdEdit.setText("32.0");
+        thresholdEdit.setTextSize(14);
+        thresholdEdit.setGravity(Gravity.CENTER);
+        thresholdRow.addView(thresholdEdit, new LinearLayout.LayoutParams(0, dp(44), 1));
+        Button setButton = button("Set", 0xFF2563EB);
+        setButton.setOnClickListener(v -> sendCommand("SETT=" + thresholdEdit.getText().toString().trim()));
+        thresholdRow.addView(setButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(thresholdRow);
 
-        LinearLayout toolsRow = row();
-        toolsRow.addView(sendButton("Replay", "r"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        toolsRow.addView(sendButton("Mute", "m"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        toolsRow.addView(sendButton("Tone", "t"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        root.addView(toolsRow);
+        LinearLayout historyRow = row();
+        historyRow.addView(sendButton("Count", "HIST?"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        historyRow.addView(sendButton("First", "HIST 1"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        historyRow.addView(sendButton("Dump", "DUMP"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        historyRow.addView(sendButton("Clear", "CLRLOG"), new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(historyRow);
 
-        LinearLayout diagRow = row();
-        diagRow.addView(sendButton("Info", "i"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        diagRow.addView(sendButton("Selftest", "e"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        diagRow.addView(sendButton("Display", "d"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        diagRow.addView(sendButton("Wiring", "w"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        diagRow.addView(sendButton("Input", "u"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        root.addView(diagRow);
+        LinearLayout localRow = row();
+        Button demoButton = button("Demo RX", 0xFF7C3AED);
+        demoButton.setOnClickListener(v -> runDemoRx());
+        Button helpButton = button("Help", 0xFF475569);
+        helpButton.setOnClickListener(v -> sendCommand("h"));
+        Button saveButton = button("Save Log", 0xFF334155);
+        saveButton.setOnClickListener(v -> createLogDocument());
+        localRow.addView(demoButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        localRow.addView(helpButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        localRow.addView(saveButton, new LinearLayout.LayoutParams(0, dp(44), 1));
+        root.addView(localRow);
 
-        LinearLayout queryRow = row();
-        queryRow.addView(sendButton("Order", "o"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        queryRow.addView(sendButton("Track List", "l"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        queryRow.addView(sendButton("Status", "?"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        queryRow.addView(sendButton("Link", "k"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        queryRow.addView(sendButton("Trace", "x"), new LinearLayout.LayoutParams(0, dp(44), 1));
-        root.addView(queryRow);
+        logView = panel("Log\n");
+        ScrollView logScroll = new ScrollView(this);
+        logScroll.addView(logView);
+        root.addView(logScroll, new LinearLayout.LayoutParams(-1, 0, 1));
 
-        LinearLayout acceptanceRow = row();
-        Button acceptanceButton = commandButton("Run Acceptance", 0xFF0F766E);
-        acceptanceButton.setOnClickListener(v -> runAcceptanceScript());
-        Button hardwareButton = commandButton("Run Hardware Check", 0xFF0F766E);
-        hardwareButton.setOnClickListener(v -> runHardwareCheck());
-        Button saveLogButton = commandButton("Save Log", 0xFF334155);
-        saveLogButton.setOnClickListener(v -> saveLogToFile());
-        Button shareLogButton = commandButton("Share Log", 0xFF334155);
-        shareLogButton.setOnClickListener(v -> shareLog());
-        Button demoRxButton = commandButton("Demo RX", 0xFF475569);
-        demoRxButton.setOnClickListener(v -> runOfflineDemo());
-        Button clearLogButton = commandButton("Clear Log", 0xFF475569);
-        clearLogButton.setOnClickListener(v -> {
-            logView.setText("");
-            resetAcceptanceSummary();
-            resetHardwareSummary();
-        });
-        acceptanceRow.addView(acceptanceButton, new LinearLayout.LayoutParams(-1, dp(44)));
-        root.addView(acceptanceRow);
-
-        LinearLayout hardwareRow = row();
-        hardwareRow.addView(hardwareButton, new LinearLayout.LayoutParams(-1, dp(44)));
-        root.addView(hardwareRow);
-
-        LinearLayout logActionRow = row();
-        logActionRow.addView(saveLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
-        logActionRow.addView(shareLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
-        logActionRow.addView(demoRxButton, new LinearLayout.LayoutParams(0, dp(44), 1));
-        logActionRow.addView(clearLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
-        root.addView(logActionRow);
-
-        LinearLayout trackGrid = new LinearLayout(this);
-        trackGrid.setOrientation(LinearLayout.VERTICAL);
-        for (int gridRow = 0; gridRow < 3; gridRow++) {
-            LinearLayout trackRow = row();
-            for (int col = 0; col < 3; col++) {
-                int track = gridRow * 3 + col + 1;
-                trackRow.addView(sendButton("Track " + track, String.valueOf(track)),
-                        new LinearLayout.LayoutParams(0, dp(42), 1));
-            }
-            trackGrid.addView(trackRow);
-        }
-        root.addView(trackGrid);
-
-        logView = new TextView(this);
-        logView.setTextSize(13);
-        logView.setTextColor(0xFF111827);
-        logView.setText("Pair HC-05 in Android Bluetooth settings first.\n");
-        ScrollView scrollView = new ScrollView(this);
-        scrollView.setBackgroundColor(0xFFFFFFFF);
-        scrollView.setPadding(dp(10), dp(10), dp(10), dp(10));
-        scrollView.addView(logView);
-        root.addView(scrollView, new LinearLayout.LayoutParams(-1, dp(220)));
-
-        ScrollView pageScroll = new ScrollView(this);
-        pageScroll.addView(root);
-        setContentView(pageScroll);
+        setContentView(root);
     }
 
-    private LinearLayout row() {
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.HORIZONTAL);
-        return layout;
+    private TextView label(String text) {
+        TextView view = new TextView(this);
+        view.setText(text);
+        view.setTextSize(14);
+        view.setTextColor(0xFF374151);
+        return view;
     }
 
-    private Button commandButton(String text, int color) {
+    private TextView panel(String text) {
+        TextView view = new TextView(this);
+        view.setText(text);
+        view.setTextSize(14);
+        view.setTextColor(0xFF111827);
+        view.setPadding(dp(10), dp(8), dp(10), dp(8));
+        view.setBackgroundColor(0xFFFFFFFF);
+        return view;
+    }
+
+    private Button button(String text, int color) {
         Button button = new Button(this);
         button.setText(text);
         button.setTextColor(0xFFFFFFFF);
+        button.setTextSize(13);
         button.setBackgroundColor(color);
         return button;
     }
 
     private Button sendButton(String text, String command) {
-        Button button = commandButton(text, 0xFF334155);
+        Button button = button(text, 0xFF0F766E);
         button.setOnClickListener(v -> sendCommand(command));
         return button;
     }
 
-    private TextView panelText(String text) {
-        TextView view = new TextView(this);
-        view.setText(text);
-        view.setTextSize(14);
-        view.setTextColor(0xFF111827);
-        view.setBackgroundColor(0xFFFFFFFF);
-        view.setPadding(dp(10), dp(8), dp(10), dp(8));
-        return view;
+    private LinearLayout row() {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(0, dp(4), 0, dp(4));
+        return row;
     }
 
     private int dp(int value) {
@@ -355,8 +260,7 @@ public class MainActivity extends Activity {
     private void ensureBluetoothPermission() {
         if (Build.VERSION.SDK_INT >= 31 &&
                 checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT},
-                    REQUEST_BLUETOOTH_PERMISSION);
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQUEST_BLUETOOTH_PERMISSION);
         }
     }
 
@@ -366,509 +270,156 @@ public class MainActivity extends Activity {
     }
 
     private void refreshBondedDevices() {
-        if (!hasBluetoothPermission()) {
-            setState("Waiting for Bluetooth permission");
+        devices.clear();
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter == null) {
+            stateView.setText("Bluetooth unavailable");
             return;
         }
-
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        devices.clear();
-        if (adapter == null) {
-            setState("Bluetooth is not supported on this phone");
-        } else if (!adapter.isEnabled()) {
-            setState("Enable Bluetooth and pair HC-05 first");
-        } else {
-            Set<BluetoothDevice> bonded = adapter.getBondedDevices();
+        if (!adapter.isEnabled()) {
+            stateView.setText("Bluetooth disabled");
+        }
+        if (!hasBluetoothPermission()) {
+            stateView.setText("Bluetooth permission required");
+            return;
+        }
+        Set<BluetoothDevice> bonded = adapter.getBondedDevices();
+        if (bonded != null) {
             for (BluetoothDevice device : bonded) {
                 devices.add(new DeviceEntry(device));
             }
-            setState(devices.isEmpty() ? "No paired devices; pair HC-05 first" : "Select a device and connect");
         }
-
-        ArrayAdapter<DeviceEntry> adapterView =
-                new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, devices);
+        ArrayAdapter<DeviceEntry> adapterView = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, devices);
+        adapterView.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         deviceSpinner.setAdapter(adapterView);
+        stateView.setText(devices.isEmpty() ? "No paired HC-05" : "Paired devices: " + devices.size());
     }
 
     private void toggleConnection() {
-        if (socket != null && socket.isConnected()) {
+        if (socket != null) {
             closeConnection();
             return;
         }
-
-        if (devices.isEmpty()) {
-            toast("No paired devices");
-            refreshBondedDevices();
+        if (devices.isEmpty() || deviceSpinner.getSelectedItem() == null) {
+            toast("No paired device");
             return;
         }
-
+        if (!hasBluetoothPermission()) {
+            ensureBluetoothPermission();
+            return;
+        }
         DeviceEntry entry = (DeviceEntry) deviceSpinner.getSelectedItem();
-        if (entry == null) {
-            toast("Select a device");
-            return;
-        }
-
-        connectButton.setEnabled(false);
-        setState("Connecting " + entry.label);
-        new Thread(() -> connectToDevice(entry.device)).start();
+        stateView.setText("Connecting " + entry.label);
+        new Thread(() -> connectDevice(entry.device)).start();
     }
 
-    private void connectToDevice(BluetoothDevice device) {
+    private void connectDevice(BluetoothDevice device) {
         try {
-            if (!hasBluetoothPermission()) {
-                runOnUiThread(() -> {
-                    ensureBluetoothPermission();
-                    connectButton.setEnabled(true);
-                });
-                return;
-            }
-
-            BluetoothSocket newSocket = device.createRfcommSocketToServiceRecord(SPP_UUID);
-            newSocket.connect();
-            socket = newSocket;
-            outputStream = newSocket.getOutputStream();
-            startReader(newSocket.getInputStream());
+            BluetoothSocket nextSocket = device.createRfcommSocketToServiceRecord(SPP_UUID);
+            nextSocket.connect();
+            socket = nextSocket;
+            outputStream = nextSocket.getOutputStream();
+            keepReading = true;
+            rxThread = new Thread(() -> readLoop(nextSocket));
+            rxThread.start();
             runOnUiThread(() -> {
+                stateView.setText("Connected " + device.getName());
                 connectButton.setText("Disconnect");
-                connectButton.setEnabled(true);
-                setState("Connected " + device.getName());
-                hardwareConnected = true;
-                renderHardwareSummary();
-                appendLog("connected");
-                syncInitialPanels();
+                appendLog("connected " + device.getAddress());
+                sendCommand("?");
             });
         } catch (IOException ex) {
-            closeConnection();
             runOnUiThread(() -> {
-                connectButton.setEnabled(true);
-                setState("Connect failed");
+                stateView.setText("Connect failed");
                 appendLog("connect error: " + ex.getMessage());
             });
+            closeQuietly();
         }
     }
 
-    private void startReader(InputStream inputStream) {
-        keepReading = true;
-        rxThread = new Thread(() -> {
-            byte[] buffer = new byte[64];
+    private void readLoop(BluetoothSocket activeSocket) {
+        byte[] buffer = new byte[64];
+        try {
+            InputStream inputStream = activeSocket.getInputStream();
             while (keepReading) {
-                try {
-                    int count = inputStream.read(buffer);
-                    if (count > 0) {
-                        String text = new String(buffer, 0, count, StandardCharsets.US_ASCII);
-                        runOnUiThread(() -> handleIncomingText(text));
-                    }
-                } catch (IOException ex) {
-                    if (keepReading) {
-                        runOnUiThread(() -> appendLog("rx error: " + ex.getMessage()));
-                    }
+                int count = inputStream.read(buffer);
+                if (count < 0) {
                     break;
                 }
+                for (int index = 0; index < count; index++) {
+                    char ch = (char) (buffer[index] & 0xFF);
+                    handleRxChar(ch);
+                }
             }
-        });
-        rxThread.start();
-    }
-
-    private void syncInitialPanels() {
-        sendCommand("?");
-        sendCommand("l");
-        sendCommand("d");
-    }
-
-    private void runAcceptanceScript() {
-        appendLog("acceptance start");
-        for (String command : ACCEPTANCE_COMMANDS) {
-            sendCommand(command);
-        }
-        appendLog("acceptance commands sent");
-    }
-
-    private void runHardwareCheck() {
-        appendLog("hardware check start");
-        resetHardwareSummary();
-        for (String command : HARDWARE_CHECK_COMMANDS) {
-            sendCommand(command);
-        }
-        appendLog("hardware check commands sent");
-    }
-
-    private void runOfflineDemo() {
-        appendLog("demo rx start");
-        StringBuilder builder = new StringBuilder();
-        for (String line : DEMO_RX_LINES) {
-            builder.append(line).append("\r\n");
-        }
-        handleIncomingText(builder.toString());
-        appendLog("demo rx done");
-    }
-
-    private void shareLog() {
-        String text = logView.getText().toString();
-        if (text.trim().length() == 0) {
-            toast("Log is empty");
-            return;
-        }
-
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, "MSP430 Bluetooth acceptance log");
-        intent.putExtra(Intent.EXTRA_TEXT, text);
-        startActivity(Intent.createChooser(intent, "Share acceptance log"));
-    }
-
-    private void saveLogToFile() {
-        String text = logView.getText().toString();
-        if (text.trim().length() == 0) {
-            toast("Log is empty");
-            return;
-        }
-
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TITLE, "msp430_acceptance_log.txt");
-        startActivityForResult(intent, REQUEST_SAVE_LOG);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_SAVE_LOG && resultCode == RESULT_OK && data != null) {
-            Uri uri = data.getData();
-            if (uri != null) {
-                writeLogToUri(uri);
-            }
-        }
-    }
-
-    private void writeLogToUri(Uri uri) {
-        try (OutputStream stream = getContentResolver().openOutputStream(uri)) {
-            if (stream == null) {
-                appendLog("save error: output stream unavailable");
-                return;
-            }
-            stream.write(logView.getText().toString().getBytes(StandardCharsets.UTF_8));
-            stream.flush();
-            appendLog("log saved");
         } catch (IOException ex) {
-            appendLog("save error: " + ex.getMessage());
+            runOnUiThread(() -> appendLog("rx error: " + ex.getMessage()));
+        }
+        runOnUiThread(() -> stateView.setText("Disconnected"));
+    }
+
+    private void handleRxChar(char ch) {
+        if (ch == '\r' || ch == '\n') {
+            if (rxLineBuffer.length() > 0) {
+                String line = rxLineBuffer.toString();
+                rxLineBuffer.setLength(0);
+                runOnUiThread(() -> parseIncomingLine(line));
+            }
+        } else if (rxLineBuffer.length() < 160) {
+            rxLineBuffer.append(ch);
         }
     }
 
-    private void handleIncomingText(String text) {
-        appendLog(text);
-        rxLineBuffer.append(text);
-
-        int newline;
-        while ((newline = rxLineBuffer.indexOf("\n")) >= 0) {
-            String line = rxLineBuffer.substring(0, newline).trim();
-            rxLineBuffer.delete(0, newline + 1);
-            if (line.length() > 0) {
-                parseIncomingLine(line);
-            }
+    private void sendCommand(String command) {
+        if (command == null || command.length() == 0) {
+            return;
+        }
+        appendLog("TX> " + command);
+        OutputStream out = outputStream;
+        if (out == null) {
+            return;
+        }
+        try {
+            out.write((command + "\r\n").getBytes(StandardCharsets.US_ASCII));
+            out.flush();
+        } catch (IOException ex) {
+            appendLog("tx error: " + ex.getMessage());
+            closeConnection();
         }
     }
 
     private void parseIncomingLine(String line) {
-        updateAcceptanceSummary(line);
-        updateHardwareSummary(line);
-        if (line.startsWith("status=")) {
-            updateDashboard(line);
-        } else if (line.startsWith("sd mounted") || line.startsWith("info name=") ||
-                line.startsWith("selftest ") || line.startsWith("tone start") ||
-                line.startsWith("tone done") || line.startsWith("open TRACK0") ||
-                line.startsWith("error: ")) {
-            updateHealthPanel(line);
-        } else if (line.startsWith("display 1:")) {
-            displayLines[0] = line.substring("display 1:".length());
-            updateDisplayFrame();
-        } else if (line.startsWith("display 2:")) {
-            displayLines[1] = line.substring("display 2:".length());
-            updateDisplayFrame();
-        } else if (line.startsWith("display 3:")) {
-            displayLines[2] = line.substring("display 3:".length());
-            updateDisplayFrame();
-        } else if (line.startsWith("tracks")) {
-            updateTrackList(line);
-        } else if (line.startsWith("link ")) {
-            updateLinkPanel(line);
-        } else if (line.startsWith("input ")) {
-            updateInputPanel(line);
-        } else if (line.startsWith("trace ")) {
-            updateTracePanel(line);
+        appendLog("RX> " + line);
+        if (line.startsWith("DATA ")) {
+            updateDataPanel(line);
+        } else if (line.startsWith("TH=")) {
+            thresholdView.setText("Threshold\nTemp: " + valueAfter(line, "TH="));
+        } else if (line.startsWith("HIST COUNT=") || line.startsWith("REC ") || line.startsWith("DUMP END") || line.startsWith("ERR HIST") || line.startsWith("LOG CLEARED")) {
+            appendPanelLine(historyView, "History", line, 8);
         } else if (line.startsWith("pin ")) {
-            updateWiringPanel(line);
-        }
-    }
-
-    private void resetAcceptanceSummary() {
-        acceptanceSdMounted = false;
-        acceptanceInfo = false;
-        acceptanceSelftest = false;
-        acceptanceTracks = false;
-        acceptanceDisplay1 = false;
-        acceptanceDisplay2 = false;
-        acceptanceDisplay3 = false;
-        acceptanceStatus = false;
-        acceptanceToneStart = false;
-        acceptanceToneDone = false;
-        acceptanceTrackOpen = false;
-        acceptanceWiring = false;
-        renderAcceptanceSummary();
-    }
-
-    private void updateAcceptanceSummary(String line) {
-        if (line.startsWith("sd mounted")) {
-            acceptanceSdMounted = true;
-        } else if (line.startsWith("info name=")) {
-            acceptanceInfo = true;
-        } else if (line.startsWith("selftest bt=ok")) {
-            acceptanceSelftest = true;
-        } else if (line.startsWith("tracks")) {
-            acceptanceTracks = true;
-        } else if (line.startsWith("display 1:")) {
-            acceptanceDisplay1 = true;
-        } else if (line.startsWith("display 2:")) {
-            acceptanceDisplay2 = true;
-        } else if (line.startsWith("display 3:")) {
-            acceptanceDisplay3 = true;
-        } else if (line.startsWith("status=")) {
-            acceptanceStatus = true;
-        } else if (line.startsWith("tone start")) {
-            acceptanceToneStart = true;
-        } else if (line.startsWith("tone done")) {
-            acceptanceToneDone = true;
-        } else if (line.startsWith("open TRACK0")) {
-            acceptanceTrackOpen = true;
-        } else if (line.startsWith("pin bt ")) {
-            acceptanceWiring = true;
-        }
-        renderAcceptanceSummary();
-    }
-
-    private void renderAcceptanceSummary() {
-        boolean displayOk = acceptanceDisplay1 && acceptanceDisplay2 && acceptanceDisplay3;
-        boolean toneOk = acceptanceToneStart && acceptanceToneDone;
-        int passed = 0;
-        passed += acceptanceSdMounted ? 1 : 0;
-        passed += acceptanceInfo ? 1 : 0;
-        passed += acceptanceSelftest ? 1 : 0;
-        passed += acceptanceTracks ? 1 : 0;
-        passed += displayOk ? 1 : 0;
-        passed += acceptanceStatus ? 1 : 0;
-        passed += toneOk ? 1 : 0;
-        passed += acceptanceTrackOpen ? 1 : 0;
-        passed += acceptanceWiring ? 1 : 0;
-
-        acceptanceView.setText("Acceptance " + passed + "/9\n" +
-                "SD:" + mark(acceptanceSdMounted) + " Info:" + mark(acceptanceInfo) +
-                " Selftest:" + mark(acceptanceSelftest) + " Tracks:" + mark(acceptanceTracks) +
-                " Wiring:" + mark(acceptanceWiring) + "\n" +
-                "Display:" + mark(displayOk) + " Status:" + mark(acceptanceStatus) +
-                " Tone:" + mark(toneOk) + " Open:" + mark(acceptanceTrackOpen));
-    }
-
-    private void resetHardwareSummary() {
-        hardwareConnected = socket != null && socket.isConnected();
-        hardwareTx = false;
-        hardwareRx = false;
-        hardwareSd = false;
-        hardwareAudio = false;
-        hardwareStatus = false;
-        hardwareWiring = false;
-        hardwareInput = false;
-        hardwareTrace = false;
-        renderHardwareSummary();
-    }
-
-    private void updateHardwareSummary(String line) {
-        hardwareRx = true;
-        if (line.startsWith("sd mounted") || line.startsWith("tracks")) {
-            hardwareSd = true;
-        } else if (line.startsWith("tone done") || line.startsWith("open TRACK0") ||
-                line.startsWith("selftest ") && line.indexOf("i2s=ok") >= 0) {
-            hardwareAudio = true;
-        } else if (line.startsWith("status=") || line.startsWith("display ")) {
-            hardwareStatus = true;
-        } else if (line.startsWith("pin bt ")) {
-            hardwareWiring = true;
-        } else if (line.startsWith("input ")) {
-            hardwareInput = true;
+            appendPanelLine(wiringView, "Wiring", line, 8);
         } else if (line.startsWith("trace ")) {
-            hardwareTrace = true;
+            traceView.setText("Trace\n" + line);
+        } else if (line.startsWith("info ") || line.startsWith("cmd ")) {
+            appendPanelLine(traceView, "Trace", line, 6);
         }
-        renderHardwareSummary();
     }
 
-    private void renderHardwareSummary() {
-        int passed = 0;
-        passed += hardwareConnected ? 1 : 0;
-        passed += hardwareTx ? 1 : 0;
-        passed += hardwareRx ? 1 : 0;
-        passed += hardwareSd ? 1 : 0;
-        passed += hardwareAudio ? 1 : 0;
-        passed += hardwareStatus ? 1 : 0;
-        passed += hardwareWiring ? 1 : 0;
-        passed += hardwareInput ? 1 : 0;
-        passed += hardwareTrace ? 1 : 0;
-
-        hardwareView.setText("Hardware " + passed + "/9\n" +
-                "BT:" + mark(hardwareConnected) + " TX:" + mark(hardwareTx) +
-                " RX:" + mark(hardwareRx) + " SD:" + mark(hardwareSd) +
-                " Audio:" + mark(hardwareAudio) + "\nStatus:" + mark(hardwareStatus) +
-                " Wiring:" + mark(hardwareWiring) + " Input:" + mark(hardwareInput) +
-                " Trace:" + mark(hardwareTrace));
+    private void updateDataPanel(String line) {
+        String temp = valueAfter(line, "T=");
+        String humidity = valueAfter(line, "H=");
+        String gas = valueAfter(line, "GAS=");
+        String level = valueAfter(line, "L=");
+        String distance = valueAfter(line, "D=");
+        String threshold = valueAfter(line, "TH=");
+        String alarm = valueAfter(line, "ALM=");
+        dataView.setText(
+                "DATA\nT: " + temp + " C  H: " + humidity + " %\n" +
+                        "Gas: " + gas + "  L: " + level + "\n" +
+                        "Distance: " + distance + " mm  Alarm: " + alarm);
+        thresholdView.setText("Threshold\nTemp: " + threshold);
     }
 
-    private String mark(boolean passed) {
-        return passed ? "OK" : "--";
-    }
-
-    private void updateDashboard(String statusLine) {
-        String mode = fieldValue(statusLine, "status=");
-        String track = fieldValue(statusLine, "track=");
-        String volume = fieldValue(statusLine, "volume=");
-        String order = fieldValue(statusLine, "order=");
-        String progress = fieldValue(statusLine, "progress=");
-        dashboardView.setText("Mode: " + mode + "\nTrack: " + track +
-                "\nVolume: " + volume + "\nOrder: " + order +
-                "\nProgress: " + progress + "%");
-        volumeBar.setProgress(boundedInt(volume, 0, 32));
-        progressBar.setProgress(boundedInt(progress, 0, 100));
-    }
-
-    private void updateHealthPanel(String line) {
-        if (line.startsWith("sd mounted")) {
-            healthSd = "OK";
-        } else if (line.startsWith("info name=")) {
-            healthInfo = fieldValue(line, "version=");
-        } else if (line.startsWith("selftest ")) {
-            healthSelftest = line.substring("selftest ".length());
-        } else if (line.startsWith("tone start")) {
-            healthTone = "running";
-        } else if (line.startsWith("tone done")) {
-            healthTone = "done";
-        } else if (line.startsWith("open TRACK0")) {
-            healthFile = line.substring("open ".length());
-        } else if (line.startsWith("error: ")) {
-            healthError = line.substring("error: ".length());
-        }
-
-        healthView.setText("Health\nSD:" + healthSd + " Info:" + healthInfo +
-                " Selftest:" + compactHealth(healthSelftest) + " Tone:" + healthTone +
-                "\nFile:" + healthFile + "\nError:" + healthError);
-    }
-
-    private String compactHealth(String text) {
-        if (text.length() <= 24) {
-            return text;
-        }
-        return text.substring(0, 24);
-    }
-
-    private void updateDisplayFrame() {
-        displayView.setText("Display frame\n" + displayLines[0] + "\n" +
-                displayLines[1] + "\n" + displayLines[2]);
-    }
-
-    private void updateTrackList(String tracksLine) {
-        String[] parts = tracksLine.split(" ");
-        StringBuilder builder = new StringBuilder("Tracks");
-        int shown = 0;
-
-        for (String part : parts) {
-            if (part.indexOf('=') <= 0) {
-                continue;
-            }
-            String[] item = part.split("=", 2);
-            if (shown % 3 == 0) {
-                builder.append('\n');
-            } else {
-                builder.append("  ");
-            }
-            builder.append(item[0]).append(": ").append(item[1]);
-            shown++;
-        }
-
-        if (shown == 0) {
-            builder.append("\n--");
-        }
-        trackListView.setText(builder.toString());
-    }
-
-    private void updateLinkPanel(String linkLine) {
-        String rx = fieldValue(linkLine, "rx=");
-        String status = fieldValue(linkLine, "status=");
-        String display = fieldValue(linkLine, "display=");
-        String bad = fieldValue(linkLine, "bad=");
-        String last = fieldValue(linkLine, "last=");
-        String uptime = fieldValue(linkLine, "uptime=");
-        linkView.setText("Link\nRX: " + rx + "  Status: " + status +
-                "  Display: " + display + "\nBad: " + bad +
-                "  Last: " + last + "  Uptime: " + uptime);
-    }
-
-    private void updateInputPanel(String inputLine) {
-        String ecw = fieldValue(inputLine, "ecw=");
-        String eccw = fieldValue(inputLine, "eccw=");
-        String eb = fieldValue(inputLine, "eb=");
-        String elong = fieldValue(inputLine, "elong=");
-        String s1 = fieldValue(inputLine, "s1=");
-        String s1l = fieldValue(inputLine, "s1l=");
-        String s2 = fieldValue(inputLine, "s2=");
-        String s2l = fieldValue(inputLine, "s2l=");
-        String s4 = fieldValue(inputLine, "s4=");
-        String s4l = fieldValue(inputLine, "s4l=");
-        inputView.setText("Input\nEC11 CW:" + ecw + " CCW:" + eccw +
-                " SW:" + eb + " Long:" + elong + "\nS1:" + s1 + "/" + s1l +
-                " S2:" + s2 + "/" + s2l + " S4:" + s4 + "/" + s4l);
-    }
-
-    private void updateTracePanel(String traceLine) {
-        String[] parts = traceLine.split(" ");
-        StringBuilder builder = new StringBuilder("Trace");
-        int shown = 0;
-        for (String part : parts) {
-            if (part.indexOf('=') <= 0 || part.startsWith("count=")) {
-                continue;
-            }
-            if (shown % 3 == 0) {
-                builder.append('\n');
-            } else {
-                builder.append("  ");
-            }
-            builder.append(part);
-            shown++;
-        }
-        if (shown == 0) {
-            builder.append("\n--");
-        }
-        traceView.setText(builder.toString());
-    }
-
-    private void updateWiringPanel(String pinLine) {
-        if (pinLine.startsWith("pin profile=")) {
-            wiringLines[0] = "Profile: " + pinLine.substring("pin profile=".length());
-        } else if (pinLine.startsWith("pin tf ")) {
-            wiringLines[1] = "TF: " + pinLine.substring("pin tf ".length());
-        } else if (pinLine.startsWith("pin i2s ")) {
-            wiringLines[2] = "I2S: " + pinLine.substring("pin i2s ".length());
-        } else if (pinLine.startsWith("pin ec11 ")) {
-            wiringLines[3] = "EC11: " + pinLine.substring("pin ec11 ".length());
-        } else if (pinLine.startsWith("pin local ")) {
-            wiringLines[4] = "Local: " + pinLine.substring("pin local ".length());
-        } else if (pinLine.startsWith("pin bt ")) {
-            wiringLines[5] = "BT: " + pinLine.substring("pin bt ".length());
-        } else if (pinLine.startsWith("pin epaper ")) {
-            wiringLines[6] = "E-paper: " + pinLine.substring("pin epaper ".length());
-        }
-
-        wiringView.setText("Wiring\n" + wiringLines[0] + "\n" + wiringLines[1] + "\n" +
-                wiringLines[2] + "\n" + wiringLines[3] + "\n" + wiringLines[4] + "\n" +
-                wiringLines[5] + "\n" + wiringLines[6]);
-    }
-
-    private String fieldValue(String line, String key) {
+    private String valueAfter(String line, String key) {
         int start = line.indexOf(key);
         if (start < 0) {
             return "--";
@@ -881,41 +432,69 @@ public class MainActivity extends Activity {
         return line.substring(start, end);
     }
 
-    private int boundedInt(String text, int min, int max) {
-        try {
-            int value = Integer.parseInt(text.replace("%", "").trim());
-            if (value < min) {
-                return min;
+    private void appendPanelLine(TextView view, String title, String line, int maxLines) {
+        String current = view.getText().toString();
+        String body = current.startsWith(title + "\n") ? current.substring(title.length() + 1) : "";
+        String[] existing = body.length() == 0 || body.equals("--") ? new String[0] : body.split("\n");
+        ArrayList<String> lines = new ArrayList<>();
+        lines.add(line);
+        for (String item : existing) {
+            if (lines.size() >= maxLines) {
+                break;
             }
-            if (value > max) {
-                return max;
-            }
-            return value;
-        } catch (NumberFormatException ex) {
-            return min;
+            lines.add(item);
         }
+        StringBuilder next = new StringBuilder(title).append('\n');
+        for (int index = 0; index < lines.size(); index++) {
+            if (index > 0) {
+                next.append('\n');
+            }
+            next.append(lines.get(index));
+        }
+        view.setText(next.toString());
     }
 
-    private void sendCommand(String command) {
-        if (outputStream == null) {
-            toast("Not connected to HC-05");
-            return;
-        }
+    private void appendLog(String line) {
+        logBuffer.append(line).append('\n');
+        logView.setText("Log\n" + logBuffer);
+    }
 
-        try {
-            outputStream.write(command.getBytes(StandardCharsets.US_ASCII));
-            outputStream.flush();
-            hardwareTx = true;
-            renderHardwareSummary();
-            appendLog("TX> " + command);
+    private void runDemoRx() {
+        appendLog("demo rx start");
+        for (String line : DEMO_RX_LINES) {
+            parseIncomingLine(line);
+        }
+        appendLog("demo rx done");
+    }
+
+    private void createLogDocument() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TITLE, "msp430_env_log.txt");
+        startActivityForResult(intent, REQUEST_SAVE_LOG);
+    }
+
+    private void saveLogToUri(Uri uri) {
+        try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+            if (out != null) {
+                out.write(logBuffer.toString().getBytes(StandardCharsets.UTF_8));
+            }
+            toast("Log saved");
         } catch (IOException ex) {
-            appendLog("tx error: " + ex.getMessage());
-            closeConnection();
+            toast("Save failed");
+            appendLog("save error: " + ex.getMessage());
         }
     }
 
     private void closeConnection() {
         keepReading = false;
+        closeQuietly();
+        stateView.setText("Disconnected");
+        connectButton.setText("Connect");
+    }
+
+    private void closeQuietly() {
         try {
             if (socket != null) {
                 socket.close();
@@ -924,24 +503,6 @@ public class MainActivity extends Activity {
         }
         socket = null;
         outputStream = null;
-        hardwareConnected = false;
-        runOnUiThread(() -> {
-            connectButton.setText("Connect");
-            connectButton.setEnabled(true);
-            setState("Disconnected");
-            renderHardwareSummary();
-        });
-    }
-
-    private void setState(String text) {
-        stateView.setText(text);
-    }
-
-    private void appendLog(String text) {
-        logView.append(text);
-        if (!text.endsWith("\n")) {
-            logView.append("\n");
-        }
     }
 
     private void toast(String text) {

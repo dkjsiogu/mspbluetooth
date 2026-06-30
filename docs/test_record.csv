@@ -1,52 +1,32 @@
 Item,Method,Expected,Actual,Result,Notes
-Firmware build,tools/run_verification.ps1,mspbluetooth.out generated,,,
-APK build,tools/verify_android_apk.ps1,app-debug.apk generated,,,
-Test WAV generation,tools/prepare_sdcard_assets.py,TRACK01-03.WAV generated,,,
-WAV asset check,tools/wav_asset_check.py,TRACK01-03.WAV are valid RIFF PCM 16-bit assets,,,
-Software effect report,tools/generate_effect_report.py,Bluetooth/board/buttons/display/APK/WAV evidence report generated,,,
-Android parser simulation,tools/android_ui_parser_sim.py,Fragmented status/health/display/tracks/link/input/trace/pin stream updates dashboard volume/progress bars Health display frame track list Link Input Trace and Wiring panels,,,
-Android command coverage,tools/android_command_coverage.py,All firmware commands have APK buttons required Bluetooth/SPP markers and connect-time panel sync,,,
-Android offline demo,tools/android_offline_demo_sim.py,APK Demo RX injects firmware-style responses and updates dashboard bars Health display tracks Link Input Wiring and Acceptance 9/9 without hardware,,,
-End-to-end demo simulation,tools/end_to_end_demo_sim.py,APK button commands receive immediate status/health/display/link/input/trace/wiring responses and drive visible phone panel state changes,,,
-Bluetooth diagnostic simulation,tools/bluetooth_diagnostic_sim.py,Fragmented uppercase noisy and diagnostic command streams produce expected responses,,,
-Whole-board control scenario,tools/board_scenario_sim.py,Bluetooth/encoder/local button mixed sequence reaches expected state and emits immediate status/display reports,,,
-Status LED pattern simulation,tools/status_led_pattern_sim.py,Playing/paused/stopped/error modes produce expected P1.0 LED patterns,,,
-Audio stream simulation,tools/audio_stream_sim.py,TRACK01-03.WAV produce non-silent scaled stereo samples and 100% progress,,,
-I2S frame simulation,tools/i2s_frame_sim.py,One stereo frame has 64 BCK pulses LRCK slots MSB delay and padding,,,
-I2S logic capture,tools/i2s_capture_check.py --input capture.csv --left none --right none,Logic analyzer CSV shows 64-edge frames with 32-low/32-high LRCK slots,,,
-EC11 quadrature simulation,tools/encoder_quadrature_sim.py,CW/CCW detents plus short/long switch presses produce expected events,,,
-E-paper gallery,tools/epaper_preview_sim.py,Playing/paused/stopped/error PGM previews are nonblank,,,
-Bluetooth connect,APK connect to paired HC-05,Connected and status response,,,
-Info command,Send i,info name=MSP430F5529-BT-WAV version=1.4.1,,,
-Selftest command,Send e,selftest bt=ok and SD/file status visible,,,
-Track scan,Send l,tracks line marks playable WAV files as ok,,,
-Display frame,Send d,display 1/2/3 lines returned,,,
-Bluetooth link counters,Send k,link rx/status/display/bad/last/uptime line returned and APK Link panel updates,,,
-Local input counters,Send u,input ecw/eccw/eb/elong/s1/s1l/s2/s2l/s4/s4l line returned and APK Input panel updates,,,
-Recent event trace,Send x,trace count line returned and APK Trace panel updates,,,
-Wiring diagnostics,Send w,pin profile/tf/i2s/ec11/local/bt/epaper lines returned and APK Wiring panel updates,,,
-E-paper preview,Run tools/epaper_preview_sim.py,epaper_preview.pgm generated and nonblank,,,
-DAC test tone,Send t,tone start/done and audible tone,,,
-TF mount,Insert TF card with TRACK01.WAV,sd mounted and open TRACK01.WAV,,,
-Play pause,Send p or short-press EC11/S1,playing/paused toggles,,,
-EC11 long press,Hold EC11 switch about 0.8s,stop is reported,,,
-Next previous,Send n/b or press S4/S2,track changes correctly,,,
-Volume,Rotate EC11 or send +/- ,volume changes in log and audio level,,,
-Mute,Send m,volume 0 then restored,,,
-Replay,Send r,current track restarts,,,
-Local S1 long,Hold S1 about 0.8s,stop is reported,,,
-Local S2 long,Hold S2 about 0.8s,mute toggles,,,
-Local S4 long,Hold S4 about 0.8s,order changes,,,
-Serial acceptance transcript,tools/serial_acceptance_check.py --input captured_log.txt,Required HC-05 transcript markers and state-command snapshots are present,,,
-Optional e-paper driver,tools/epaper_driver_trace_sim.py,296x128 driver source is compiled default-disabled and refresh trace sends one packed frame,,,
-Android acceptance script,tools/android_acceptance_log_sim.py,APK Run Acceptance command sequence updates Android panels and produces a serial-checkable TX log,,,
-Android Link panel,tools/android_acceptance_log_sim.py,APK visible Link panel parses Bluetooth command counters after k command,,,
-Android Health panel,tools/android_acceptance_log_sim.py,APK visible Health panel parses SD firmware selftest tone file-open and error evidence,,,
-Android Input panel,tools/android_acceptance_log_sim.py,APK visible Input panel parses EC11 and local button counters after u command,,,
-Android Trace panel,tools/android_acceptance_log_sim.py,APK visible Trace panel parses recent BT/EC11/local event ring after x command,,,
-Android Wiring panel,tools/android_acceptance_log_sim.py,APK visible Wiring panel parses active pin map after w command,,,
-Android acceptance summary,tools/android_acceptance_log_sim.py,APK visible Acceptance panel reaches 9/9 after boot evidence and Run Acceptance responses,,,
-Android log save,tools/android_command_coverage.py,APK Save Log uses Android document picker to write TX/RX text as a file,,,
-Android log export,APK Share Log after Run Acceptance,Phone can export TX/RX text for serial_acceptance_check.py on PC,,,
-Hardware evidence summary,tools/hardware_evidence_check.py --serial-log phone_log.txt --i2s-csv i2s_capture.csv,Combined report marks real serial and I2S evidence as passed,,,
-Readability audit,tools/readability_audit.py,Project-owned headers/declarations/macros/static items pass documentation checks,,,
+Firmware build,tools/run_verification.ps1,Debug/mspbluetooth.out generated,,,Software
+Static check,tools/firmware_static_check.py,active environment firmware checks passed,,,Software
+Readability audit,tools/readability_audit.py,current project comments pass,,,Software
+Bluetooth protocol,tools/bluetooth_protocol_sim.py,DATA/threshold/history/wiring/trace commands pass,,,Software
+Board scenario,tools/board_scenario_sim.py,normal/warning/danger/timeout scenarios pass,,,Software
+Flash log,tools/flash_log_sim.py,append/read/clear/CRC checks pass,,,Software
+Encoder threshold,tools/encoder_threshold_sim.py,EC11 and Bluetooth threshold steps pass,,,Software
+Android build,tools/verify_android_apk.ps1,app-debug.apk generated and source markers pass,,,Software
+Delivery package,tools/package_release.ps1,dist/msp_env_delivery generated with SHA256SUMS,,,Software
+DHT11 wiring,Measure VCC/GND and DATA=P1.0,no short circuit and DATA pull-up present,,,Hardware
+DHT11 data,Send ?,DATA T/H values reasonable,,,Hardware
+MQ-2 input,Measure AO before connecting,AO <= 3.3V at MSP430 ADC pin,,,Hardware safety
+MQ-2 data,Heat/expose sensor according to lab rule,GAS ADC and L change,,,Hardware
+HC-SR04 safety,Measure Echo divider,Echo at P1.3 <= 3.3V,,,Hardware safety
+HC-SR04 data,Move obstacle,D value changes and timeout handled,,,Hardware
+OLED display,Power on,Four lines show T/H/GAS/D/TH/ALM,,,Hardware
+HC-05 pairing,Android connect,Connected and DATA response visible,,,Hardware
+Threshold T+,Send T+,TH increases by 0.5C,,,Hardware
+Threshold T-,Send T-,TH decreases by 0.5C,,,Hardware
+Threshold SETT,Send SETT=32.0,TH=32.0 SAVED,,,Hardware
+EC11 CW/CCW,Rotate encoder,threshold increases/decreases,,,Hardware
+EC11 button,Press encoder,one DATA refresh sent,,,Hardware
+Flash count,Send HIST?,HIST COUNT line returned,,,Hardware
+Flash read,Send HIST 1,REC line returned after logging interval,,,Hardware
+Flash clear,Send CLRLOG then HIST?,LOG CLEARED and HIST COUNT=0,,,Hardware
+Buzzer temperature alarm,Rise temperature over threshold,buzzer rhythm starts and gets faster with level,,,Hardware
+Buzzer gas alarm,Increase MQ-2 ADC safely,buzzer rhythm starts and gets faster with level,,,Hardware
+Wiring command,Send w,pin lines match physical wiring,,,Hardware
+Trace command,Send x,trace count line contains recent commands,,,Hardware
+Android Demo RX,Tap Demo RX,panels update without hardware,,,APK
+Android Save Log,Tap Save Log,text log saved through document picker,,,APK
