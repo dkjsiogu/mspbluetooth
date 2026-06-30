@@ -1,17 +1,14 @@
 /*
  * main.c
- * Firmware entry point for the MSP430F5529 Bluetooth WAV player. The file
- * keeps startup order and the foreground scheduler visible in one short place.
+ * MSP430F5529 多点温度/环境监测系统入口。文件只保留启动顺序和前台
+ * 调度循环，具体采集、显示、蓝牙、Flash 和报警逻辑放在 env_monitor。
  */
 #include <msp430.h>
 
-#include "application/audio_player.h"
+#include "application/env_monitor.h"
 #include "drivers/bluetooth_uart.h"
 #include "drivers/board.h"
-#include "drivers/epaper_panel.h"
 #include "drivers/encoder.h"
-#include "drivers/i2s_dac.h"
-#include "drivers/local_buttons.h"
 
 int main(void)
 {
@@ -22,19 +19,13 @@ int main(void)
     board_tick_init();
     bluetooth_uart_init();
     encoder_init();
-    local_buttons_init();
-    i2s_dac_init();
-    epaper_panel_init();
 
     __enable_interrupt();
 
-    bluetooth_uart_write_line("");
-    bluetooth_uart_write_line("MSP430F5529 Bluetooth WAV player");
-    audio_player_init();
+    env_monitor_init();
 
     while (1) {
-        audio_player_poll_controls();
-        audio_player_service();
+        env_monitor_service();
         board_idle();
     }
 }

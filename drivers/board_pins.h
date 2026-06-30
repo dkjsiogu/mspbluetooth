@@ -1,21 +1,83 @@
 /*
  * board_pins.h
- * Physical pin map for the player hardware. All low-level drivers include this
- * file instead of hard-coding MSP430 port registers, making pin conflicts easy
- * to audit before wiring the board.
+ * 多点温度/环境监测系统的物理引脚表。所有底层驱动通过本文件访问
+ * MSP430 端口寄存器，便于集中检查 DHT11、MQ-2、超声波、OLED、蓝牙、
+ * 蜂鸣器和编码器之间的引脚冲突。
  */
 #ifndef BOARD_PINS_H
 #define BOARD_PINS_H
 
 #include <msp430.h>
 
-/* Status LED: MSP430F5529 LaunchPad/Pocket Kit LED on P1.0. */
-/* STATUS_LED_DIR: direction register for the heartbeat/status LED. */
-#define STATUS_LED_DIR                  P1DIR
-/* STATUS_LED_OUT: output latch register for the heartbeat/status LED. */
-#define STATUS_LED_OUT                  P1OUT
-/* STATUS_LED_BIT: bit mask of the heartbeat/status LED. */
-#define STATUS_LED_BIT                  BIT0
+/* STATUS_LED_DIR: 状态指示灯方向寄存器；P1.0 已留给 DHT11，状态灯改用 P4.7。 */
+#define STATUS_LED_DIR                  P4DIR
+/* STATUS_LED_OUT: 状态指示灯输出锁存寄存器。 */
+#define STATUS_LED_OUT                  P4OUT
+/* STATUS_LED_BIT: 状态指示灯位掩码。 */
+#define STATUS_LED_BIT                  BIT7
+
+/* DHT11_SEL: DHT11 DATA=P1.0 的功能选择寄存器。 */
+#define DHT11_SEL                       P1SEL
+/* DHT11_DIR: DHT11 DATA=P1.0 的方向寄存器。 */
+#define DHT11_DIR                       P1DIR
+/* DHT11_OUT: DHT11 DATA=P1.0 的输出锁存寄存器。 */
+#define DHT11_OUT                       P1OUT
+/* DHT11_IN: DHT11 DATA=P1.0 的输入寄存器。 */
+#define DHT11_IN                        P1IN
+/* DHT11_REN: DHT11 DATA=P1.0 的上下拉电阻寄存器。 */
+#define DHT11_REN                       P1REN
+/* DHT11_BIT: DHT11 DATA=P1.0 的位掩码。 */
+#define DHT11_BIT                       BIT0
+
+/* MQ2_SEL: MQ-2 AO=P6.0 的功能选择寄存器。 */
+#define MQ2_SEL                         P6SEL
+/* MQ2_DIR: MQ-2 AO=P6.0 的方向寄存器。 */
+#define MQ2_DIR                         P6DIR
+/* MQ2_BIT: MQ-2 AO=P6.0 的位掩码，对应 ADC12_A0。 */
+#define MQ2_BIT                         BIT0
+
+/* HCSR04_TRIG_SEL: HC-SR04 Trig=P1.2 的功能选择寄存器。 */
+#define HCSR04_TRIG_SEL                 P1SEL
+/* HCSR04_TRIG_DIR: HC-SR04 Trig=P1.2 的方向寄存器。 */
+#define HCSR04_TRIG_DIR                 P1DIR
+/* HCSR04_TRIG_OUT: HC-SR04 Trig=P1.2 的输出锁存寄存器。 */
+#define HCSR04_TRIG_OUT                 P1OUT
+/* HCSR04_TRIG_BIT: HC-SR04 Trig=P1.2 的位掩码。 */
+#define HCSR04_TRIG_BIT                 BIT2
+/* HCSR04_ECHO_SEL: HC-SR04 Echo=P1.3 的功能选择寄存器。 */
+#define HCSR04_ECHO_SEL                 P1SEL
+/* HCSR04_ECHO_DIR: HC-SR04 Echo=P1.3 的方向寄存器。 */
+#define HCSR04_ECHO_DIR                 P1DIR
+/* HCSR04_ECHO_IN: HC-SR04 Echo=P1.3 的输入寄存器。 */
+#define HCSR04_ECHO_IN                  P1IN
+/* HCSR04_ECHO_REN: HC-SR04 Echo=P1.3 的上下拉电阻寄存器。 */
+#define HCSR04_ECHO_REN                 P1REN
+/* HCSR04_ECHO_OUT: HC-SR04 Echo=P1.3 的上拉/下拉选择寄存器。 */
+#define HCSR04_ECHO_OUT                 P1OUT
+/* HCSR04_ECHO_BIT: HC-SR04 Echo=P1.3 的位掩码。 */
+#define HCSR04_ECHO_BIT                 BIT3
+
+/* OLED_SEL: OLED 软件 I2C SCL/SDA 的功能选择寄存器。 */
+#define OLED_SEL                        P3SEL
+/* OLED_DIR: OLED 软件 I2C SCL/SDA 的方向寄存器。 */
+#define OLED_DIR                        P3DIR
+/* OLED_OUT: OLED 软件 I2C SCL/SDA 的输出锁存寄存器。 */
+#define OLED_OUT                        P3OUT
+/* OLED_REN: OLED 软件 I2C SCL/SDA 的上下拉电阻寄存器。 */
+#define OLED_REN                        P3REN
+/* OLED_SDA_BIT: OLED SDA=P3.0 的位掩码。 */
+#define OLED_SDA_BIT                    BIT0
+/* OLED_SCL_BIT: OLED SCL=P3.1 的位掩码。 */
+#define OLED_SCL_BIT                    BIT1
+
+/* BUZZER_SEL: 蜂鸣器控制脚 P2.0 的功能选择寄存器。 */
+#define BUZZER_SEL                      P2SEL
+/* BUZZER_DIR: 蜂鸣器控制脚 P2.0 的方向寄存器。 */
+#define BUZZER_DIR                      P2DIR
+/* BUZZER_OUT: 蜂鸣器控制脚 P2.0 的输出锁存寄存器。 */
+#define BUZZER_OUT                      P2OUT
+/* BUZZER_BIT: 蜂鸣器控制脚 P2.0 的位掩码。 */
+#define BUZZER_BIT                      BIT0
 
 /* TF card SPI, kept on the course-design pins. SPI is bit-banged. */
 /* SD_CS_SEL: function-select register for TF-card chip select. */

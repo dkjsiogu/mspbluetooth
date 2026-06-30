@@ -1,23 +1,21 @@
 /*
  * platform_config.h
- * Central compile-time configuration for the MSP430F5529 Bluetooth WAV player.
- * This file keeps clock rates, command defaults, buffer sizes, and selectable
- * hardware mappings in one place so board changes do not leak into application
- * logic.
+ * 多点温度/环境监测系统的集中配置文件。这里统一保存时钟、蓝牙串口、
+ * 采样周期、报警阈值和记录容量，避免应用逻辑中散落硬编码参数。
  */
 #ifndef PLATFORM_CONFIG_H
 #define PLATFORM_CONFIG_H
 
 #include <stdint.h>
 
-/* PLAYER_FIRMWARE_NAME: ASCII product name reported by the info command. */
-#define PLAYER_FIRMWARE_NAME            "MSP430F5529-BT-WAV"
+/* PLAYER_FIRMWARE_NAME: 蓝牙 info 命令返回的工程名称。 */
+#define PLAYER_FIRMWARE_NAME            "MSP430F5529-ENV-MON"
 
-/* PLAYER_FIRMWARE_VERSION: manually updated firmware version string. */
-#define PLAYER_FIRMWARE_VERSION         "1.4.1"
+/* PLAYER_FIRMWARE_VERSION: 手动维护的软件版本号。 */
+#define PLAYER_FIRMWARE_VERSION         "2.0.0"
 
-/* PLAYER_HARDWARE_PROFILE: wiring profile name reported for lab debugging. */
-#define PLAYER_HARDWARE_PROFILE         "TF:P3.1-3.3 I2S:P4.1-4.3 BT:UCA1"
+/* PLAYER_HARDWARE_PROFILE: 蓝牙 wiring 命令返回的主要接线摘要。 */
+#define PLAYER_HARDWARE_PROFILE         "DHT:P1.0 MQ2:P6.0 US:P1.2/1.3 OLED:P3.0/3.1 BT:UCA1"
 
 /* MCLK_HZ: CPU clock frequency used by delay loops and timing calculations. */
 #define MCLK_HZ                         16000000UL
@@ -42,51 +40,32 @@
  */
 #define PLAYER_BT_UART_MODE             PLAYER_BT_UART_UCA1_P45
 
-/* PLAYER_AUTOPLAY_ON_BOOT: nonzero starts the first valid WAV after boot. */
-#define PLAYER_AUTOPLAY_ON_BOOT         1u
+/* ENV_SAMPLE_PERIOD_MS: 三类传感器的周期采样间隔。 */
+#define ENV_SAMPLE_PERIOD_MS            1000u
 
-/* PLAYER_DEFAULT_VOLUME: startup volume, scaled against PLAYER_VOLUME_MAX. */
-#define PLAYER_DEFAULT_VOLUME           18u
+/* ENV_OLED_REFRESH_MS: OLED 页面刷新间隔。 */
+#define ENV_OLED_REFRESH_MS             500u
 
-/* PLAYER_VOLUME_MAX: maximum software gain step accepted by the player. */
-#define PLAYER_VOLUME_MAX               32u
+/* ENV_BT_PUSH_MS: 蓝牙主动上传实时数据的间隔。 */
+#define ENV_BT_PUSH_MS                  2000u
 
-/* PLAYER_MAX_TRACKS: highest TRACKxx.WAV number scanned on the TF card. */
-#define PLAYER_MAX_TRACKS               9u
+/* ENV_FLASH_LOG_MS: 内部 Flash 历史记录写入间隔。 */
+#define ENV_FLASH_LOG_MS                10000u
 
-/* PLAYER_TRACE_DEPTH: number of recent control events kept for diagnostics. */
-#define PLAYER_TRACE_DEPTH              6u
+/* ENV_DEFAULT_TEMP_THRESHOLD_X10: 默认温度报警阈值，单位 0.1 摄氏度。 */
+#define ENV_DEFAULT_TEMP_THRESHOLD_X10  300
 
-/* PLAYER_AUDIO_BUFFER_BYTES: one SD read chunk; keep small for MSP430 RAM. */
-#define PLAYER_AUDIO_BUFFER_BYTES       192u
+/* ENV_TEMP_STEP_X10: 编码器和 T+/T- 命令每次调整的阈值步进。 */
+#define ENV_TEMP_STEP_X10               5
 
-/* PLAYER_TEST_TONE_FRAMES: stereo frames emitted by the DAC self-test command. */
-#define PLAYER_TEST_TONE_FRAMES         900u
+/* ENV_GAS_WARN_ADC: MQ-2 ADC 原始值超过该值后进入气体报警区。 */
+#define ENV_GAS_WARN_ADC                1800u
 
-/* PLAYER_TEST_TONE_AMPLITUDE: signed PCM amplitude used by the DAC self-test. */
-#define PLAYER_TEST_TONE_AMPLITUDE      12000
+/* ENV_GAS_STEP_ADC: 气体报警等级每升一级对应的 ADC 增量。 */
+#define ENV_GAS_STEP_ADC                300u
 
-/* PLAYER_STATUS_PUSH_MS: periodic Bluetooth status interval; 0 disables it. */
-#define PLAYER_STATUS_PUSH_MS           5000u
-
-/* PLAYER_LED_PLAYING_MS: status LED toggle period while audio is playing. */
-#define PLAYER_LED_PLAYING_MS           200u
-
-/* PLAYER_LED_PAUSED_MS: status LED toggle period while playback is paused. */
-#define PLAYER_LED_PAUSED_MS            1000u
-
-/* PLAYER_LED_ERROR_STEP_MS: status LED step period for error double-blink. */
-#define PLAYER_LED_ERROR_STEP_MS        150u
-
-/* PLAYER_ENABLE_EPAPER_PANEL: 1 enables optional 296x128 SPI e-paper output. */
-#define PLAYER_ENABLE_EPAPER_PANEL      0u
-
-/*
- * PLAYER_EPAPER_REFRESH_ON_CHANGE: nonzero refreshes the optional e-paper
- * panel whenever the display model is reported. Keep PLAYER_ENABLE_EPAPER_PANEL
- * at 0 unless the P6.x wiring is actually added, because e-paper refresh is slow.
- */
-#define PLAYER_EPAPER_REFRESH_ON_CHANGE 1u
+/* ENV_TRACE_DEPTH: 近期蓝牙/编码器操作轨迹条数。 */
+#define ENV_TRACE_DEPTH                 6u
 
 /* ENCODER_POLL_PERIOD_MS: EC11 sample interval for quadrature decoding. */
 #define ENCODER_POLL_PERIOD_MS          2u

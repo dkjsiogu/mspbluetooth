@@ -1,9 +1,9 @@
-"""Static project checks for the MSP430 Bluetooth WAV player.
+"""Static checks for the MSP430F5529 environment monitor firmware.
 
-The checks focus on requirements that are easy to regress while editing:
-header documentation, command coverage, known pin conflicts, and successful
-build artifacts. It is intentionally lightweight so it can run on the classroom
-PC without extra Python packages.
+The checker guards the active course-design baseline: DHT11, MQ-2, HC-SR04,
+OLED display, Bluetooth telemetry, internal Flash history, buzzer alarm, and
+EC11 threshold adjustment. It intentionally ignores the old audio-player
+modules unless they accidentally re-enter the build.
 """
 
 from __future__ import annotations
@@ -15,92 +15,105 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-
-REQUIRED_FILES = [
+ACTIVE_FILES = [
     "main.c",
-    "application/audio_player.c",
+    "application/env_monitor.c",
+    "application/env_monitor.h",
+    "drivers/alarm_buzzer.c",
+    "drivers/alarm_buzzer.h",
     "drivers/bluetooth_uart.c",
+    "drivers/bluetooth_uart.h",
+    "drivers/board.c",
+    "drivers/board.h",
+    "drivers/board_pins.h",
     "drivers/encoder.c",
-    "drivers/epaper_panel.c",
-    "drivers/local_buttons.c",
-    "drivers/i2s_dac.c",
-    "middleware/display_model.c",
-    "middleware/wav_reader.c",
-    "fatfs/HAL_SDCard.c",
-    "tools/epaper_preview_sim.py",
-    "tools/epaper_driver_trace_sim.py",
-    "tools/android_ui_parser_sim.py",
-    "tools/audio_stream_sim.py",
-    "tools/encoder_quadrature_sim.py",
-    "tools/status_led_pattern_sim.py",
-    "tools/i2s_frame_sim.py",
-    "tools/i2s_capture_check.py",
-    "tools/hardware_evidence_check.py",
-    "tools/bluetooth_diagnostic_sim.py",
-    "tools/serial_acceptance_check.py",
-    "tools/android_command_coverage.py",
-    "tools/android_acceptance_log_sim.py",
-    "tools/android_offline_demo_sim.py",
-    "tools/end_to_end_demo_sim.py",
-    "tools/generate_effect_report.py",
-    "tools/generate_diagrams.py",
-    "tools/generate_course_report.py",
-    "tools/wav_asset_check.py",
-    "tools/readability_audit.py",
+    "drivers/encoder.h",
+    "drivers/env_sensors.c",
+    "drivers/env_sensors.h",
+    "drivers/flash_log.c",
+    "drivers/flash_log.h",
+    "drivers/oled_ssd1306.c",
+    "drivers/oled_ssd1306.h",
+    "drivers/platform_config.h",
     "Debug/mspbluetooth.out",
 ]
 
-
-REQUIRED_COMMANDS = {
-    "p": "play/pause",
-    "s": "stop",
-    "r": "replay",
-    "n": "next",
-    "b": "previous",
-    "+": "volume up",
-    "-": "volume down",
-    "m": "mute",
-    "o": "play order",
-    "t": "tone test",
-    "i": "info",
-    "e": "selftest",
-    "l": "track list",
-    "d": "display frame",
-    "?": "status",
-    "k": "Bluetooth link counters",
-    "u": "local input counters",
-    "x": "recent control event trace",
-    "w": "active wiring diagnostics",
-}
-
-
 HEADER_FILES = [
-    "application/audio_player.h",
+    "application/env_monitor.h",
+    "drivers/alarm_buzzer.h",
     "drivers/bluetooth_uart.h",
     "drivers/board.h",
     "drivers/board_pins.h",
     "drivers/encoder.h",
-    "drivers/epaper_panel.h",
-    "drivers/i2s_dac.h",
-    "drivers/local_buttons.h",
+    "drivers/env_sensors.h",
+    "drivers/flash_log.h",
+    "drivers/oled_ssd1306.h",
     "drivers/platform_config.h",
-    "fatfs/HAL_SDCard.h",
-    "middleware/display_model.h",
-    "middleware/wav_reader.h",
 ]
 
 SOURCE_FILES = [
     "main.c",
-    "application/audio_player.c",
+    "application/env_monitor.c",
+    "drivers/alarm_buzzer.c",
     "drivers/bluetooth_uart.c",
     "drivers/board.c",
     "drivers/encoder.c",
-    "drivers/epaper_panel.c",
-    "drivers/local_buttons.c",
-    "drivers/i2s_dac.c",
-    "middleware/display_model.c",
-    "middleware/wav_reader.c",
-    "fatfs/HAL_SDCard.c",
+    "drivers/env_sensors.c",
+    "drivers/flash_log.c",
+    "drivers/oled_ssd1306.c",
+]
+
+REQUIRED_COMMAND_TOKENS = {
+    "?": "real-time DATA refresh",
+    "i": "firmware information",
+    "w": "wiring diagnostics",
+    "h": "help text",
+    "x": "recent operation trace",
+    "T+": "temperature threshold up",
+    "T-": "temperature threshold down",
+    "SETT=": "set threshold directly",
+    "HIST?": "history count",
+    "HIST ": "read one history record",
+    "DUMP": "dump all history records",
+    "CLRLOG": "clear Flash history",
+}
+
+REQUIRED_PIN_TOKENS = [
+    "DHT11_BIT                       BIT0",
+    "MQ2_BIT                         BIT0",
+    "HCSR04_TRIG_BIT                 BIT2",
+    "HCSR04_ECHO_BIT                 BIT3",
+    "OLED_SDA_BIT                    BIT0",
+    "OLED_SCL_BIT                    BIT1",
+    "BUZZER_BIT                      BIT0",
+    "ENC_A_BIT                       BIT1",
+    "ENC_B_BIT                       BIT2",
+    "ENC_SW_BIT                      BIT3",
+    "BT_UCA1_TX_BIT                  BIT4",
+    "BT_UCA1_RX_BIT                  BIT5",
+    "STATUS_LED_BIT                  BIT7",
+]
+
+REQUIRED_BUILD_OBJECTS = [
+    "main.obj",
+    "board.obj",
+    "bluetooth_uart.obj",
+    "encoder.obj",
+    "alarm_buzzer.obj",
+    "env_sensors.obj",
+    "flash_log.obj",
+    "oled_ssd1306.obj",
+    "env_monitor.obj",
+]
+
+FORBIDDEN_BUILD_OBJECTS = [
+    "audio_player.obj",
+    "i2s_dac.obj",
+    "local_buttons.obj",
+    "epaper_panel.obj",
+    "wav_reader.obj",
+    "display_model.obj",
+    "HAL_SDCard.obj",
 ]
 
 
@@ -115,7 +128,7 @@ def read_text(relative: str) -> str:
 
 def is_comment_line(line: str) -> bool:
     stripped = line.strip()
-    return stripped.startswith("/*") or stripped.startswith("*") or stripped.endswith("*/")
+    return stripped.startswith("/*") or stripped.startswith("*") or stripped.startswith("//") or stripped.endswith("*/")
 
 
 def previous_nonblank_line(lines: list[str], index: int) -> str:
@@ -162,115 +175,95 @@ def declaration_parameter_names(declaration: str) -> list[str]:
     return names
 
 
-def check_required_files() -> None:
-    for relative in REQUIRED_FILES:
+def check_active_files() -> None:
+    for relative in ACTIVE_FILES:
         path = ROOT / relative
         if not path.exists():
-            fail(f"missing required file: {relative}")
+            fail(f"missing active firmware file: {relative}")
         if path.is_file() and path.stat().st_size == 0:
-            fail(f"empty required file: {relative}")
+            fail(f"empty active firmware file: {relative}")
 
 
 def check_header_comments() -> None:
+    declaration_pattern = r"^(?:[A-Za-z_][\w\s\*]+\s+)?[A-Za-z_]\w+\([^;{}]*\);"
+
     for relative in HEADER_FILES:
         text = read_text(relative)
         lines = text.splitlines()
-        stripped = text.lstrip()
-        if not stripped.startswith("/*"):
+        if not text.lstrip().startswith("/*"):
             fail(f"{relative} must start with a module comment")
 
-        declarations = re.findall(r"^(?:[A-Za-z_][\w\s\*]+\s+)?[A-Za-z_]\w+\([^;{}]*\);", text, re.M)
-        for declaration in declarations:
-            start = text.find(declaration)
-            line_index = text[:start].count("\n")
-            comment = comment_block_before(lines, line_index)
-            if comment == "":
-                fail(f"{relative} declaration lacks comment: {declaration.strip()}")
-            for param_name in declaration_parameter_names(declaration):
-                if param_name not in comment:
-                    fail(f"{relative} declaration comment must describe parameter {param_name}: {declaration.strip()}")
-
-        defines = re.findall(r"^#define\s+([A-Za-z_]\w+)", text, re.M)
-        for name in defines:
+        for match in re.finditer(r"^#define\s+([A-Za-z_]\w+)\b.*$", text, re.M):
+            name = match.group(1)
             if name.endswith("_H"):
                 continue
-            define_line = re.search(rf"^#define\s+{name}\b.*$", text, re.M)
-            if not define_line:
-                continue
-            line_index = text[:define_line.start()].count("\n")
+            line_index = text[: match.start()].count("\n")
             if not is_comment_line(previous_nonblank_line(lines, line_index)):
                 fail(f"{relative} #define lacks comment: {name}")
+
+        for match in re.finditer(declaration_pattern, text, re.M):
+            declaration = match.group(0).strip()
+            line_index = text[: match.start()].count("\n")
+            comment = comment_block_before(lines, line_index)
+            if comment == "":
+                fail(f"{relative} declaration lacks comment: {declaration}")
+            for param_name in declaration_parameter_names(declaration):
+                if re.search(rf"\b{re.escape(param_name)}\s*:", comment) is None:
+                    fail(f"{relative} declaration comment must describe parameter {param_name}: {declaration}")
 
 
 def check_source_comments() -> None:
     for relative in SOURCE_FILES:
         text = read_text(relative)
-        stripped = text.lstrip()
-        if not stripped.startswith("/*"):
+        if not text.lstrip().startswith("/*"):
             fail(f"{relative} must start with a module comment")
 
         lines = text.splitlines()
         for index, line in enumerate(lines):
-            if not re.match(r"^\s*static\s+", line):
-                continue
-            if not is_comment_line(previous_nonblank_line(lines, index)):
+            if re.match(r"^static\s+", line) and not is_comment_line(previous_nonblank_line(lines, index)):
                 fail(f"{relative} static item lacks comment near line {index + 1}: {line.strip()}")
 
 
-def check_commands() -> None:
-    audio = read_text("application/audio_player.c")
-    readme = read_text("README.md")
+def check_protocol() -> None:
+    app = read_text("application/env_monitor.c")
+    for token, meaning in REQUIRED_COMMAND_TOKENS.items():
+        if token not in app:
+            fail(f"env_monitor.c missing command token {token!r} ({meaning})")
 
-    for command, meaning in REQUIRED_COMMANDS.items():
-        escaped = re.escape(command)
-        if f"case '{command}'" not in audio and f"case \"{command}\"" not in audio:
-            fail(f"audio_player.c missing command {command!r} ({meaning})")
-        if re.search(escaped, readme) is None:
-            fail(f"README missing command {command!r} ({meaning})")
-
-    if "1-9" not in readme and "1~9" not in readme:
-        fail("README missing direct track command range 1-9")
+    for token in ["DATA T=", "GAS=", "D=", "TH=", "ALM=", "HIST COUNT=", "REC ", "LOG CLEARED"]:
+        if token not in app:
+            fail(f"env_monitor.c missing Bluetooth output token: {token}")
 
 
-def check_pin_conflict_documented() -> None:
-    config = read_text("drivers/platform_config.h")
+def check_pins_and_config() -> None:
     pins = read_text("drivers/board_pins.h")
-    readme = read_text("README.md")
-
-    if "PLAYER_BT_UART_MODE             PLAYER_BT_UART_UCA1_P45" not in config:
-        fail("Bluetooth must default to UCA1 P4.4/P4.5 to avoid TF-card MISO conflict")
-    if "BT_UCA0_TX_BIT                  BIT3" not in pins:
-        fail("alternate UCA0 conflict pin must remain visible in board_pins.h")
-    if "P3.3" not in readme or "MISO" not in readme or "冲突" not in readme:
-        fail("README must document the P3.3 Bluetooth/TF-card conflict")
-
-
-def check_local_button_long_press() -> None:
-    local_header = read_text("drivers/local_buttons.h")
-    local_source = read_text("drivers/local_buttons.c")
-    encoder_header = read_text("drivers/encoder.h")
-    encoder_source = read_text("drivers/encoder.c")
     config = read_text("drivers/platform_config.h")
 
-    for token in [
-        "LOCAL_BUTTON_EVENT_STOP",
-        "LOCAL_BUTTON_EVENT_MUTE",
-        "LOCAL_BUTTON_EVENT_ORDER",
-        "LOCAL_BUTTON_LONG_PRESS_MS",
-        "LOCAL_BUTTON_LONG_PRESS_TICKS",
-    ]:
-        if token not in local_header and token not in local_source and token not in config:
-            fail(f"local button long-press support missing token: {token}")
+    for token in REQUIRED_PIN_TOKENS:
+        if token not in pins:
+            fail(f"board_pins.h missing expected pin token: {token}")
 
     for token in [
-        "ENCODER_EVENT_BUTTON_LONG",
-        "ENCODER_LONG_PRESS_MS",
-        "ENCODER_LONG_PRESS_TICKS",
-        "g_button_hold_ticks",
-        "g_button_long_sent",
+        'PLAYER_FIRMWARE_NAME            "MSP430F5529-ENV-MON"',
+        "PLAYER_BT_UART_MODE             PLAYER_BT_UART_UCA1_P45",
+        "ENV_SAMPLE_PERIOD_MS",
+        "ENV_FLASH_LOG_MS",
+        "ENV_DEFAULT_TEMP_THRESHOLD_X10",
+        "ENV_GAS_WARN_ADC",
+        "ENV_TRACE_DEPTH",
     ]:
-        if token not in encoder_header and token not in encoder_source and token not in config:
-            fail(f"EC11 long-press support missing token: {token}")
+        if token not in config:
+            fail(f"platform_config.h missing environment config token: {token}")
+
+
+def check_makefile_objects() -> None:
+    makefile = read_text("Debug/makefile")
+    for obj in REQUIRED_BUILD_OBJECTS:
+        if obj not in makefile:
+            fail(f"Debug/makefile missing active object: {obj}")
+    for obj in FORBIDDEN_BUILD_OBJECTS:
+        if obj in makefile:
+            fail(f"Debug/makefile still builds old audio object: {obj}")
 
 
 def check_build_map() -> None:
@@ -293,14 +286,14 @@ def check_build_map() -> None:
 
 
 def main() -> int:
-    check_required_files()
+    check_active_files()
     check_header_comments()
     check_source_comments()
-    check_commands()
-    check_pin_conflict_documented()
-    check_local_button_long_press()
+    check_protocol()
+    check_pins_and_config()
+    check_makefile_objects()
     check_build_map()
-    print("firmware static checks passed")
+    print("environment firmware static checks passed")
     return 0
 
 

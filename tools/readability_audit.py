@@ -1,9 +1,8 @@
-"""Audit source readability rules requested for the course project.
+"""Audit source readability rules for the environment monitor firmware.
 
-The firmware already has functional simulations. This audit focuses on whether
-the code remains easy to review in a classroom setting: every project header has
-a module comment, public declarations explain their parameters, macros are
-documented, and static items have local intent comments.
+The report focuses on classroom review quality: active project headers start
+with module comments, public declarations explain parameters, macros are
+documented, and top-level static items have local intent comments.
 """
 
 from __future__ import annotations
@@ -18,32 +17,28 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT = ROOT / "docs" / "readability_report.md"
 
 HEADER_FILES = [
-    "application/audio_player.h",
+    "application/env_monitor.h",
+    "drivers/alarm_buzzer.h",
     "drivers/bluetooth_uart.h",
     "drivers/board.h",
     "drivers/board_pins.h",
     "drivers/encoder.h",
-    "drivers/epaper_panel.h",
-    "drivers/i2s_dac.h",
-    "drivers/local_buttons.h",
+    "drivers/env_sensors.h",
+    "drivers/flash_log.h",
+    "drivers/oled_ssd1306.h",
     "drivers/platform_config.h",
-    "fatfs/HAL_SDCard.h",
-    "middleware/display_model.h",
-    "middleware/wav_reader.h",
 ]
 
 SOURCE_FILES = [
     "main.c",
-    "application/audio_player.c",
+    "application/env_monitor.c",
+    "drivers/alarm_buzzer.c",
     "drivers/bluetooth_uart.c",
     "drivers/board.c",
     "drivers/encoder.c",
-    "drivers/epaper_panel.c",
-    "drivers/local_buttons.c",
-    "drivers/i2s_dac.c",
-    "middleware/display_model.c",
-    "middleware/wav_reader.c",
-    "fatfs/HAL_SDCard.c",
+    "drivers/env_sensors.c",
+    "drivers/flash_log.c",
+    "drivers/oled_ssd1306.c",
 ]
 
 
@@ -209,7 +204,7 @@ def audit_sources() -> tuple[list[Finding], int]:
         findings.append(check_module_header(relative, text))
 
         for index, line in enumerate(lines):
-            if not re.match(r"^\s*static\s+", line):
+            if not re.match(r"^static\s+", line):
                 continue
             static_count += 1
             stripped = line.strip()

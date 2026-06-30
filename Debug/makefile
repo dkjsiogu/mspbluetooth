@@ -33,15 +33,11 @@ OBJS := \
 	board.obj \
 	bluetooth_uart.obj \
 	encoder.obj \
-	epaper_panel.obj \
-	local_buttons.obj \
-	i2s_dac.obj \
-	audio_player.obj \
-	display_model.obj \
-	wav_reader.obj \
-	HAL_SDCard.obj \
-	ff.obj \
-	mmc.obj
+	alarm_buzzer.obj \
+	env_sensors.obj \
+	flash_log.obj \
+	oled_ssd1306.obj \
+	env_monitor.obj
 
 all: mspbluetooth.out
 
@@ -66,41 +62,25 @@ encoder.obj: ../drivers/encoder.c
 	@echo MSP430 Compiler - building file: "$<"
 	$(CC) $(CFLAGS) --preproc_dependency="encoder.d_raw" "$<"
 
-epaper_panel.obj: ../drivers/epaper_panel.c
+alarm_buzzer.obj: ../drivers/alarm_buzzer.c
 	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="epaper_panel.d_raw" "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="alarm_buzzer.d_raw" "$<"
 
-local_buttons.obj: ../drivers/local_buttons.c
+env_sensors.obj: ../drivers/env_sensors.c
 	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="local_buttons.d_raw" "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="env_sensors.d_raw" "$<"
 
-i2s_dac.obj: ../drivers/i2s_dac.c
+flash_log.obj: ../drivers/flash_log.c
 	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="i2s_dac.d_raw" "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="flash_log.d_raw" "$<"
 
-audio_player.obj: ../application/audio_player.c
+oled_ssd1306.obj: ../drivers/oled_ssd1306.c
 	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="audio_player.d_raw" "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="oled_ssd1306.d_raw" "$<"
 
-display_model.obj: ../middleware/display_model.c
+env_monitor.obj: ../application/env_monitor.c
 	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="display_model.d_raw" "$<"
-
-wav_reader.obj: ../middleware/wav_reader.c
-	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="wav_reader.d_raw" "$<"
-
-HAL_SDCard.obj: ../fatfs/HAL_SDCard.c
-	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="HAL_SDCard.d_raw" "$<"
-
-ff.obj: ../fatfs/ff.c
-	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="ff.d_raw" "$<"
-
-mmc.obj: ../fatfs/mmc.c
-	@echo MSP430 Compiler - building file: "$<"
-	$(CC) $(CFLAGS) --preproc_dependency="mmc.d_raw" "$<"
+	$(CC) $(CFLAGS) --preproc_dependency="env_monitor.d_raw" "$<"
 
 clean:
 	-DEL /F $(OBJS) 2>NUL
