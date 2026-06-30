@@ -41,6 +41,7 @@ try {
     Invoke-Checked { python tools\i2s_frame_sim.py }
     Invoke-Checked { python tools\i2s_capture_check.py }
     Invoke-Checked { python tools\hardware_evidence_check.py }
+    Invoke-Checked { powershell -ExecutionPolicy Bypass -File tools\run_real_board_acceptance.ps1 -UseGeneratedSamples -OutputDir dist\verification\real_board_acceptance }
     Invoke-Checked { python tools\generate_effect_report.py }
 } finally {
     Pop-Location

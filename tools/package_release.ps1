@@ -63,6 +63,7 @@ try {
         Invoke-Checked { python tools\i2s_frame_sim.py }
         Invoke-Checked { python tools\i2s_capture_check.py }
         Invoke-Checked { python tools\hardware_evidence_check.py }
+        Invoke-Checked { powershell -ExecutionPolicy Bypass -File tools\run_real_board_acceptance.ps1 -UseGeneratedSamples -OutputDir dist\verification\real_board_acceptance }
         Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
         Invoke-Checked { python tools\serial_acceptance_check.py }
         Invoke-Checked { python tools\epaper_driver_trace_sim.py }
@@ -86,6 +87,7 @@ try {
     Copy-RequiredFile "README.md" (Join-Path $packageRoot "README.md")
     Copy-RequiredFile "docs\hardware_verification.md" (Join-Path $packageRoot "docs\hardware_verification.md")
     Copy-RequiredFile "docs\acceptance_matrix.md" (Join-Path $packageRoot "docs\acceptance_matrix.md")
+    Copy-RequiredFile "docs\real_board_acceptance.md" (Join-Path $packageRoot "docs\real_board_acceptance.md")
     Copy-RequiredFile "docs\report_outline.md" (Join-Path $packageRoot "docs\report_outline.md")
     Copy-RequiredFile "docs\course_report_draft.md" (Join-Path $packageRoot "docs\course_report_draft.md")
     Copy-RequiredFile "docs\readability_report.md" (Join-Path $packageRoot "docs\readability_report.md")
@@ -108,6 +110,10 @@ try {
     Copy-RequiredFile "docs\hardware_block_diagram.svg" (Join-Path $packageRoot "docs\hardware_block_diagram.svg")
     Copy-RequiredFile "docs\software_flowchart.svg" (Join-Path $packageRoot "docs\software_flowchart.svg")
     Copy-RequiredFile "sdcard\README.md" (Join-Path $packageRoot "sdcard\README.md")
+    Copy-RequiredFile "tools\run_real_board_acceptance.ps1" (Join-Path $packageRoot "tools\run_real_board_acceptance.ps1")
+    Copy-RequiredFile "tools\hardware_evidence_check.py" (Join-Path $packageRoot "tools\hardware_evidence_check.py")
+    Copy-RequiredFile "tools\serial_acceptance_check.py" (Join-Path $packageRoot "tools\serial_acceptance_check.py")
+    Copy-RequiredFile "tools\i2s_capture_check.py" (Join-Path $packageRoot "tools\i2s_capture_check.py")
     Invoke-Checked {
         python tools\epaper_preview_sim.py `
             --output (Join-Path $packageRoot "docs\epaper_preview.pgm") `
@@ -161,6 +167,7 @@ try {
         "sdcard\TRACK03.WAV",
         "docs\hardware_verification.md",
         "docs\acceptance_matrix.md",
+        "docs\real_board_acceptance.md",
         "docs\report_outline.md",
         "docs\course_report_draft.md",
         "docs\readability_report.md",
@@ -193,6 +200,10 @@ try {
         "docs\epaper_gallery\epaper_stopped.pgm",
         "docs\epaper_gallery\epaper_error.pgm",
         "docs\wav_asset_report.md",
+        "tools\run_real_board_acceptance.ps1",
+        "tools\hardware_evidence_check.py",
+        "tools\serial_acceptance_check.py",
+        "tools\i2s_capture_check.py",
         "",
         "Note: software build and simulations are verified by this package script.",
         "Physical flashing and board-level audio tests still need the real MSP430F5529 hardware."

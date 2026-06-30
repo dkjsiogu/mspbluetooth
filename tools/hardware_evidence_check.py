@@ -47,6 +47,20 @@ def artifact_status(path: Path, label: str) -> EvidenceItem:
     return EvidenceItem(label, str(path), "missing", "build or package step has not produced this artifact")
 
 
+def first_artifact_status(paths: list[Path], label: str) -> EvidenceItem:
+    """Reports the first present artifact across repo and delivery layouts."""
+
+    for path in paths:
+        if path.exists() and path.is_file() and path.stat().st_size > 0:
+            return EvidenceItem(label, str(path), "present", f"{path.stat().st_size} bytes")
+    return EvidenceItem(
+        label,
+        " | ".join(str(path) for path in paths),
+        "missing",
+        "artifact was not found in either development or delivery package layout",
+    )
+
+
 def serial_evidence(input_path: Path | None, sample_out: Path) -> EvidenceItem:
     """Runs serial transcript checks and returns a report item."""
 
@@ -94,9 +108,21 @@ def run_evidence_check(serial_log: Path | None, i2s_csv: Path | None, serial_sam
     """Runs all evidence checks and returns report rows."""
 
     items = [
-        artifact_status(ROOT / "Debug" / "mspbluetooth.out", "Firmware build artifact"),
-        artifact_status(ROOT / "android" / "app" / "build" / "outputs" / "apk" / "debug" / "app-debug.apk", "Android APK artifact"),
-        artifact_status(ROOT / "dist" / "mspbluetooth_delivery" / "MANIFEST.txt", "Delivery package manifest"),
+        first_artifact_status(
+            [ROOT / "Debug" / "mspbluetooth.out", ROOT / "firmware" / "mspbluetooth.out"],
+            "Firmware build artifact",
+        ),
+        first_artifact_status(
+            [
+                ROOT / "android" / "app" / "build" / "outputs" / "apk" / "debug" / "app-debug.apk",
+                ROOT / "android" / "mspbluetooth-debug.apk",
+            ],
+            "Android APK artifact",
+        ),
+        first_artifact_status(
+            [ROOT / "dist" / "mspbluetooth_delivery" / "MANIFEST.txt", ROOT / "MANIFEST.txt"],
+            "Delivery package manifest",
+        ),
         serial_evidence(serial_log, serial_sample),
         i2s_evidence(i2s_csv, i2s_sample),
     ]
