@@ -1,172 +1,148 @@
-"""Whole-board control scenario simulator.
-
-This validates that the intended physical controls do not fight each other:
-Bluetooth controls transport, EC11 controls volume/play-pause/stop, and
-S1/S2/S4 provide local fallback transport keys. It mirrors the firmware mapping
-rather than emulating MSP430 registers.
-"""
+"""Board-level scenario simulation for the MSP430 environment monitor."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
-TRACE_DEPTH = 6
+ROOT = Path(__file__).resolve().parents[1]
+REPORT = ROOT / "docs" / "board_scenario_report.md"
+GAS_WARN_ADC = 1800
+GAS_STEP_ADC = 300
+THRESHOLD_X10 = 300
 
 
-@dataclass
-class BoardState:
-    mode: str = "playing"
-    track: int = 1
-    volume: int = 18
-    order: str = "repeat_all"
-    led_toggles: int = 0
-    status_reports: int = 0
-    display_reports: int = 0
-    tone_tests: int = 0
-    input_encoder_cw: int = 0
-    input_encoder_ccw: int = 0
-    input_encoder_button: int = 0
-    input_encoder_long: int = 0
-    input_s1_short: int = 0
-    input_s1_long: int = 0
-    input_s2_short: int = 0
-    input_s2_long: int = 0
-    input_s4_short: int = 0
-    input_s4_long: int = 0
-    trace: tuple[str, ...] = ()
+@dataclass(frozen=True)
+class Scenario:
+    name: str
+    temperature_x10: int
+    humidity_x10: int
+    gas_adc: int
+    distance_mm: int
+    dht_ok: bool = True
+    distance_ok: bool = True
+    mq2_ready: bool = True
 
 
-def apply_event(state: BoardState, event: str) -> None:
-    reports_status = event.startswith(("bt:", "enc:")) or event in ("s1", "s2", "s4", "s1:long", "s2:long", "s4:long")
-    trace_label = event
-    if event == "enc:press":
-        trace_label = "enc:sw"
-    elif event == "s1":
-        trace_label = "s1:short"
-    elif event == "s2":
-        trace_label = "s2:short"
-    elif event == "s4":
-        trace_label = "s4:short"
+@dataclass(frozen=True)
+class ScenarioResult:
+    scenario: Scenario
+    gas_level: int
+    alarm_level: int
+    oled_lines: tuple[str, str, str, str]
+    data_line: str
 
-    if event in ("bt:p", "enc:press", "s1"):
-        if event == "enc:press":
-            state.input_encoder_button += 1
-        elif event == "s1":
-            state.input_s1_short += 1
-        state.mode = "paused" if state.mode == "playing" else "playing"
-    elif event == "enc:long":
-        state.input_encoder_long += 1
-        state.mode = "stopped"
-    elif event == "s1:long":
-        state.input_s1_long += 1
-        state.mode = "stopped"
-    elif event in ("bt:+", "enc:cw"):
-        if event == "enc:cw":
-            state.input_encoder_cw += 1
-        state.volume = min(32, state.volume + 1)
-    elif event in ("bt:-", "enc:ccw"):
-        if event == "enc:ccw":
-            state.input_encoder_ccw += 1
-        state.volume = max(0, state.volume - 1)
-    elif event == "s2:long":
-        state.input_s2_long += 1
-        state.volume = 0
-    elif event == "bt:t":
-        state.tone_tests += 1
-        state.mode = "paused"
-    elif event == "bt:r":
-        state.mode = "playing"
-    elif event == "bt:o":
-        if state.order == "sequence":
-            state.order = "repeat_all"
-        elif state.order == "repeat_all":
-            state.order = "repeat_one"
-        else:
-            state.order = "sequence"
-    elif event == "s4:long":
-        state.input_s4_long += 1
-        if state.order == "sequence":
-            state.order = "repeat_all"
-        elif state.order == "repeat_all":
-            state.order = "repeat_one"
-        else:
-            state.order = "sequence"
-    elif event in ("bt:n", "s4"):
-        if event == "s4":
-            state.input_s4_short += 1
-        state.track = 1 if state.track >= 9 else state.track + 1
-        state.mode = "playing"
-    elif event in ("bt:b", "s2"):
-        if event == "s2":
-            state.input_s2_short += 1
-        state.track = 9 if state.track <= 1 else state.track - 1
-        state.mode = "playing"
-    elif event == "tick:500ms":
-        state.led_toggles += 1
-    elif event == "tick:5s":
-        state.status_reports += 1
-    else:
-        raise ValueError(f"unknown event: {event}")
 
-    if reports_status:
-        state.trace = (*state.trace, trace_label)[-TRACE_DEPTH:]
-        state.status_reports += 1
-        state.display_reports += 1
+def x10(value: int) -> str:
+    sign = "-" if value < 0 else ""
+    value = abs(value)
+    return f"{sign}{value // 10}.{value % 10}"
+
+
+def gas_level(adc: int) -> int:
+    if adc <= GAS_WARN_ADC:
+        return 0
+    return min(5, 1 + ((adc - GAS_WARN_ADC) // GAS_STEP_ADC))
+
+
+def alarm_level(scenario: Scenario, level: int) -> int:
+    temp_level = 0
+    if scenario.dht_ok:
+        over = scenario.temperature_x10 - THRESHOLD_X10
+        if over > 0:
+            temp_level = min(5, 1 + (over // 20))
+    return max(temp_level, level if scenario.mq2_ready else 0)
+
+
+def oled_lines(scenario: Scenario, level: int, alarm: int) -> tuple[str, str, str, str]:
+    line0 = f"T:{x10(scenario.temperature_x10)}C H:{scenario.humidity_x10 // 10}%"
+    line1 = f"GAS:{scenario.gas_adc} L:{level}"
+    distance = str(scenario.distance_mm) if scenario.distance_ok else "----"
+    line2 = f"D:{distance}MM"
+    line3 = f"TH:{x10(THRESHOLD_X10)} ALM:{alarm}"
+    return line0, line1, line2, line3
+
+
+def data_line(scenario: Scenario, level: int, alarm: int) -> str:
+    return (
+        f"DATA T={x10(scenario.temperature_x10)} H={scenario.humidity_x10 // 10} "
+        f"GAS={scenario.gas_adc} L={level} D={scenario.distance_mm} "
+        f"TH={x10(THRESHOLD_X10)} ALM={alarm}"
+    )
+
+
+def run_scenario(scenario: Scenario) -> ScenarioResult:
+    level = gas_level(scenario.gas_adc)
+    alarm = alarm_level(scenario, level)
+    lines = oled_lines(scenario, level, alarm)
+    for line in lines:
+        if len(line) > 21:
+            raise AssertionError(f"OLED line too long in {scenario.name}: {line}")
+    return ScenarioResult(scenario, level, alarm, lines, data_line(scenario, level, alarm))
+
+
+def row(columns: list[object]) -> str:
+    return "| " + " | ".join(str(column).replace("|", "\\|") for column in columns) + " |"
+
+
+def render_report(results: list[ScenarioResult]) -> str:
+    lines = [
+        "# Board Scenario Simulation",
+        "",
+        "Generated by `tools/board_scenario_sim.py`. It checks the firmware-visible behavior of sensor values, OLED text, Bluetooth telemetry, and alarm levels.",
+        "",
+        row(["Scenario", "T", "H", "Gas ADC", "Distance", "Gas L", "Alarm", "OLED"]),
+        row(["---", "---", "---", "---", "---", "---", "---", "---"]),
+    ]
+    for result in results:
+        scenario = result.scenario
+        lines.append(
+            row(
+                [
+                    scenario.name,
+                    x10(scenario.temperature_x10),
+                    scenario.humidity_x10 // 10,
+                    scenario.gas_adc,
+                    scenario.distance_mm if scenario.distance_ok else "timeout",
+                    result.gas_level,
+                    result.alarm_level,
+                    " / ".join(result.oled_lines),
+                ]
+            )
+        )
+
+    lines.extend(["", "## Bluetooth DATA Lines", "", "```text"])
+    lines.extend(result.data_line for result in results)
+    lines.extend(["```", ""])
+    return "\n".join(lines)
 
 
 def main() -> int:
-    state = BoardState()
-    scenario = [
-        "enc:cw",
-        "enc:cw",
-        "s1",
-        "s1",
-        "s1:long",
-        "s1",
-        "s4",
-        "bt:n",
-        "s2",
-        "bt:-",
-        "s2:long",
-        "enc:cw",
-        "enc:cw",
-        "enc:cw",
-        "bt:t",
-        "bt:r",
-        "s4:long",
-        "enc:long",
-        "s1",
-        "enc:press",
-        "tick:500ms",
-        "tick:5s",
+    scenarios = [
+        Scenario("normal room", 263, 580, 1250, 342),
+        Scenario("temperature warning", 326, 620, 1300, 310),
+        Scenario("gas warning", 282, 590, 2450, 280),
+        Scenario("combined danger", 388, 700, 3600, 190),
+        Scenario("ultrasonic timeout", 251, 530, 1100, 0, distance_ok=False),
     ]
+    results = [run_scenario(scenario) for scenario in scenarios]
 
-    for event in scenario:
-        apply_event(state, event)
+    expected = {
+        "normal room": 0,
+        "temperature warning": 2,
+        "gas warning": 3,
+        "combined danger": 5,
+        "ultrasonic timeout": 0,
+    }
+    for result in results:
+        wanted = expected[result.scenario.name]
+        if result.alarm_level != wanted:
+            raise AssertionError(f"{result.scenario.name} alarm={result.alarm_level}, expected {wanted}")
 
-    assert state.mode == "paused", state
-    assert state.track == 2, state
-    assert state.volume == 3, state
-    assert state.order == "repeat_one", state
-    assert state.led_toggles == 1, state
-    assert state.status_reports == 21, state
-    assert state.display_reports == 20, state
-    assert state.tone_tests == 1, state
-    assert state.input_encoder_cw == 5, state
-    assert state.input_encoder_ccw == 0, state
-    assert state.input_encoder_button == 1, state
-    assert state.input_encoder_long == 1, state
-    assert state.input_s1_short == 4, state
-    assert state.input_s1_long == 1, state
-    assert state.input_s2_short == 1, state
-    assert state.input_s2_long == 1, state
-    assert state.input_s4_short == 1, state
-    assert state.input_s4_long == 1, state
-    assert state.trace == ("enc:cw", "bt:t", "bt:r", "s4:long", "enc:long", "s1:short", "enc:sw")[-TRACE_DEPTH:], state
-
-    print("whole-board control scenario passed")
-    print(state)
+    REPORT.write_text(render_report(results), encoding="utf-8")
+    print("board scenario simulation passed")
+    print(f"report generated: {REPORT}")
     return 0
 
 

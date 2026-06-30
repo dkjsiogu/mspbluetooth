@@ -1,48 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560">
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="600" viewBox="0 0 1040 600">
 <rect width="100%" height="100%" fill="#ffffff"/>
 <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#1f2937"/></marker></defs>
-<style>text{font-family:Arial,Helvetica,sans-serif;font-size:13px;fill:#111827}.title{font-size:18px;font-weight:bold}.box{fill:#f8fafc;stroke:#334155;stroke-width:1.5}.core{fill:#ecfeff;stroke:#0f766e;stroke-width:2}.note{font-size:12px;fill:#475569}.line{stroke:#1f2937;stroke-width:1.5;fill:none;marker-end:url(#arrow)}</style>
-<text class="title" x="30" y="34">MSP430F5529 蓝牙遥控音频播放器硬件框图</text>
-<rect class="core" x="390" y="210" width="210" height="120" rx="6"/>
-<text x="402" y="232" font-weight="bold">MSP430F5529</text>
-<text class="note" x="402" y="254">16 MHz MCLK/SMCLK</text>
-<text class="note" x="402" y="271">GPIO / UART / SPI / I2S</text>
-<text class="note" x="402" y="288">Timer / interrupt</text>
-<rect class="box" x="40" y="70" width="220" height="95" rx="6"/>
-<text x="52" y="92" font-weight="bold">Android + HC-05</text>
-<text class="note" x="52" y="114">SPP 串口透传</text>
-<text class="note" x="52" y="131">UCA1 P4.4/P4.5</text>
-<rect class="box" x="40" y="220" width="220" height="95" rx="6"/>
-<text x="52" y="242" font-weight="bold">TF 卡座</text>
-<text class="note" x="52" y="264">FATFS + WAV 文件</text>
-<text class="note" x="52" y="281">P3.1/P3.2/P3.3 + P4.0</text>
-<rect class="box" x="40" y="370" width="220" height="95" rx="6"/>
-<text x="52" y="392" font-weight="bold">本地输入</text>
-<text class="note" x="52" y="414">EC11旋转/短按/长按</text>
-<text class="note" x="52" y="431">S1/S2/S4 短按/长按</text>
-<rect class="box" x="720" y="100" width="220" height="95" rx="6"/>
-<text x="732" y="122" font-weight="bold">PCM5102A DAC</text>
-<text class="note" x="732" y="144">软件 I2S</text>
-<text class="note" x="732" y="161">BCK/LRCK/DIN=P4.1/4.2/4.3</text>
-<rect class="box" x="720" y="250" width="220" height="95" rx="6"/>
-<text x="732" y="272" font-weight="bold">PAM8403 + 喇叭</text>
-<text class="note" x="732" y="294">DAC 模拟输出</text>
-<text class="note" x="732" y="311">功放驱动无源喇叭</text>
-<rect class="box" x="720" y="400" width="220" height="95" rx="6"/>
-<text x="732" y="422" font-weight="bold">3.5mm 耳机座 / 状态显示</text>
-<text class="note" x="732" y="444">耳机并联输出</text>
-<text class="note" x="732" y="461">APK + 三行显示帧</text>
-<path class="line" d="M260,118 L390,240"/>
-<text class="note" text-anchor="middle" x="325" y="173">UART</text>
-<path class="line" d="M260,268 L390,270"/>
-<text class="note" text-anchor="middle" x="325" y="263">SPI</text>
-<path class="line" d="M260,418 L390,300"/>
-<text class="note" text-anchor="middle" x="325" y="353">GPIO</text>
-<path class="line" d="M600,250 L720,148"/>
-<text class="note" text-anchor="middle" x="660" y="193">I2S</text>
-<path class="line" d="M830,195 L830,250"/>
-<text class="note" text-anchor="middle" x="830" y="216">analog</text>
-<path class="line" d="M600,300 L720,448"/>
-<text class="note" text-anchor="middle" x="660" y="368">status</text>
-<text class="note" x="30" y="530">说明：课程资料中的 HC-05 P3.3/P3.4 与 TF MISO=P3.3 冲突，本工程默认使用 UCA1 P4.4/P4.5。</text>
+<style>text{font-family:Arial,Helvetica,sans-serif;font-size:13px;fill:#111827}.title{font-size:18px;font-weight:bold}.box{fill:#f8fafc;stroke:#334155;stroke-width:1.5}.core{fill:#ecfeff;stroke:#0f766e;stroke-width:2}.warn{fill:#fff7ed;stroke:#c2410c;stroke-width:1.5}.note{font-size:12px;fill:#475569}.line{stroke:#1f2937;stroke-width:1.5;fill:none;marker-end:url(#arrow)}</style>
+<text class="title" x="30" y="34">MSP430F5529 多点温度/环境监测系统硬件框图</text>
+<rect class="core" x="410" y="220" width="220" height="130" rx="6"/>
+<text x="422" y="242" font-weight="bold">MSP430F5529</text>
+<text class="note" x="422" y="264">GPIO / ADC12 / TimerA</text>
+<text class="note" x="422" y="281">UART UCA1</text>
+<text class="note" x="422" y="298">内部 Information Flash</text>
+<text class="note" x="422" y="315">1 ms tick scheduler</text>
+<rect class="box" x="40" y="70" width="230" height="85" rx="6"/>
+<text x="52" y="92" font-weight="bold">DHT11 温湿度</text>
+<text class="note" x="52" y="114">DATA=P1.0</text>
+<text class="note" x="52" y="131">单总线 40 bit</text>
+<rect class="warn" x="40" y="205" width="230" height="85" rx="6"/>
+<text x="52" y="227" font-weight="bold">MQ-2 可燃气体</text>
+<text class="note" x="52" y="249">AO=P6.0 / ADC12_A0</text>
+<text class="note" x="52" y="266">注意模拟电压限幅</text>
+<rect class="warn" x="40" y="340" width="230" height="95" rx="6"/>
+<text x="52" y="362" font-weight="bold">HC-SR04 超声波</text>
+<text class="note" x="52" y="384">Trig=P1.2</text>
+<text class="note" x="52" y="401">Echo=P1.3</text>
+<text class="note" x="52" y="418">Echo 需分压到 3.3 V</text>
+<rect class="box" x="40" y="480" width="230" height="75" rx="6"/>
+<text x="52" y="502" font-weight="bold">EC11 编码器</text>
+<text class="note" x="52" y="524">A=P2.1 B=P2.2 SW=P2.3</text>
+<text class="note" x="52" y="541">调节温度报警阈值</text>
+<rect class="box" x="770" y="80" width="230" height="85" rx="6"/>
+<text x="782" y="102" font-weight="bold">0.96 OLED SSD1306</text>
+<text class="note" x="782" y="124">SDA=P3.0 SCL=P3.1</text>
+<text class="note" x="782" y="141">软件 I2C 四行显示</text>
+<rect class="box" x="770" y="225" width="230" height="85" rx="6"/>
+<text x="782" y="247" font-weight="bold">HC-05 蓝牙</text>
+<text class="note" x="782" y="269">TX/RX=P4.5/P4.4</text>
+<text class="note" x="782" y="286">手机 SPP 数据/命令</text>
+<rect class="box" x="770" y="365" width="230" height="75" rx="6"/>
+<text x="782" y="387" font-weight="bold">蜂鸣器报警</text>
+<text class="note" x="782" y="409">GPIO=P2.0</text>
+<text class="note" x="782" y="426">等级越高节奏越急</text>
+<rect class="box" x="770" y="490" width="230" height="75" rx="6"/>
+<text x="782" y="512" font-weight="bold">内部 Flash 历史</text>
+<text class="note" x="782" y="534">Info B/C/D</text>
+<text class="note" x="782" y="551">记录可独立读出</text>
+<path class="line" d="M270,112 L410,250"/>
+<text class="note" text-anchor="middle" x="340" y="175">1-Wire</text>
+<path class="line" d="M270,248 L410,270"/>
+<text class="note" text-anchor="middle" x="340" y="253">ADC</text>
+<path class="line" d="M270,388 L410,292"/>
+<text class="note" text-anchor="middle" x="340" y="334">GPIO timing</text>
+<path class="line" d="M270,518 L410,330"/>
+<text class="note" text-anchor="middle" x="340" y="418">EC11</text>
+<path class="line" d="M630,252 L770,122"/>
+<text class="note" text-anchor="middle" x="700" y="181">I2C</text>
+<path class="line" d="M630,276 L770,268"/>
+<text class="note" text-anchor="middle" x="700" y="266">UART</text>
+<path class="line" d="M630,315 L770,402"/>
+<text class="note" text-anchor="middle" x="700" y="352">alarm</text>
+<path class="line" d="M630,340 L770,528"/>
+<text class="note" text-anchor="middle" x="700" y="428">log</text>
+<text class="note" x="30" y="580">说明：HC-SR04 和 MQ-2 常见模块为 5 V 供电，接入 MSP430 输入/ADC 前必须确认 3.3 V 电平兼容或使用分压/限流。</text>
 </svg>

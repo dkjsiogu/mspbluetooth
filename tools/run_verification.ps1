@@ -19,29 +19,11 @@ try {
     Invoke-Checked { python tools\firmware_static_check.py }
     Invoke-Checked { python tools\readability_audit.py }
     Invoke-Checked { python tools\bluetooth_protocol_sim.py }
-    Invoke-Checked { python tools\bluetooth_diagnostic_sim.py }
-    Invoke-Checked { python tools\serial_acceptance_check.py }
-    Invoke-Checked { python tools\android_ui_parser_sim.py }
-    Invoke-Checked { python tools\android_command_coverage.py }
-    Invoke-Checked { python tools\android_acceptance_log_sim.py }
-    Invoke-Checked { python tools\android_offline_demo_sim.py }
-    Invoke-Checked { python tools\android_hardware_check_sim.py }
-    Invoke-Checked { python tools\end_to_end_demo_sim.py }
     Invoke-Checked { python tools\board_scenario_sim.py }
-    Invoke-Checked { python tools\encoder_quadrature_sim.py }
-    Invoke-Checked { python tools\local_button_sim.py }
-    Invoke-Checked { python tools\status_led_pattern_sim.py }
-    Invoke-Checked { python tools\epaper_preview_sim.py }
-    Invoke-Checked { python tools\epaper_driver_trace_sim.py }
+    Invoke-Checked { python tools\flash_log_sim.py }
+    Invoke-Checked { python tools\encoder_threshold_sim.py }
     Invoke-Checked { python tools\generate_diagrams.py }
     Invoke-Checked { python tools\generate_course_report.py }
-    Invoke-Checked { python tools\prepare_sdcard_assets.py --seconds 0.25 }
-    Invoke-Checked { python tools\wav_asset_check.py --report dist\verification\wav_asset_report.md }
-    Invoke-Checked { python tools\audio_stream_sim.py }
-    Invoke-Checked { python tools\i2s_frame_sim.py }
-    Invoke-Checked { python tools\i2s_capture_check.py }
-    Invoke-Checked { python tools\hardware_evidence_check.py }
-    Invoke-Checked { powershell -ExecutionPolicy Bypass -File tools\run_real_board_acceptance.ps1 -UseGeneratedSamples -OutputDir dist\verification\real_board_acceptance }
     Invoke-Checked { python tools\generate_effect_report.py }
 } finally {
     Pop-Location
