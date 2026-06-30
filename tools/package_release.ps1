@@ -110,10 +110,13 @@ try {
     Copy-RequiredFile "docs\hardware_block_diagram.svg" (Join-Path $packageRoot "docs\hardware_block_diagram.svg")
     Copy-RequiredFile "docs\software_flowchart.svg" (Join-Path $packageRoot "docs\software_flowchart.svg")
     Copy-RequiredFile "sdcard\README.md" (Join-Path $packageRoot "sdcard\README.md")
+    Copy-RequiredFile "drivers\platform_config.h" (Join-Path $packageRoot "drivers\platform_config.h")
     Copy-RequiredFile "tools\run_real_board_acceptance.ps1" (Join-Path $packageRoot "tools\run_real_board_acceptance.ps1")
     Copy-RequiredFile "tools\hardware_evidence_check.py" (Join-Path $packageRoot "tools\hardware_evidence_check.py")
     Copy-RequiredFile "tools\serial_acceptance_check.py" (Join-Path $packageRoot "tools\serial_acceptance_check.py")
     Copy-RequiredFile "tools\i2s_capture_check.py" (Join-Path $packageRoot "tools\i2s_capture_check.py")
+    Copy-RequiredFile "tools\i2s_frame_sim.py" (Join-Path $packageRoot "tools\i2s_frame_sim.py")
+    Copy-RequiredFile "tools\bluetooth_protocol_sim.py" (Join-Path $packageRoot "tools\bluetooth_protocol_sim.py")
     Invoke-Checked {
         python tools\epaper_preview_sim.py `
             --output (Join-Path $packageRoot "docs\epaper_preview.pgm") `
@@ -200,10 +203,13 @@ try {
         "docs\epaper_gallery\epaper_stopped.pgm",
         "docs\epaper_gallery\epaper_error.pgm",
         "docs\wav_asset_report.md",
+        "drivers\platform_config.h",
         "tools\run_real_board_acceptance.ps1",
         "tools\hardware_evidence_check.py",
         "tools\serial_acceptance_check.py",
         "tools\i2s_capture_check.py",
+        "tools\i2s_frame_sim.py",
+        "tools\bluetooth_protocol_sim.py",
         "",
         "Note: software build and simulations are verified by this package script.",
         "Physical flashing and board-level audio tests still need the real MSP430F5529 hardware."
