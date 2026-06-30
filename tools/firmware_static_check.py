@@ -2,8 +2,8 @@
 
 The checker guards the active course-design baseline: DHT11, MQ-2, HC-SR04,
 OLED display, Bluetooth telemetry, internal Flash history, buzzer alarm, and
-EC11 threshold adjustment. It intentionally ignores the old audio-player
-modules unless they accidentally re-enter the build.
+EC11 threshold adjustment. It rejects legacy audio-player objects if they
+accidentally re-enter the active build.
 """
 
 from __future__ import annotations
@@ -36,6 +36,18 @@ ACTIVE_FILES = [
     "drivers/oled_ssd1306.h",
     "drivers/platform_config.h",
     "Debug/mspbluetooth.out",
+]
+
+REMOVED_LEGACY_PATHS = [
+    "application/audio_player.c",
+    "application/audio_player.h",
+    "drivers/i2s_dac.c",
+    "drivers/i2s_dac.h",
+    "drivers/local_buttons.c",
+    "drivers/local_buttons.h",
+    "middleware",
+    "fatfs",
+    "sdcard",
 ]
 
 HEADER_FILES = [
@@ -110,7 +122,6 @@ FORBIDDEN_BUILD_OBJECTS = [
     "audio_player.obj",
     "i2s_dac.obj",
     "local_buttons.obj",
-    "epaper_panel.obj",
     "wav_reader.obj",
     "display_model.obj",
     "HAL_SDCard.obj",
@@ -183,6 +194,10 @@ def check_active_files() -> None:
         if path.is_file() and path.stat().st_size == 0:
             fail(f"empty active firmware file: {relative}")
 
+    for relative in REMOVED_LEGACY_PATHS:
+        if (ROOT / relative).exists():
+            fail(f"legacy audio-player path must not exist in active project: {relative}")
+
 
 def check_header_comments() -> None:
     declaration_pattern = r"^(?:[A-Za-z_][\w\s\*]+\s+)?[A-Za-z_]\w+\([^;{}]*\);"
@@ -244,8 +259,8 @@ def check_pins_and_config() -> None:
             fail(f"board_pins.h missing expected pin token: {token}")
 
     for token in [
-        'PLAYER_FIRMWARE_NAME            "MSP430F5529-ENV-MON"',
-        "PLAYER_BT_UART_MODE             PLAYER_BT_UART_UCA1_P45",
+        'ENV_FIRMWARE_NAME               "MSP430F5529-ENV-MON"',
+        "ENV_BT_UART_MODE                ENV_BT_UART_UCA1_P45",
         "ENV_SAMPLE_PERIOD_MS",
         "ENV_FLASH_LOG_MS",
         "ENV_DEFAULT_TEMP_THRESHOLD_X10",

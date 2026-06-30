@@ -1,7 +1,7 @@
 /*
  * bluetooth_uart.c
- * HC-05 UART implementation. The RX interrupt stores incoming command bytes in
- * a small ring buffer while foreground code uses blocking transmit helpers.
+ * HC-05 串口驱动实现。接收中断把蓝牙命令字节写入环形缓冲区，前台
+ * 环境监测逻辑使用阻塞式发送函数输出文本状态。
  */
 #include "bluetooth_uart.h"
 
@@ -10,22 +10,22 @@
 #include "board_pins.h"
 #include "platform_config.h"
 
-/* UART_RX_BUFFER_SIZE: power-of-two RX ring size for Bluetooth command bytes. */
+/* UART_RX_BUFFER_SIZE: 蓝牙接收环形缓冲区长度，必须为 2 的幂。 */
 #define UART_RX_BUFFER_SIZE             32u
 
-/* UART_RX_BUFFER_MASK: wraps RX ring indices without division. */
+/* UART_RX_BUFFER_MASK: 环形缓冲区下标回绕掩码。 */
 #define UART_RX_BUFFER_MASK             (UART_RX_BUFFER_SIZE - 1u)
 
-/* g_rx_buffer: interrupt-filled circular buffer for received command bytes. */
+/* g_rx_buffer: 接收中断写入的命令字节环形缓冲区。 */
 static volatile uint8_t g_rx_buffer[UART_RX_BUFFER_SIZE];
 
-/* g_rx_head: write index advanced by the UART RX ISR. */
+/* g_rx_head: 接收中断推进的写入下标。 */
 static volatile uint8_t g_rx_head = 0;
 
-/* g_rx_tail: read index advanced by foreground command polling. */
+/* g_rx_tail: 前台命令轮询推进的读取下标。 */
 static volatile uint8_t g_rx_tail = 0;
 
-/* uart_rx_push: stores byte in the RX ring unless it is full. */
+/* uart_rx_push: 在缓冲区未满时保存一个接收字节。 */
 static void uart_rx_push(uint8_t byte)
 {
     uint8_t next;
@@ -50,7 +50,7 @@ uint8_t bluetooth_uart_read(uint8_t *byte)
 
 void bluetooth_uart_init(void)
 {
-#if PLAYER_BT_UART_MODE == PLAYER_BT_UART_UCA1_P45
+#if ENV_BT_UART_MODE == ENV_BT_UART_UCA1_P45
     BT_UCA1_SEL |= BT_UCA1_TX_BIT | BT_UCA1_RX_BIT;
     BT_UCA1_DIR |= BT_UCA1_TX_BIT;
     BT_UCA1_DIR &= (uint8_t)~BT_UCA1_RX_BIT;
@@ -62,7 +62,7 @@ void bluetooth_uart_init(void)
     UCA1MCTL = UCBRF_3 | UCBRS_0 | UCOS16;
     UCA1CTL1 &= (uint8_t)~UCSWRST;
     UCA1IE |= UCRXIE;
-#elif PLAYER_BT_UART_MODE == PLAYER_BT_UART_UCA0_P34
+#elif ENV_BT_UART_MODE == ENV_BT_UART_UCA0_P34
     BT_UCA0_SEL |= BT_UCA0_TX_BIT | BT_UCA0_RX_BIT;
     BT_UCA0_DIR |= BT_UCA0_TX_BIT;
     BT_UCA0_DIR &= (uint8_t)~BT_UCA0_RX_BIT;
@@ -75,13 +75,13 @@ void bluetooth_uart_init(void)
     UCA0CTL1 &= (uint8_t)~UCSWRST;
     UCA0IE |= UCRXIE;
 #else
-#error Unsupported PLAYER_BT_UART_MODE
+#error Unsupported ENV_BT_UART_MODE
 #endif
 }
 
 void bluetooth_uart_write_char(uint8_t byte)
 {
-#if PLAYER_BT_UART_MODE == PLAYER_BT_UART_UCA1_P45
+#if ENV_BT_UART_MODE == ENV_BT_UART_UCA1_P45
     while ((UCA1IFG & UCTXIFG) == 0u) {
     }
     UCA1TXBUF = byte;
@@ -129,7 +129,7 @@ void bluetooth_uart_write_uint(uint32_t value)
     }
 }
 
-#if PLAYER_BT_UART_MODE == PLAYER_BT_UART_UCA1_P45
+#if ENV_BT_UART_MODE == ENV_BT_UART_UCA1_P45
 #pragma vector=USCI_A1_VECTOR
 __interrupt void USCI_A1_ISR(void)
 {

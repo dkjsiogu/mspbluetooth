@@ -42,8 +42,6 @@
                                     <listOptionValue value="${PROJECT_ROOT}"/>
                                     <listOptionValue value="${PROJECT_ROOT}/application"/>
                                     <listOptionValue value="${PROJECT_ROOT}/drivers"/>
-                                    <listOptionValue value="${PROJECT_ROOT}/middleware"/>
-                                    <listOptionValue value="${PROJECT_ROOT}/fatfs"/>
                                     <listOptionValue value="${CG_TOOL_ROOT}/include"/>
                                 </option>
                                 <inputType id="com.ti.ccstudio.buildDefinitions.MSP430_20.2.compiler.inputType__C_SRCS.mspbluetooth" name="C Sources" superClass="com.ti.ccstudio.buildDefinitions.MSP430_20.2.compiler.inputType__C_SRCS"/>
@@ -75,4 +73,3 @@
     </storageModule>
     <storageModule moduleId="scannerConfiguration"/>
 </cproject>
-

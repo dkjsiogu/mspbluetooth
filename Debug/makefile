@@ -14,8 +14,6 @@ INCLUDE_FLAGS := --include_path="$(CCS_MSP430_ROOT)/include" \
 	--include_path="$(PROJECT_ROOT)" \
 	--include_path="$(PROJECT_ROOT)/application" \
 	--include_path="$(PROJECT_ROOT)/drivers" \
-	--include_path="$(PROJECT_ROOT)/middleware" \
-	--include_path="$(PROJECT_ROOT)/fatfs" \
 	--include_path="$(CG_TOOL_ROOT)/include"
 
 CFLAGS := $(COMMON_FLAGS) $(INCLUDE_FLAGS) -g --opt_level=2 --opt_for_speed=0 \

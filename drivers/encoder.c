@@ -1,7 +1,7 @@
 /*
  * encoder.c
- * EC11 rotary encoder implementation. It polls quadrature phase transitions and
- * the active-low push switch, then exposes debounced semantic events.
+ * EC11 旋转编码器实现。模块轮询正交相位变化和低电平有效按键，并输出
+ * 已去抖的语义事件。
  */
 #include "encoder.h"
 
@@ -11,34 +11,34 @@
 #include "board_pins.h"
 #include "platform_config.h"
 
-/* g_last_ab: previous two-bit EC11 A/B phase sample. */
+/* g_last_ab: 上一次 EC11 A/B 两位相位采样。 */
 static uint8_t g_last_ab = 0;
 
-/* g_quadrature_accum: signed transition accumulator; +/-4 equals one detent. */
+/* g_quadrature_accum: 正交相位累加器，累计到 +/-4 视为一格。 */
 static int8_t g_quadrature_accum = 0;
 
-/* g_pending_events: accumulated ENCODER_EVENT_* bits since the last read. */
+/* g_pending_events: 上次读取后累计的 ENCODER_EVENT_* 事件位。 */
 static uint8_t g_pending_events = ENCODER_EVENT_NONE;
 
-/* g_button_sample: most recent raw EC11 push-button sample. */
+/* g_button_sample: 最近一次 EC11 按键原始采样。 */
 static uint8_t g_button_sample = 0;
 
-/* g_button_stable: debounced EC11 push-button state. */
+/* g_button_stable: 去抖后的 EC11 按键稳定状态。 */
 static uint8_t g_button_stable = 0;
 
-/* g_button_ticks: count of consecutive samples matching g_button_sample. */
+/* g_button_ticks: 与当前原始采样连续一致的次数。 */
 static uint8_t g_button_ticks = 0;
 
-/* g_button_hold_ticks: stable pressed samples counted toward long press. */
+/* g_button_hold_ticks: 稳定按下后累计的长按采样次数。 */
 static uint16_t g_button_hold_ticks = 0u;
 
-/* g_button_long_sent: nonzero after the current press emitted a long event. */
+/* g_button_long_sent: 当前按压周期是否已经发出长按事件。 */
 static uint8_t g_button_long_sent = 0u;
 
-/* g_last_poll_ms: millisecond timestamp used to pace encoder polling. */
+/* g_last_poll_ms: 控制编码器轮询周期的毫秒时间戳。 */
 static uint32_t g_last_poll_ms = 0;
 
-/* encoder_read_ab: returns phase A in bit0 and phase B in bit1. */
+/* encoder_read_ab: 读取 A/B 相位，A 放 bit0，B 放 bit1。 */
 static uint8_t encoder_read_ab(void)
 {
     uint8_t value;
@@ -54,20 +54,20 @@ static uint8_t encoder_read_ab(void)
     return value;
 }
 
-/* encoder_read_button_pressed: returns 1 while the active-low EC11 switch is down. */
+/* encoder_read_button_pressed: EC11 低电平按下时返回 1。 */
 static uint8_t encoder_read_button_pressed(void)
 {
     return (uint8_t)((ENC_IN & ENC_SW_BIT) == 0u);
 }
 
-/* encoder_reset_button_hold: clears hold tracking for a newly pressed switch. */
+/* encoder_reset_button_hold: 新一轮按压开始时清空长按跟踪状态。 */
 static void encoder_reset_button_hold(void)
 {
     g_button_hold_ticks = 0u;
     g_button_long_sent = 0u;
 }
 
-/* encoder_update_button_hold: emits one long-press event after the hold threshold. */
+/* encoder_update_button_hold: 稳定按压超过阈值后只发出一次长按事件。 */
 static void encoder_update_button_hold(void)
 {
     if ((g_button_stable == 0u) || (g_button_long_sent != 0u)) {
@@ -98,10 +98,10 @@ void encoder_init(void)
     encoder_reset_button_hold();
 }
 
-/* encoder_poll: samples A/B/SW, decodes movement, and debounces the button. */
+/* encoder_poll: 采样 A/B/SW，解码旋转方向并处理按键去抖。 */
 static void encoder_poll(void)
 {
-    /* transition_table: signed quadrature delta indexed by previous/current AB. */
+    /* transition_table: 以前后 AB 状态为索引的正交解码增量表。 */
     static const int8_t transition_table[16] = {
         0, -1,  1,  0,
         1,  0,  0, -1,

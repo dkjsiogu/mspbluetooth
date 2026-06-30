@@ -1,7 +1,7 @@
 /*
  * board.c
- * Board support implementation for clock setup, millisecond timing, blocking
- * delays, and the LaunchPad/Pocket Kit status LED.
+ * 板级支持实现。负责时钟配置、毫秒节拍、阻塞延时和 LaunchPad/Pocket Kit
+ * 状态指示灯。
  */
 #include "board.h"
 
@@ -10,10 +10,10 @@
 #include "board_pins.h"
 #include "platform_config.h"
 
-/* g_millis: 1 ms uptime counter incremented by TIMER0_A0 ISR. */
+/* g_millis: TIMER0_A0 中断递增的 1 ms 运行计数。 */
 static volatile uint32_t g_millis = 0;
 
-/* pmm_set_vcore_up: raises PMM core voltage by one level; level is target VCore. */
+/* pmm_set_vcore_up: 将 PMM 核心电压提升到指定等级。 */
 static uint8_t pmm_set_vcore_up(uint8_t level)
 {
     uint16_t pmmrie_backup;
@@ -82,7 +82,7 @@ static uint8_t pmm_set_vcore_up(uint8_t level)
     return 1;
 }
 
-/* pmm_set_vcore: walks VCore upward until target_level is reached. */
+/* pmm_set_vcore: 逐级提升 VCore，直到达到目标等级。 */
 static void pmm_set_vcore(uint8_t target_level)
 {
     uint8_t level;

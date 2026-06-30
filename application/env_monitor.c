@@ -221,11 +221,11 @@ static void send_data_line(void)
 static void send_info(void)
 {
     bluetooth_uart_write_str("info name=");
-    bluetooth_uart_write_str(PLAYER_FIRMWARE_NAME);
+    bluetooth_uart_write_str(ENV_FIRMWARE_NAME);
     bluetooth_uart_write_str(" version=");
-    bluetooth_uart_write_str(PLAYER_FIRMWARE_VERSION);
+    bluetooth_uart_write_str(ENV_FIRMWARE_VERSION);
     bluetooth_uart_write_str(" profile=");
-    bluetooth_uart_write_line(PLAYER_HARDWARE_PROFILE);
+    bluetooth_uart_write_line(ENV_HARDWARE_PROFILE);
 }
 
 /* send_wiring: 发送主要接线诊断信息。 */

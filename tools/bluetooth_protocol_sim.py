@@ -20,9 +20,9 @@ def config_string(name: str) -> str:
     return match.group(1)
 
 
-FIRMWARE_NAME = config_string("PLAYER_FIRMWARE_NAME")
-FIRMWARE_VERSION = config_string("PLAYER_FIRMWARE_VERSION")
-HARDWARE_PROFILE = config_string("PLAYER_HARDWARE_PROFILE")
+FIRMWARE_NAME = config_string("ENV_FIRMWARE_NAME")
+FIRMWARE_VERSION = config_string("ENV_FIRMWARE_VERSION")
+HARDWARE_PROFILE = config_string("ENV_HARDWARE_PROFILE")
 
 
 @dataclass

@@ -79,152 +79,39 @@
 /* BUZZER_BIT: 蜂鸣器控制脚 P2.0 的位掩码。 */
 #define BUZZER_BIT                      BIT0
 
-/* TF card SPI, kept on the course-design pins. SPI is bit-banged. */
-/* SD_CS_SEL: function-select register for TF-card chip select. */
-#define SD_CS_SEL                       P4SEL
-/* SD_CS_DIR: direction register for TF-card chip select. */
-#define SD_CS_DIR                       P4DIR
-/* SD_CS_OUT: output latch register for TF-card chip select. */
-#define SD_CS_OUT                       P4OUT
-/* SD_CS_REN: pull resistor register for TF-card chip select. */
-#define SD_CS_REN                       P4REN
-/* SD_CS_BIT: TF-card chip-select bit mask, active low. */
-#define SD_CS_BIT                       BIT0
-
-/* SD_SPI_SEL: function-select register for software SPI pins. */
-#define SD_SPI_SEL                      P3SEL
-/* SD_SPI_DIR: direction register for software SPI pins. */
-#define SD_SPI_DIR                      P3DIR
-/* SD_SPI_OUT: output latch register for software SPI pins. */
-#define SD_SPI_OUT                      P3OUT
-/* SD_SPI_IN: input register for software SPI pins. */
-#define SD_SPI_IN                       P3IN
-/* SD_SPI_REN: pull resistor register for software SPI pins. */
-#define SD_SPI_REN                      P3REN
-/* SD_SPI_SCK_BIT: TF-card SPI clock bit mask. */
-#define SD_SPI_SCK_BIT                  BIT1
-/* SD_SPI_MOSI_BIT: TF-card SPI MOSI bit mask. */
-#define SD_SPI_MOSI_BIT                 BIT2
-/* SD_SPI_MISO_BIT: TF-card SPI MISO bit mask. */
-#define SD_SPI_MISO_BIT                 BIT3
-
-/* PCM5102A I2S input pins. */
-/* I2S_SEL: function-select register for software I2S pins. */
-#define I2S_SEL                         P4SEL
-/* I2S_DIR: direction register for software I2S pins. */
-#define I2S_DIR                         P4DIR
-/* I2S_OUT: output latch register for software I2S pins. */
-#define I2S_OUT                         P4OUT
-/* I2S_BCK_BIT: PCM5102A bit-clock output bit mask. */
-#define I2S_BCK_BIT                     BIT1
-/* I2S_LRCK_BIT: PCM5102A left/right clock output bit mask. */
-#define I2S_LRCK_BIT                    BIT2
-/* I2S_DIN_BIT: PCM5102A serial data output bit mask. */
-#define I2S_DIN_BIT                     BIT3
-
-/* EC11 rotary encoder with push button. Active level is low. */
-/* ENC_SEL: function-select register for EC11 pins. */
+/* ENC_SEL: EC11 编码器引脚功能选择寄存器。 */
 #define ENC_SEL                         P2SEL
-/* ENC_DIR: direction register for EC11 pins. */
+/* ENC_DIR: EC11 编码器引脚方向寄存器。 */
 #define ENC_DIR                         P2DIR
-/* ENC_OUT: output latch register used for EC11 pull-ups. */
+/* ENC_OUT: EC11 上拉输出锁存寄存器。 */
 #define ENC_OUT                         P2OUT
-/* ENC_IN: input register used to sample EC11 states. */
+/* ENC_IN: EC11 相位和按键输入寄存器。 */
 #define ENC_IN                          P2IN
-/* ENC_REN: pull resistor register for EC11 pins. */
+/* ENC_REN: EC11 上拉电阻使能寄存器。 */
 #define ENC_REN                         P2REN
-/* ENC_A_BIT: EC11 phase-A bit mask. */
+/* ENC_A_BIT: EC11 A 相位 P2.1 位掩码。 */
 #define ENC_A_BIT                       BIT1
-/* ENC_B_BIT: EC11 phase-B bit mask. */
+/* ENC_B_BIT: EC11 B 相位 P2.2 位掩码。 */
 #define ENC_B_BIT                       BIT2
-/* ENC_SW_BIT: EC11 push-switch bit mask, active low. */
+/* ENC_SW_BIT: EC11 按键 P2.3 位掩码，低电平按下。 */
 #define ENC_SW_BIT                      BIT3
 
-/* Local board buttons; S3/P2.3 is intentionally reserved for EC11 switch. */
-/* LOCAL_BTN1_SEL: function-select register for S1 on P1.2. */
-#define LOCAL_BTN1_SEL                  P1SEL
-/* LOCAL_BTN1_DIR: direction register for S1 on P1.2. */
-#define LOCAL_BTN1_DIR                  P1DIR
-/* LOCAL_BTN1_OUT: output latch register used to enable S1 pull-up. */
-#define LOCAL_BTN1_OUT                  P1OUT
-/* LOCAL_BTN1_IN: input register used to sample S1. */
-#define LOCAL_BTN1_IN                   P1IN
-/* LOCAL_BTN1_REN: pull resistor register for S1. */
-#define LOCAL_BTN1_REN                  P1REN
-/* LOCAL_BTN1_BIT: S1 bit mask, active low. */
-#define LOCAL_BTN1_BIT                  BIT2
-
-/* LOCAL_BTN2_SEL: function-select register for S2 on P1.3. */
-#define LOCAL_BTN2_SEL                  P1SEL
-/* LOCAL_BTN2_DIR: direction register for S2 on P1.3. */
-#define LOCAL_BTN2_DIR                  P1DIR
-/* LOCAL_BTN2_OUT: output latch register used to enable S2 pull-up. */
-#define LOCAL_BTN2_OUT                  P1OUT
-/* LOCAL_BTN2_IN: input register used to sample S2. */
-#define LOCAL_BTN2_IN                   P1IN
-/* LOCAL_BTN2_REN: pull resistor register for S2. */
-#define LOCAL_BTN2_REN                  P1REN
-/* LOCAL_BTN2_BIT: S2 bit mask, active low. */
-#define LOCAL_BTN2_BIT                  BIT3
-
-/* LOCAL_BTN4_SEL: function-select register for S4 on P2.6. */
-#define LOCAL_BTN4_SEL                  P2SEL
-/* LOCAL_BTN4_DIR: direction register for S4 on P2.6. */
-#define LOCAL_BTN4_DIR                  P2DIR
-/* LOCAL_BTN4_OUT: output latch register used to enable S4 pull-up. */
-#define LOCAL_BTN4_OUT                  P2OUT
-/* LOCAL_BTN4_IN: input register used to sample S4. */
-#define LOCAL_BTN4_IN                   P2IN
-/* LOCAL_BTN4_REN: pull resistor register for S4. */
-#define LOCAL_BTN4_REN                  P2REN
-/* LOCAL_BTN4_BIT: S4 bit mask, active low. */
-#define LOCAL_BTN4_BIT                  BIT6
-
-/* Bluetooth UART alternatives. */
-/* BT_UCA1_SEL: function-select register for UCA1 Bluetooth pins. */
+/* BT_UCA1_SEL: HC-05 使用 UCA1 时的功能选择寄存器。 */
 #define BT_UCA1_SEL                     P4SEL
-/* BT_UCA1_DIR: direction register for UCA1 Bluetooth pins. */
+/* BT_UCA1_DIR: HC-05 使用 UCA1 时的方向寄存器。 */
 #define BT_UCA1_DIR                     P4DIR
-/* BT_UCA1_TX_BIT: UCA1 TXD bit mask, connect to HC-05 RXD. */
+/* BT_UCA1_TX_BIT: P4.4/UCA1TXD，连接 HC-05 RXD。 */
 #define BT_UCA1_TX_BIT                  BIT4
-/* BT_UCA1_RX_BIT: UCA1 RXD bit mask, connect to HC-05 TXD. */
+/* BT_UCA1_RX_BIT: P4.5/UCA1RXD，连接 HC-05 TXD。 */
 #define BT_UCA1_RX_BIT                  BIT5
 
-/* BT_UCA0_SEL: function-select register for alternate UCA0 Bluetooth pins. */
+/* BT_UCA0_SEL: 备用 UCA0 蓝牙引脚功能选择寄存器。 */
 #define BT_UCA0_SEL                     P3SEL
-/* BT_UCA0_DIR: direction register for alternate UCA0 Bluetooth pins. */
+/* BT_UCA0_DIR: 备用 UCA0 蓝牙引脚方向寄存器。 */
 #define BT_UCA0_DIR                     P3DIR
-/* BT_UCA0_TX_BIT: alternate UCA0 TXD bit mask, conflicts with TF MISO. */
+/* BT_UCA0_TX_BIT: P3.3/UCA0TXD 备用发送位掩码。 */
 #define BT_UCA0_TX_BIT                  BIT3
-/* BT_UCA0_RX_BIT: alternate UCA0 RXD bit mask. */
+/* BT_UCA0_RX_BIT: P3.4/UCA0RXD 备用接收位掩码。 */
 #define BT_UCA0_RX_BIT                  BIT4
-
-/*
- * Optional e-paper panel on P6.x. This is intentionally disabled in the default
- * firmware build and exists for a later hardware spin where the audio player
- * core remains unchanged.
- */
-/* EPAPER_SEL: function-select register for optional e-paper GPIO pins. */
-#define EPAPER_SEL                      P6SEL
-/* EPAPER_DIR: direction register for optional e-paper GPIO pins. */
-#define EPAPER_DIR                      P6DIR
-/* EPAPER_OUT: output latch register for optional e-paper GPIO pins. */
-#define EPAPER_OUT                      P6OUT
-/* EPAPER_IN: input register for optional e-paper GPIO pins. */
-#define EPAPER_IN                       P6IN
-/* EPAPER_REN: pull resistor register for optional e-paper GPIO pins. */
-#define EPAPER_REN                      P6REN
-/* EPAPER_SCK_BIT: optional e-paper software SPI clock on P6.0. */
-#define EPAPER_SCK_BIT                  BIT0
-/* EPAPER_MOSI_BIT: optional e-paper software SPI MOSI on P6.1. */
-#define EPAPER_MOSI_BIT                 BIT1
-/* EPAPER_CS_BIT: optional e-paper chip select on P6.2, active low. */
-#define EPAPER_CS_BIT                   BIT2
-/* EPAPER_DC_BIT: optional e-paper data/command select on P6.3. */
-#define EPAPER_DC_BIT                   BIT3
-/* EPAPER_RST_BIT: optional e-paper reset output on P6.4, active low. */
-#define EPAPER_RST_BIT                  BIT4
-/* EPAPER_BUSY_BIT: optional e-paper busy input on P6.5, high while busy. */
-#define EPAPER_BUSY_BIT                 BIT5
 
 #endif

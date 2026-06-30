@@ -1,150 +1,97 @@
 # 硬件现场验证清单
 
-本清单用于把软件仿真推进到实物确认。建议按顺序做，每一步通过后再接下一类外设，避免多个问题叠加。
+本清单用于 MSP430F5529 多点温度/环境监测系统上板验收。软件仿真通过只
+证明固件、APK 和协议逻辑可工作；真实传感器、电平、显示和报警效果必须
+按本清单逐项确认。
 
-## 1. 烧录前检查
+## 1. 上电前检查
 
-- 确认固件：`Debug\mspbluetooth.out`
-- 确认 APK：`android\app\build\outputs\apk\debug\app-debug.apk`
-- TF 卡根目录准备 16-bit PCM WAV：`TRACK01.WAV` 到 `TRACK09.WAV`
-- 建议首测 WAV：8 kHz 或 16 kHz，双声道或单声道均可
-- 可运行 `python tools\prepare_sdcard_assets.py` 生成 `sdcard\TRACK01.WAV` 到 `TRACK03.WAV`
+- MSP430F5529、面包板、HC-05、DHT11、MQ-2、HC-SR04、OLED、蜂鸣器、
+  EC11 共地。
+- DHT11 DATA 接 P1.0，并有上拉。
+- MQ-2 AO 接 P6.0 前先测量电压，确认进入 MSP430 ADC 的电压不超过 3.3 V。
+- HC-SR04 Echo 接 P1.3 前必须经过分压或电平转换，确认 P1.3 不会收到 5 V。
+- OLED SDA=P3.0，SCL=P3.1，确认模块地址为常见 SSD1306 地址。
+- HC-05 RXD 接 P4.4/UCA1TXD，TXD 接 P4.5/UCA1RXD。
+- 蜂鸣器控制脚接 P2.0；若使用无源蜂鸣器，应改成 PWM 驱动后再验收。
+- EC11 A=P2.1，B=P2.2，SW=P2.3，三路均使用上拉。
 
-## 2. 最小系统
+## 2. 烧录后基础检查
 
-只接 MSP430F5529 和 USB 调试器，不接 TF、DAC、功放。
-
-预期：
-
-- 烧录后 P1.0 状态 LED 可见：停止常亮；播放约 200 ms 快闪；暂停约 1000 ms 慢闪；错误双闪
-- 无明显复位循环
-
-## 3. 蓝牙链路
-
-接线：
-
-- HC-05 VCC 接 3.3 V
-- HC-05 GND 接 GND
-- HC-05 RXD 接 P4.4
-- HC-05 TXD 接 P4.5
-
-手机操作：
-
-- 系统蓝牙先配对 HC-05
-- 安装并打开 APK
-- 选择 HC-05 后连接
-
-测试命令与预期：
+1. 只连接 MSP430F5529 和 USB 调试器，暂不接 5 V 传感器输出。
+2. 烧录 `Debug\mspbluetooth.out`。
+3. 打开手机端或串口助手，连接 HC-05 后应看到启动帮助：
 
 ```text
-? -> status=...
-i -> info name=MSP430F5529-BT-WAV version=1.4.1 ...
-e -> selftest bt=ok sd=... file=...
-l -> tracks 1=ok 2=-- ...
-d -> display 1/2/3 ...
-k -> link rx=... status=... display=... bad=... last=k uptime=...ms
-u -> input ecw=... eccw=... eb=... elong=... s1=... s1l=... s2=... s2l=... s4=... s4l=...
-x -> trace count=... 1=... 2=...
-w -> pin profile=... / pin bt tx=P4.4 rx=P4.5 mode=UCA1 note=no-tf-conflict
+MSP430F5529 ENV monitor
+cmd ? i w x T+ T- SETT=32.0 HIST? HIST n DUMP CLRLOG
 ```
 
-如果连接失败：
-
-- 先用系统蓝牙确认 HC-05 已配对
-- 确认 APK 有 Bluetooth permission
-- 确认当前固件默认蓝牙是 UCA1 P4.4/P4.5
-
-## 4. DAC/功放/喇叭链路
-
-接线：
-
-- PCM5102A BCK 接 P4.1
-- PCM5102A LRCK 接 P4.2
-- PCM5102A DIN 接 P4.3
-- PCM5102A 供电与 GND 按模块要求连接
-- PCM5102A 模拟输出接 PAM8403 输入或耳机座
-
-测试命令：
+4. 发送 `i`，应返回：
 
 ```text
-t
+info name=MSP430F5529-ENV-MON version=2.0.0 ...
 ```
 
-预期：
+## 3. 传感器逐项验证
 
-- APK 日志显示 `tone start` 和 `tone done`
-- 喇叭或耳机能听到短测试音
+### DHT11
 
-如果没有声音：
+- 接入 DHT11 后发送 `?`。
+- 期望 `DATA T=... H=...` 数值合理。
+- 若长时间为默认值或跳变异常，检查 P1.0 上拉和单总线接线。
 
-- 先确认功放供电、喇叭接线和音量
-- 发送 `+` 多次提高音量
-- 发送 `m` 确认没有静音
-- 用逻辑分析仪看 P4.1/P4.2/P4.3 是否有跳变
+### MQ-2
 
-## 5. TF 卡与 WAV 播放
+- 上电后预热，预热前数据可显示但不作为报警依据。
+- 发送 `?`，观察 `GAS=... L=...`。
+- 安全改变气体环境时，`GAS` 和 `L` 应随之变化。
 
-接线：
+### HC-SR04
 
-- TF CS 接 P4.0
-- TF SCK 接 P3.1
-- TF MOSI 接 P3.2
-- TF MISO 接 P3.3
+- 移动障碍物并发送 `?`。
+- `D=...` 应随距离变化；超时或无回波时 OLED 第三行显示 `D:----MM`。
+- 若读数固定为 0，重点检查 Trig、Echo 分压和共地。
 
-测试命令：
+## 4. OLED 显示
+
+OLED 应显示四行：
 
 ```text
-1 -> open TRACK01.WAV ...
-p -> play/pause
-n -> next track
-b -> previous track
-r -> replay
-l -> tracks 1=ok ...
-s -> stop
+T:26.3C H:58%
+GAS:1250 L:0
+D:342MM
+TH:30.0 ALM:0
 ```
 
-预期：
+实际数值可不同，但每行含义应一致，且文字不应明显乱码或越界。
 
-- 能打开 `TRACK01.WAV`
-- 能听到 WAV 音频
-- `n/b/r/s/p` 状态响应符合日志
+## 5. 蓝牙和 Android APK
 
-## 6. 本地输入
+- 运行 `tools\verify_android_apk.ps1` 构建 APK。
+- 手机安装 `android\app\build\outputs\apk\debug\app-debug.apk`。
+- 连接 HC-05 后点击 `Data`，手机 DATA 面板应更新。
+- 点击 `Wiring`，应显示 DHT11、MQ-2、HC-SR04、OLED、BT、buzzer、EC11 引脚。
+- 点击 `Demo RX` 可在无硬件时演示面板解析效果。
+- 点击 `Save Log` 保存 TXT 日志，作为课程验收记录。
 
-EC11：
+## 6. Flash 历史记录
 
-- A 接 P2.1
-- B 接 P2.2
-- SW 接 P2.3
+1. 等待至少一个 `ENV_FLASH_LOG_MS` 周期。
+2. 发送 `HIST?`，应返回 `HIST COUNT=n`。
+3. 发送 `HIST 1`，应返回 `REC 1 ...`。
+4. 发送 `DUMP`，应逐条输出历史并以 `DUMP END` 结束。
+5. 发送 `CLRLOG` 后再发送 `HIST?`，应返回 `HIST COUNT=0`。
 
-本地按键：
+## 7. 阈值和报警
 
-- S1=P1.2：短按播放/暂停，长按约 0.8 秒停止
-- S2=P1.3：短按上一曲，长按约 0.8 秒静音/恢复
-- S4=P2.6：短按下一曲，长按约 0.8 秒切换播放顺序
+- 发送 `T+`，温度阈值增加 0.5°C。
+- 发送 `T-`，温度阈值减少 0.5°C。
+- 发送 `SETT=32.0`，应返回 `TH=32.0 SAVED`。
+- 顺时针旋转 EC11，阈值增加；逆时针旋转，阈值降低。
+- 温度超过阈值越多或 MQ-2 等级越高，`ALM` 越高，蜂鸣器节奏应越急促。
 
-预期：
+## 8. 记录表
 
-- EC11 旋转改变音量，APK 日志显示 `volume=...`
-- EC11 短按切换播放/暂停，长按约 0.8 秒显示 `stop`
-- S1/S2/S4 短按映射与蓝牙播放/上一曲/下一曲命令一致
-- S1/S2/S4 长按分别显示 `stop`、`mute=...`、`order=...`
-
-## 7. 墨水屏可行性说明
-
-参考工程 `E:\code\ccs\GPIO\LED` 的墨水屏路径使用了多根 GPIO。该项目当前主线已经占用：
-
-- P4.1/P4.2/P4.3：PCM5102A I2S
-- P3.1/P3.2/P3.3：TF 卡 SPI
-- P2.1/P2.2/P2.3：EC11
-- P4.4/P4.5：HC-05
-
-其中 P3.2/P3.3、P2.2 等与参考墨水屏方案存在冲突。为了不影响音频播放器主功能，当前不把墨水屏并入默认构建。状态显示由 APK、蓝牙自动上报和 `d` 三行显示帧承担；如果后续确实要加墨水屏，应先重新分配硬件引脚，再把 `middleware/display_model.*` 输出的三行文本接到屏幕渲染层。
-
-软件侧可先用以下命令生成 296x128 黑白预览图，确认三行显示帧在墨水屏尺寸下的可读性：
-
-```powershell
-python tools\epaper_preview_sim.py --output dist\verification\epaper_preview.pgm
-```
-
-交付包会自动包含 `docs\epaper_preview.pgm`。
+现场结果填写到 `docs\test_record.csv`。只有真实硬件逐项通过后，才能声明
+硬件验收完成；软件仿真和打包通过不能替代实物验证。
