@@ -25,6 +25,7 @@ try {
     Invoke-Checked { python tools\android_command_coverage.py }
     Invoke-Checked { python tools\android_acceptance_log_sim.py }
     Invoke-Checked { python tools\android_offline_demo_sim.py }
+    Invoke-Checked { python tools\android_hardware_check_sim.py }
     Invoke-Checked { python tools\end_to_end_demo_sim.py }
     Invoke-Checked { python tools\board_scenario_sim.py }
     Invoke-Checked { python tools\encoder_quadrature_sim.py }

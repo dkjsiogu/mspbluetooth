@@ -36,6 +36,8 @@ public class MainActivity extends Activity {
     private static final int REQUEST_SAVE_LOG = 431;
     private static final String[] ACCEPTANCE_COMMANDS =
             new String[]{"h", "i", "e", "l", "d", "?", "t", "1", "p", "+", "n", "b", "o", "3", "k", "u", "x", "w"};
+    private static final String[] HARDWARE_CHECK_COMMANDS =
+            new String[]{"?", "i", "l", "d", "t", "k", "u", "x", "w"};
     private static final String[] DEMO_RX_LINES = new String[]{
             "sd mounted",
             "info name=MSP430F5529-BT-WAV version=1.4.1 profile=bt_wav_player",
@@ -74,6 +76,7 @@ public class MainActivity extends Activity {
     private TextView traceView;
     private TextView wiringView;
     private TextView acceptanceView;
+    private TextView hardwareView;
     private TextView logView;
     private Button connectButton;
     private BluetoothSocket socket;
@@ -102,6 +105,15 @@ public class MainActivity extends Activity {
     private boolean acceptanceToneDone;
     private boolean acceptanceTrackOpen;
     private boolean acceptanceWiring;
+    private boolean hardwareConnected;
+    private boolean hardwareTx;
+    private boolean hardwareRx;
+    private boolean hardwareSd;
+    private boolean hardwareAudio;
+    private boolean hardwareStatus;
+    private boolean hardwareWiring;
+    private boolean hardwareInput;
+    private boolean hardwareTrace;
 
     private static final class DeviceEntry {
         final BluetoothDevice device;
@@ -201,6 +213,9 @@ public class MainActivity extends Activity {
         acceptanceView = panelText("Acceptance 0/9\nSD:-- Info:-- Selftest:-- Tracks:-- Wiring:--\nDisplay:-- Status:-- Tone:-- Open:--");
         root.addView(acceptanceView, new LinearLayout.LayoutParams(-1, dp(70)));
 
+        hardwareView = panelText("Hardware 0/9\nBT:-- TX:-- RX:-- SD:-- Audio:--\nStatus:-- Wiring:-- Input:-- Trace:--");
+        root.addView(hardwareView, new LinearLayout.LayoutParams(-1, dp(70)));
+
         LinearLayout connectionRow = row();
         connectButton = commandButton("Connect", 0xFF0F766E);
         connectButton.setOnClickListener(v -> toggleConnection());
@@ -247,6 +262,8 @@ public class MainActivity extends Activity {
         LinearLayout acceptanceRow = row();
         Button acceptanceButton = commandButton("Run Acceptance", 0xFF0F766E);
         acceptanceButton.setOnClickListener(v -> runAcceptanceScript());
+        Button hardwareButton = commandButton("Run Hardware Check", 0xFF0F766E);
+        hardwareButton.setOnClickListener(v -> runHardwareCheck());
         Button saveLogButton = commandButton("Save Log", 0xFF334155);
         saveLogButton.setOnClickListener(v -> saveLogToFile());
         Button shareLogButton = commandButton("Share Log", 0xFF334155);
@@ -257,9 +274,14 @@ public class MainActivity extends Activity {
         clearLogButton.setOnClickListener(v -> {
             logView.setText("");
             resetAcceptanceSummary();
+            resetHardwareSummary();
         });
         acceptanceRow.addView(acceptanceButton, new LinearLayout.LayoutParams(-1, dp(44)));
         root.addView(acceptanceRow);
+
+        LinearLayout hardwareRow = row();
+        hardwareRow.addView(hardwareButton, new LinearLayout.LayoutParams(-1, dp(44)));
+        root.addView(hardwareRow);
 
         LinearLayout logActionRow = row();
         logActionRow.addView(saveLogButton, new LinearLayout.LayoutParams(0, dp(44), 1));
@@ -410,6 +432,8 @@ public class MainActivity extends Activity {
                 connectButton.setText("Disconnect");
                 connectButton.setEnabled(true);
                 setState("Connected " + device.getName());
+                hardwareConnected = true;
+                renderHardwareSummary();
                 appendLog("connected");
                 syncInitialPanels();
             });
@@ -457,6 +481,15 @@ public class MainActivity extends Activity {
             sendCommand(command);
         }
         appendLog("acceptance commands sent");
+    }
+
+    private void runHardwareCheck() {
+        appendLog("hardware check start");
+        resetHardwareSummary();
+        for (String command : HARDWARE_CHECK_COMMANDS) {
+            sendCommand(command);
+        }
+        appendLog("hardware check commands sent");
     }
 
     private void runOfflineDemo() {
@@ -538,6 +571,7 @@ public class MainActivity extends Activity {
 
     private void parseIncomingLine(String line) {
         updateAcceptanceSummary(line);
+        updateHardwareSummary(line);
         if (line.startsWith("status=")) {
             updateDashboard(line);
         } else if (line.startsWith("sd mounted") || line.startsWith("info name=") ||
@@ -632,6 +666,58 @@ public class MainActivity extends Activity {
                 " Wiring:" + mark(acceptanceWiring) + "\n" +
                 "Display:" + mark(displayOk) + " Status:" + mark(acceptanceStatus) +
                 " Tone:" + mark(toneOk) + " Open:" + mark(acceptanceTrackOpen));
+    }
+
+    private void resetHardwareSummary() {
+        hardwareConnected = socket != null && socket.isConnected();
+        hardwareTx = false;
+        hardwareRx = false;
+        hardwareSd = false;
+        hardwareAudio = false;
+        hardwareStatus = false;
+        hardwareWiring = false;
+        hardwareInput = false;
+        hardwareTrace = false;
+        renderHardwareSummary();
+    }
+
+    private void updateHardwareSummary(String line) {
+        hardwareRx = true;
+        if (line.startsWith("sd mounted") || line.startsWith("tracks")) {
+            hardwareSd = true;
+        } else if (line.startsWith("tone done") || line.startsWith("open TRACK0") ||
+                line.startsWith("selftest ") && line.indexOf("i2s=ok") >= 0) {
+            hardwareAudio = true;
+        } else if (line.startsWith("status=") || line.startsWith("display ")) {
+            hardwareStatus = true;
+        } else if (line.startsWith("pin bt ")) {
+            hardwareWiring = true;
+        } else if (line.startsWith("input ")) {
+            hardwareInput = true;
+        } else if (line.startsWith("trace ")) {
+            hardwareTrace = true;
+        }
+        renderHardwareSummary();
+    }
+
+    private void renderHardwareSummary() {
+        int passed = 0;
+        passed += hardwareConnected ? 1 : 0;
+        passed += hardwareTx ? 1 : 0;
+        passed += hardwareRx ? 1 : 0;
+        passed += hardwareSd ? 1 : 0;
+        passed += hardwareAudio ? 1 : 0;
+        passed += hardwareStatus ? 1 : 0;
+        passed += hardwareWiring ? 1 : 0;
+        passed += hardwareInput ? 1 : 0;
+        passed += hardwareTrace ? 1 : 0;
+
+        hardwareView.setText("Hardware " + passed + "/9\n" +
+                "BT:" + mark(hardwareConnected) + " TX:" + mark(hardwareTx) +
+                " RX:" + mark(hardwareRx) + " SD:" + mark(hardwareSd) +
+                " Audio:" + mark(hardwareAudio) + "\nStatus:" + mark(hardwareStatus) +
+                " Wiring:" + mark(hardwareWiring) + " Input:" + mark(hardwareInput) +
+                " Trace:" + mark(hardwareTrace));
     }
 
     private String mark(boolean passed) {
@@ -819,6 +905,8 @@ public class MainActivity extends Activity {
         try {
             outputStream.write(command.getBytes(StandardCharsets.US_ASCII));
             outputStream.flush();
+            hardwareTx = true;
+            renderHardwareSummary();
             appendLog("TX> " + command);
         } catch (IOException ex) {
             appendLog("tx error: " + ex.getMessage());
@@ -836,10 +924,12 @@ public class MainActivity extends Activity {
         }
         socket = null;
         outputStream = null;
+        hardwareConnected = false;
         runOnUiThread(() -> {
             connectButton.setText("Connect");
             connectButton.setEnabled(true);
             setState("Disconnected");
+            renderHardwareSummary();
         });
     }
 

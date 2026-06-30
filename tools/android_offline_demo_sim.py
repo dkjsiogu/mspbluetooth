@@ -71,6 +71,8 @@ def run_offline_demo() -> tuple[AndroidUiState, list[str]]:
         raise AssertionError(f"offline demo wiring mismatch: {state.wiring_text!r}")
     if not state.acceptance_text.startswith("Acceptance 9/9"):
         raise AssertionError(f"offline demo acceptance mismatch: {state.acceptance_text!r}")
+    if not state.hardware_text.startswith("Hardware 7/9"):
+        raise AssertionError(f"offline demo hardware summary mismatch: {state.hardware_text!r}")
     if state.rx_line_buffer:
         raise AssertionError(f"offline demo left partial RX data: {state.rx_line_buffer!r}")
 
@@ -105,6 +107,7 @@ def render_report(state: AndroidUiState, lines: list[str]) -> str:
             row(["Trace diagnostics", state.trace_text]),
             row(["Wiring diagnostics", state.wiring_text]),
             row(["Acceptance summary", state.acceptance_text]),
+            row(["Hardware summary", state.hardware_text]),
             "",
             "## Demo Transcript",
             "",
@@ -131,6 +134,7 @@ def main() -> int:
     print(state.health_text.replace("\n", " | "))
     print(state.display_text.replace("\n", " | "))
     print(state.acceptance_text.replace("\n", " | "))
+    print(state.hardware_text.replace("\n", " | "))
     print(f"offline demo report generated: {args.report}")
     return 0
 

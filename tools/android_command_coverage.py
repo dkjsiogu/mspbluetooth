@@ -91,6 +91,14 @@ REQUIRED_PARSER_MARKERS = [
     "DEMO_RX_LINES",
     "runOfflineDemo",
     "Demo RX",
+    "hardwareView",
+    "HARDWARE_CHECK_COMMANDS",
+    "runHardwareCheck",
+    "resetHardwareSummary",
+    "updateHardwareSummary",
+    "renderHardwareSummary",
+    "Hardware 0/9",
+    "Run Hardware Check",
 ]
 
 REQUIRED_ACCEPTANCE_MARKERS = [
@@ -176,8 +184,10 @@ def render_report(commands: dict[str, list[str]], source: str, manifest: str) ->
             row(["`input ...`", "`updateInputPanel` renders EC11 and S1/S2/S4 short/long event counters"]),
             row(["`trace ...`", "`updateTracePanel` renders the recent BT/EC11/local-button event ring"]),
             row(["`pin ...`", "`updateWiringPanel` renders TF/I2S/EC11/local/BT/e-paper wiring diagnostics"]),
+            row(["Hardware summary", "`hardwareView` tracks BT connection, TX, RX, SD, audio, status, wiring, input, and trace evidence as `Hardware X/9`"]),
             row(["Connect bootstrap", "`syncInitialPanels` sends `?`, `l`, and `d` after RFCOMM connect"]),
             row(["Acceptance script", "`Run Acceptance` sends diagnostic, display, tone, and control commands with `TX>` log markers"]),
+            row(["Hardware check script", "`Run Hardware Check` sends a compact real-board evidence sequence: `? i l d t k u x w`"]),
             row(["Acceptance summary", "`acceptanceView` shows SD, info, selftest, tracks, wiring, display, status, tone, and file-open evidence as `Acceptance X/9`"]),
             row(["Offline phone demo", "`Demo RX` injects representative firmware responses into the same parser so Android panels can be checked without HC-05 hardware"]),
             row(["Acceptance log export", "`Share Log` uses Android `ACTION_SEND` with `EXTRA_TEXT` so logs can be saved and checked on PC"]),

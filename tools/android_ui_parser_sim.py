@@ -62,6 +62,7 @@ class AndroidUiState:
     trace_text: str = "Trace\n--"
     wiring_lines: list[str] = field(default_factory=lambda: ["Profile: --", "TF: --", "I2S: --", "EC11: --", "Local: --", "BT: --", "E-paper: --"])
     acceptance_text: str = "Acceptance 0/9\nSD:-- Info:-- Selftest:-- Tracks:-- Wiring:--\nDisplay:-- Status:-- Tone:-- Open:--"
+    hardware_text: str = "Hardware 0/9\nBT:-- TX:-- RX:-- SD:-- Audio:--\nStatus:-- Wiring:-- Input:-- Trace:--"
     rx_line_buffer: str = ""
     parsed_lines: list[str] = field(default_factory=list)
     acceptance_sd_mounted: bool = False
@@ -76,6 +77,15 @@ class AndroidUiState:
     acceptance_tone_done: bool = False
     acceptance_track_open: bool = False
     acceptance_wiring: bool = False
+    hardware_connected: bool = False
+    hardware_tx: bool = False
+    hardware_rx: bool = False
+    hardware_sd: bool = False
+    hardware_audio: bool = False
+    hardware_status: bool = False
+    hardware_wiring: bool = False
+    hardware_input: bool = False
+    hardware_trace: bool = False
 
     @property
     def display_text(self) -> str:
@@ -290,9 +300,63 @@ def update_acceptance_summary(state: AndroidUiState, line: str) -> None:
     render_acceptance_summary(state)
 
 
+def render_hardware_summary(state: AndroidUiState) -> None:
+    passed = sum(
+        [
+            state.hardware_connected,
+            state.hardware_tx,
+            state.hardware_rx,
+            state.hardware_sd,
+            state.hardware_audio,
+            state.hardware_status,
+            state.hardware_wiring,
+            state.hardware_input,
+            state.hardware_trace,
+        ]
+    )
+    state.hardware_text = (
+        f"Hardware {passed}/9\n"
+        f"BT:{mark(state.hardware_connected)} TX:{mark(state.hardware_tx)} "
+        f"RX:{mark(state.hardware_rx)} SD:{mark(state.hardware_sd)} "
+        f"Audio:{mark(state.hardware_audio)}\n"
+        f"Status:{mark(state.hardware_status)} Wiring:{mark(state.hardware_wiring)} "
+        f"Input:{mark(state.hardware_input)} Trace:{mark(state.hardware_trace)}"
+    )
+
+
+def update_hardware_summary(state: AndroidUiState, line: str) -> None:
+    state.hardware_rx = True
+    if line.startswith("sd mounted") or line.startswith("tracks"):
+        state.hardware_sd = True
+    elif line.startswith("tone done") or line.startswith("open TRACK0") or (
+        line.startswith("selftest ") and "i2s=ok" in line
+    ):
+        state.hardware_audio = True
+    elif line.startswith("status=") or line.startswith("display "):
+        state.hardware_status = True
+    elif line.startswith("pin bt "):
+        state.hardware_wiring = True
+    elif line.startswith("input "):
+        state.hardware_input = True
+    elif line.startswith("trace "):
+        state.hardware_trace = True
+    render_hardware_summary(state)
+
+
+def mark_connected(state: AndroidUiState) -> None:
+    state.hardware_connected = True
+    render_hardware_summary(state)
+
+
+def mark_tx(state: AndroidUiState) -> None:
+    state.hardware_tx = True
+    render_hardware_summary(state)
+
+
 def parse_incoming_line(state: AndroidUiState, line: str) -> None:
     state.parsed_lines.append(line)
     update_acceptance_summary(state, line)
+    update_hardware_summary(state, line)
     if line.startswith("status="):
         update_dashboard(state, line)
     elif (
@@ -360,6 +424,9 @@ def run_fragmented_flow() -> AndroidUiState:
         raise AssertionError(f"track list mismatch: {state.track_list_text!r}")
     if not state.acceptance_text.startswith("Acceptance 9/9"):
         raise AssertionError(f"acceptance summary mismatch: {state.acceptance_text!r}")
+    expected_hardware = "Hardware 7/9\nBT:-- TX:-- RX:OK SD:OK Audio:OK\nStatus:OK Wiring:OK Input:OK Trace:OK"
+    if state.hardware_text != expected_hardware:
+        raise AssertionError(f"hardware summary mismatch: {state.hardware_text!r}")
     expected_link = "Link\nRX: 15  Status: 10  Display: 9\nBad: 0  Last: k  Uptime: 1234ms"
     if state.link_text != expected_link:
         raise AssertionError(f"link panel mismatch: {state.link_text!r}")
@@ -389,6 +456,7 @@ def main() -> int:
     print(state.trace_text.replace("\n", " | "))
     print(state.wiring_text.replace("\n", " | "))
     print(state.acceptance_text.replace("\n", " | "))
+    print(state.hardware_text.replace("\n", " | "))
     return 0
 
 

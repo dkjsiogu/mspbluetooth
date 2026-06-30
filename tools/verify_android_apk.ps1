@@ -70,6 +70,14 @@ $requiredUiMarkers = @(
     "inputView",
     "traceView",
     "wiringView",
+    "hardwareView",
+    "HARDWARE_CHECK_COMMANDS",
+    "runHardwareCheck",
+    "resetHardwareSummary",
+    "updateHardwareSummary",
+    "renderHardwareSummary",
+    '"Run Hardware Check"',
+    '"Hardware 0/9',
     "parseIncomingLine",
     "REQUEST_SAVE_LOG",
     "Intent.ACTION_CREATE_DOCUMENT",
@@ -111,6 +119,7 @@ foreach ($marker in $requiredUiMarkers) {
 Invoke-Checked { python (Join-Path $root "tools\android_ui_parser_sim.py") }
 Invoke-Checked { python (Join-Path $root "tools\android_command_coverage.py") }
 Invoke-Checked { python (Join-Path $root "tools\android_offline_demo_sim.py") }
+Invoke-Checked { python (Join-Path $root "tools\android_hardware_check_sim.py") }
 
 Write-Output "Android APK verification passed"
 Write-Output $apk

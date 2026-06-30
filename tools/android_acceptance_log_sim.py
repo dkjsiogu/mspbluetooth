@@ -13,7 +13,7 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
-from android_ui_parser_sim import AndroidUiState, handle_incoming_text
+from android_ui_parser_sim import AndroidUiState, handle_incoming_text, mark_connected, mark_tx
 from bluetooth_protocol_sim import SimulatedPlayer
 from serial_acceptance_check import check_required_criteria, check_state_command_snapshots, normalize_lines
 
@@ -40,6 +40,7 @@ class AcceptanceResult:
     trace: str
     wiring: str
     acceptance: str
+    hardware: str
     passed_checks: int
     total_checks: int
 
@@ -75,11 +76,13 @@ def run_acceptance_flow() -> AcceptanceResult:
     player = SimulatedPlayer()
     android = AndroidUiState()
     log_lines = ["connected", "sd mounted", "open TRACK01.WAV", "acceptance start"]
+    mark_connected(android)
     fragmented_android_feed(android, log_lines[:3])
 
     for command in ACCEPTANCE_COMMANDS:
         before = len(player.transcript)
         log_lines.append(f"TX> {command}")
+        mark_tx(android)
         player.send(command)
         responses = player.transcript[before:]
         log_lines.extend(responses)
@@ -112,6 +115,8 @@ def run_acceptance_flow() -> AcceptanceResult:
         raise AssertionError(f"Android trace panel did not parse event trace: {android.trace_text!r}")
     if "BT: tx=P4.4 rx=P4.5" not in android.wiring_text:
         raise AssertionError(f"Android wiring panel did not parse pin diagnostics: {android.wiring_text!r}")
+    if not android.hardware_text.startswith("Hardware 9/9"):
+        raise AssertionError(f"Android hardware summary did not reach 9/9: {android.hardware_text!r}")
 
     return AcceptanceResult(
         log_lines=log_lines,
@@ -126,6 +131,7 @@ def run_acceptance_flow() -> AcceptanceResult:
         trace=android.trace_text,
         wiring=android.wiring_text,
         acceptance=android.acceptance_text,
+        hardware=android.hardware_text,
         passed_checks=len(check_results),
         total_checks=len(check_results),
     )
@@ -162,6 +168,7 @@ def render_report(result: AcceptanceResult, log_path: Path) -> str:
         row(["Trace diagnostics", result.trace]),
         row(["Wiring diagnostics", result.wiring]),
         row(["Acceptance summary", result.acceptance]),
+        row(["Hardware summary", result.hardware]),
         "",
         "## Log Preview",
         "",
@@ -194,6 +201,7 @@ def main() -> int:
     print(result.trace.replace("\n", " | "))
     print(result.wiring.replace("\n", " | "))
     print(result.acceptance.replace("\n", " | "))
+    print(result.hardware.replace("\n", " | "))
     print(f"acceptance log generated: {args.log}")
     print(f"acceptance report generated: {args.report}")
     return 0
